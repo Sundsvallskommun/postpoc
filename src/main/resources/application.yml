@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: api-service-postportalservice
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DATABASE.URL}
+    username: ${DATABASE.USERNAME}
+    password: ${DATABASE.PASSWORD}
+openapi:
+  title: Postportalservice
+  name: postportalservice
+  version: '@project.version@'
