@@ -8,7 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -56,9 +59,17 @@ public class RecipientEntity {
 	@Column(name = "country", columnDefinition = "VARCHAR(100)")
 	private String country;
 
+	@Column(name = "created", columnDefinition = "DATETIME")
+	private OffsetDateTime created;
+
 	@OneToMany
 	@JoinColumn(name = "recipient_id", referencedColumnName = "id", columnDefinition = "VARCHAR(36) NOT NULL")
-	private List<DeliveryEntity> deliveries;
+	private List<DeliveryEntity> deliveries = new ArrayList<>();
+
+	@PrePersist
+	void prePersist() {
+		created = OffsetDateTime.now();
+	}
 
 	public String getId() {
 		return id;
@@ -156,6 +167,14 @@ public class RecipientEntity {
 		this.country = country;
 	}
 
+	public OffsetDateTime getCreated() {
+		return created;
+	}
+
+	public void setCreated(OffsetDateTime created) {
+		this.created = created;
+	}
+
 	public List<DeliveryEntity> getDeliveries() {
 		return deliveries;
 	}
@@ -179,6 +198,7 @@ public class RecipientEntity {
 			", zipCode='" + zipCode + '\'' +
 			", city='" + city + '\'' +
 			", country='" + country + '\'' +
+			", created=" + created +
 			", deliveries=" + deliveries +
 			'}';
 	}
@@ -190,11 +210,12 @@ public class RecipientEntity {
 		RecipientEntity that = (RecipientEntity) o;
 		return Objects.equals(id, that.id) && Objects.equals(partyId, that.partyId) && Objects.equals(email, that.email) && Objects.equals(phoneNumber, that.phoneNumber) && Objects.equals(firstName,
 			that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(streetAddress, that.streetAddress) && Objects.equals(apartmentNumber, that.apartmentNumber) && Objects.equals(careOf, that.careOf)
-			&& Objects.equals(zipCode, that.zipCode) && Objects.equals(city, that.city) && Objects.equals(country, that.country) && Objects.equals(deliveries, that.deliveries);
+			&& Objects.equals(zipCode, that.zipCode) && Objects.equals(city, that.city) && Objects.equals(country, that.country) && Objects.equals(created, that.created) && Objects.equals(deliveries,
+				that.deliveries);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, partyId, email, phoneNumber, firstName, lastName, streetAddress, apartmentNumber, careOf, zipCode, city, country, deliveries);
+		return Objects.hash(id, partyId, email, phoneNumber, firstName, lastName, streetAddress, apartmentNumber, careOf, zipCode, city, country, created, deliveries);
 	}
 }

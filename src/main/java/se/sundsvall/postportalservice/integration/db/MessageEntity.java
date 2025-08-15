@@ -9,7 +9,10 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import se.sundsvall.postportalservice.integration.db.converter.MessageType;
@@ -35,6 +38,9 @@ public class MessageEntity {
 	@Column(name = "text", columnDefinition = "TEXT")
 	private String text;
 
+	@Column(name = "created", columnDefinition = "DATETIME")
+	private OffsetDateTime created;
+
 	@ManyToOne
 	@JoinColumn(name = "user_id", columnDefinition = "VARCHAR(36)")
 	private UserEntity user;
@@ -45,11 +51,16 @@ public class MessageEntity {
 
 	@OneToMany
 	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
-	private List<AttachmentEntity> attachments;
+	private List<AttachmentEntity> attachments = new ArrayList<>();
 
 	@OneToMany
 	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
-	private List<RecipientEntity> recipients;
+	private List<RecipientEntity> recipients = new ArrayList<>();
+
+	@PrePersist
+	void prePersist() {
+		created = OffsetDateTime.now();
+	}
 
 	public String getId() {
 		return id;
@@ -81,6 +92,14 @@ public class MessageEntity {
 
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	public OffsetDateTime getCreated() {
+		return created;
+	}
+
+	public void setCreated(OffsetDateTime created) {
+		this.created = created;
 	}
 
 	public UserEntity getUser() {
@@ -122,6 +141,7 @@ public class MessageEntity {
 			", messagingId='" + messagingId + '\'' +
 			", originalMessageType=" + originalMessageType +
 			", text='" + text + '\'' +
+			", created=" + created +
 			", user=" + user +
 			", department=" + department +
 			", attachments=" + attachments +
@@ -134,12 +154,12 @@ public class MessageEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		MessageEntity that = (MessageEntity) o;
-		return Objects.equals(id, that.id) && Objects.equals(messagingId, that.messagingId) && originalMessageType == that.originalMessageType && Objects.equals(text, that.text) && Objects.equals(user, that.user)
-			&& Objects.equals(department, that.department) && Objects.equals(attachments, that.attachments) && Objects.equals(recipients, that.recipients);
+		return Objects.equals(id, that.id) && Objects.equals(messagingId, that.messagingId) && originalMessageType == that.originalMessageType && Objects.equals(text, that.text) && Objects.equals(created, that.created)
+			&& Objects.equals(user, that.user) && Objects.equals(department, that.department) && Objects.equals(attachments, that.attachments) && Objects.equals(recipients, that.recipients);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, messagingId, originalMessageType, text, user, department, attachments, recipients);
+		return Objects.hash(id, messagingId, originalMessageType, text, created, user, department, attachments, recipients);
 	}
 }
