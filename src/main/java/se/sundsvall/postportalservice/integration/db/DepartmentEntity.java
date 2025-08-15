@@ -17,7 +17,7 @@ public class DepartmentEntity {
 	@Column(name = "id", columnDefinition = "VARCHAR(36)")
 	private String id;
 
-	@Column(name = "name")
+	@Column(name = "name", columnDefinition = "VARCHAR(100)")
 	private String name;
 
 	public String getId() {

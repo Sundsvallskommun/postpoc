@@ -7,12 +7,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.util.Objects;
 
 @Entity
-@Table(name = "attachment")
+@Table(name = "attachment", indexes = {
+	@Index(name = "IDX_ATTACHMENT_MESSAGE_ID", columnList = "message_id")
+})
 public class AttachmentEntity {
 
 	@Id
@@ -28,40 +31,8 @@ public class AttachmentEntity {
 
 	@Lob
 	@Basic(fetch = FetchType.LAZY)
-	@Column(name = "content", columnDefinition = "LONGTEXT")
+	@Column(name = "content", columnDefinition = "LONGBLOB")
 	private String content;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getMimeType() {
-		return mimeType;
-	}
-
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
 
 	@Override
 	public String toString() {
