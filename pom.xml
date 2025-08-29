@@ -107,6 +107,18 @@
 							</configOptions>
 						</configuration>
 					</execution>
+					<execution>
+						<id>digitalregisteredletter-api</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/integrations/digitalregisteredletter.yml</inputSpec>
+							<configOptions>
+								<modelPackage>generated.se.sundsvall.digitalregisteredletter</modelPackage>
+							</configOptions>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
