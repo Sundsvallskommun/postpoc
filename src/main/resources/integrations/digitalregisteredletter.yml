@@ -1,0 +1,642 @@
+openapi: 3.0.1
+info:
+  title: digital-registered-letter
+  contact: { }
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  version: "1.0"
+servers:
+  - url: http://localhost:53535
+    description: Generated server url
+tags:
+  - name: Scheduler Resource
+    description: Manually trigger scheduled tasks
+  - name: Letter Resource
+    description: Send and manage digital registered letters
+  - name: Eligibility Resource
+    description: Check eligibility for sending digital registered letters
+paths:
+  /{municipalityId}/scheduler:
+    post:
+      tags:
+        - Scheduler Resource
+      summary: Trigger update letter statuses task
+      description: Triggers the task that updates letter statuses
+      operationId: updateLetterStatuses
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful Operation - OK
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/letters:
+    get:
+      tags:
+        - Letter Resource
+      summary: Get all letters
+      description: Retrieves all letters for a municipality
+      operationId: getLetters
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Zero-based page index (0..N)
+          required: false
+          schema:
+            minimum: 0
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: The size of the page to be returned
+          required: false
+          schema:
+            minimum: 1
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Successful Operation - OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Letters"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+    post:
+      tags:
+        - Letter Resource
+      summary: Send letter
+      description: Send a digital registered letter using Kivra
+      operationId: sendLetter
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - letter
+                - letterAttachments
+              type: object
+              properties:
+                letter:
+                  $ref: "#/components/schemas/LetterRequest"
+                letterAttachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "201":
+          description: Successful operation - Created
+          headers:
+            Location:
+              style: simple
+              schema:
+                type: string
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/letters/{letterId}:
+    get:
+      tags:
+        - Letter Resource
+      summary: Get letter
+      description: Retrieves a letter by id
+      operationId: getLetter
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: letterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful Operation - OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Letter"
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/eligibility/kivra:
+    get:
+      tags:
+        - Eligibility Resource
+      summary: Check if the given partyIds are eligible for receiving digital registered
+        letters with Kivra
+      description: Returns a list of party IDs that are eligible for Kivra based on
+        the provided municipality ID and party IDs
+      operationId: checkKivraEligibility
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: request
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/EligibilityRequest"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /api-docs:
+    get:
+      tags:
+        - API
+      summary: OpenAPI
+      operationId: getApiDocs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+      x-auth-type: None
+      x-throttling-tier: Unlimited
+      x-wso2-mutual-ssl: Optional
+components:
+  schemas:
+    Problem:
+      type: object
+      properties:
+        instance:
+          type: string
+          format: uri
+        type:
+          type: string
+          format: uri
+        parameters:
+          type: object
+          additionalProperties:
+            type: object
+        status:
+          $ref: "#/components/schemas/StatusType"
+        title:
+          type: string
+        detail:
+          type: string
+    StatusType:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          format: int32
+        reasonPhrase:
+          type: string
+    ConstraintViolationProblem:
+      type: object
+      properties:
+        cause:
+          $ref: "#/components/schemas/ThrowableProblem"
+        stackTrace:
+          type: array
+          items:
+            type: object
+            properties:
+              classLoaderName:
+                type: string
+              moduleName:
+                type: string
+              moduleVersion:
+                type: string
+              methodName:
+                type: string
+              fileName:
+                type: string
+              lineNumber:
+                type: integer
+                format: int32
+              className:
+                type: string
+              nativeMethod:
+                type: boolean
+        type:
+          type: string
+          format: uri
+        status:
+          $ref: "#/components/schemas/StatusType"
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Violation"
+        title:
+          type: string
+        message:
+          type: string
+        instance:
+          type: string
+          format: uri
+        parameters:
+          type: object
+          additionalProperties:
+            type: object
+        detail:
+          type: string
+        suppressed:
+          type: array
+          items:
+            type: object
+            properties:
+              stackTrace:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    classLoaderName:
+                      type: string
+                    moduleName:
+                      type: string
+                    moduleVersion:
+                      type: string
+                    methodName:
+                      type: string
+                    fileName:
+                      type: string
+                    lineNumber:
+                      type: integer
+                      format: int32
+                    className:
+                      type: string
+                    nativeMethod:
+                      type: boolean
+              message:
+                type: string
+              localizedMessage:
+                type: string
+        localizedMessage:
+          type: string
+    ThrowableProblem:
+      type: object
+      properties:
+        cause:
+          $ref: "#/components/schemas/ThrowableProblem"
+        stackTrace:
+          type: array
+          items:
+            type: object
+            properties:
+              classLoaderName:
+                type: string
+              moduleName:
+                type: string
+              moduleVersion:
+                type: string
+              methodName:
+                type: string
+              fileName:
+                type: string
+              lineNumber:
+                type: integer
+                format: int32
+              className:
+                type: string
+              nativeMethod:
+                type: boolean
+        message:
+          type: string
+        instance:
+          type: string
+          format: uri
+        type:
+          type: string
+          format: uri
+        parameters:
+          type: object
+          additionalProperties:
+            type: object
+        status:
+          $ref: "#/components/schemas/StatusType"
+        title:
+          type: string
+        detail:
+          type: string
+        suppressed:
+          type: array
+          items:
+            type: object
+            properties:
+              stackTrace:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    classLoaderName:
+                      type: string
+                    moduleName:
+                      type: string
+                    moduleVersion:
+                      type: string
+                    methodName:
+                      type: string
+                    fileName:
+                      type: string
+                    lineNumber:
+                      type: integer
+                      format: int32
+                    className:
+                      type: string
+                    nativeMethod:
+                      type: boolean
+              message:
+                type: string
+              localizedMessage:
+                type: string
+        localizedMessage:
+          type: string
+    Violation:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+    LetterRequest:
+      required:
+        - body
+        - contentType
+        - partyId
+        - subject
+        - supportInfo
+      type: object
+      properties:
+        partyId:
+          type: string
+          description: Party ID of the recipient
+          example: 7ca29702-a07f-4e13-a66a-4ebc27929cfd
+        subject:
+          minLength: 1
+          type: string
+          description: Subject of the letter
+          example: Important Notification
+        supportInfo:
+          $ref: "#/components/schemas/SupportInfo"
+        contentType:
+          type: string
+          description: "Content type of the letter body, e.g., 'text/plain' or 'text/html'"
+          example: text/plain
+        body:
+          minLength: 1
+          type: string
+          description: Body of the letter
+          example: This is the content of the letter. Plain-text body
+      description: LetterRequest as a JSON string
+    SupportInfo:
+      required:
+        - contactInformationEmail
+        - contactInformationPhoneNumber
+        - contactInformationUrl
+        - supportText
+      type: object
+      properties:
+        supportText:
+          minLength: 1
+          type: string
+          description: Support text for the letter
+          example: "For support, please contact us at the information below."
+        contactInformationUrl:
+          minLength: 1
+          type: string
+          description: URL for contact
+          example: https://example.com/support
+        contactInformationPhoneNumber:
+          type: string
+          description: Phone number for contact
+          example: "+46123456789"
+        contactInformationEmail:
+          type: string
+          description: Email address for contact
+          example: support@email.com
+      description: Support information for the letter
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Unique identifier for the attachment, used for fetching the\
+            \ attachment content"
+          example: 123e4567-e89b-12d3-a456-426614174001
+        fileName:
+          type: string
+          description: Name of the attachment file
+          example: document.pdf
+        contentType:
+          type: string
+          description: Content type of the attachment
+          example: application/pdf
+      description: List of attachments for the letter
+    Direction:
+      type: string
+      description: The sort order direction
+      example: ASC
+      enum:
+        - ASC
+        - DESC
+    Letter:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the letter
+          example: 123e4567-e89b-12d3-a456-426614174000
+        municipalityId:
+          type: string
+          description: Municipality ID for the sender of the letter
+          example: "2281"
+        status:
+          type: string
+          description: Status of the letter
+        body:
+          type: string
+          description: The letter body
+        contentType:
+          type: string
+          description: Content type of the letter body
+          example: text/html
+        created:
+          type: string
+          description: When the letter was sent
+          format: date-time
+          example: 2023-10-09T12:34:56Z
+        updated:
+          type: string
+          description: When the letter was last updated
+          format: date-time
+          example: 2023-10-09T12:34:56Z
+        supportInfo:
+          $ref: "#/components/schemas/SupportInfo"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attachment"
+      description: Digital registered letter response
+      readOnly: true
+    Letters:
+      type: object
+      properties:
+        _meta:
+          $ref: "#/components/schemas/PagingAndSortingMetaData"
+        letters:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Letter"
+      description: Paginated response containing a list of letters
+    PagingAndSortingMetaData:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page
+          format: int32
+          readOnly: true
+          example: 5
+        limit:
+          type: integer
+          description: Displayed objects per page
+          format: int32
+          readOnly: true
+          example: 20
+        count:
+          type: integer
+          description: Displayed objects on current page
+          format: int32
+          readOnly: true
+          example: 13
+        totalRecords:
+          type: integer
+          description: Total amount of hits based on provided search parameters
+          format: int64
+          readOnly: true
+          example: 98
+        totalPages:
+          type: integer
+          description: Total amount of pages based on provided search parameters
+          format: int32
+          readOnly: true
+          example: 23
+        sortBy:
+          type: array
+          readOnly: true
+          items:
+            type: string
+            description: The properties to sort by
+            readOnly: true
+            example: property
+        sortDirection:
+          $ref: "#/components/schemas/Direction"
+      description: PagingAndSortingMetaData model
+      readOnly: true
+    EligibilityRequest:
+      type: object
+      properties:
+        partyIds:
+          type: array
+          items:
+            type: string
+  securitySchemes: { }

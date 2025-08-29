@@ -13,6 +13,13 @@ spring:
     url: ${DATABASE.URL}
     username: ${DATABASE.USERNAME}
     password: ${DATABASE.PASSWORD}
+  security:
+    oauth2:
+      client:
+        registration:
+          digitalregisteredletter:
+            authorization-grant-type: client_credentials
+            provider: digitalregisteredletter
 openapi:
   title: Postportalservice
   name: postportalservice
