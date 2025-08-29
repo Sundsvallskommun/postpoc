@@ -26,18 +26,18 @@ public interface DigitalRegisteredLetterClient {
 
 	@GetMapping(path = "/{municipalityId}/eligibility/kivra")
 	List<String> checkKivraEligibility(
-		@PathVariable("municipalityId") final String municipalityId,
+		@PathVariable final String municipalityId,
 		@RequestParam final EligibilityRequest request);
 
 	@GetMapping(path = "/{municipalityId}/letters")
-	List<Letters> getAllLetters(@PathVariable("municipalityId") final String municipalityId);
+	List<Letters> getAllLetters(@PathVariable final String municipalityId);
 
 	@GetMapping(path = "/{municipalityId}/letters/{letterId}")
-	Letter getLetterById(@PathVariable("municipalityId") final String municipalityId,
+	Letter getLetterById(@PathVariable final String municipalityId,
 		@PathVariable("letterId") final String letterId);
 
 	@PostMapping("/{municipalityId}/letters")
-	ResponseEntity<Void> sendLetter(@PathVariable("municipalityId") final String municipalityId,
+	ResponseEntity<Void> sendLetter(@PathVariable final String municipalityId,
 		@RequestPart(name = "letter") final String letter,
 		@RequestPart(name = "letterAttachments") final List<MultipartFile> files);
 
