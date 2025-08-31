@@ -20,6 +20,9 @@ spring:
           digitalregisteredletter:
             authorization-grant-type: client_credentials
             provider: digitalregisteredletter
+          messagingsettings:
+            authorization-grant-type: client_credentials
+            provider: messagingsettings
 openapi:
   title: Postportalservice
   name: postportalservice
