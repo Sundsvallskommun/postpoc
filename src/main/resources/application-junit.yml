@@ -13,10 +13,19 @@ spring:
         provider:
           digitalregisteredletter:
             token-uri: http://token.url
+          messagingsettings:
+            token-uri: http://token.url
         registration:
           digitalregisteredletter:
+            client-id: the-client-id
+            client-secret: the-client-secret
+          messagingsettings:
             client-id: the-client-id
             client-secret: the-client-secret
 integration:
   digitalregisteredletter:
     url: http://digitalregisteredletter.com
+  messagingsettings:
+    url: http://messagingsettings.api
+    connect-timeout: 10
+    read-timeout: 20
