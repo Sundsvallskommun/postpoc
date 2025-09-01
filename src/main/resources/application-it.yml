@@ -15,6 +15,8 @@ spring:
             token-uri: http://localhost:${wiremock.server.port:}/api-gateway/token
           messagingsettings:
             token-uri: http://localhost:${wiremock.server.port:}/api-gateway/token
+          messaging:
+            token-uri: http://localhost:${wiremock.server.port:}/api-gateway/token
         registration:
           digitalregisteredletter:
             client-id: the-client-id
@@ -22,8 +24,13 @@ spring:
           messagingsettings:
             client-id: the-client-id
             client-secret: the-client-secret
+          messaging:
+            client-id: the-client-id
+            client-secret: the-client-secret
 integration:
   digitalregisteredletter:
     url: http://localhost:${wiremock.server.port:}/api-digitalregisteredletter
   messagingsettings:
     url: http://localhost:${wiremock.server.port:}/api-messagingsettings
+  messaging:
+    url: http://localhost:${wiremock.server.port:}/api-messaging

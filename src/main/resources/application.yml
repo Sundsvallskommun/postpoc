@@ -23,6 +23,9 @@ spring:
           messagingsettings:
             authorization-grant-type: client_credentials
             provider: messagingsettings
+          messaging:
+            authorization-grant-type: client_credentials
+            provider: messaging
 openapi:
   title: Postportalservice
   name: postportalservice
