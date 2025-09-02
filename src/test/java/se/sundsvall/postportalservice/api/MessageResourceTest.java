@@ -3,6 +3,9 @@ package se.sundsvall.postportalservice.api;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static se.sundsvall.postportalservice.TestDataFactory.INVALID_MUNICIPALITY_ID;
 import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
+import static se.sundsvall.postportalservice.TestDataFactory.createValidDigitalRegisteredLetterRequest;
+import static se.sundsvall.postportalservice.TestDataFactory.createValidLetterRequest;
+import static se.sundsvall.postportalservice.TestDataFactory.createValidSmsRequest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.postportalservice.Application;
-import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
-import se.sundsvall.postportalservice.api.model.LetterRequest;
-import se.sundsvall.postportalservice.api.model.SmsRequest;
 
 @SpringBootTest(classes = Application.class, webEnvironment = RANDOM_PORT)
 @ActiveProfiles("junit")
@@ -30,7 +30,7 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/letter")
 				.build(MUNICIPALITY_ID, userId, messageId))
-			.bodyValue(new LetterRequest())
+			.bodyValue(createValidLetterRequest())
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.NOT_IMPLEMENTED);
 	}
@@ -40,7 +40,7 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/letter")
 				.build(INVALID_MUNICIPALITY_ID))
-			.bodyValue(new LetterRequest())
+			.bodyValue(createValidLetterRequest())
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
 	}
@@ -50,7 +50,7 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/registered-letter")
 				.build(MUNICIPALITY_ID))
-			.bodyValue(new DigitalRegisteredLetterRequest())
+			.bodyValue(createValidDigitalRegisteredLetterRequest())
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.NOT_IMPLEMENTED);
 	}
@@ -60,7 +60,7 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/registered-letter")
 				.build(INVALID_MUNICIPALITY_ID))
-			.bodyValue(new DigitalRegisteredLetterRequest())
+			.bodyValue(createValidDigitalRegisteredLetterRequest())
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
 	}
@@ -70,7 +70,7 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/sms")
 				.build(MUNICIPALITY_ID))
-			.bodyValue(new SmsRequest())
+			.bodyValue(createValidSmsRequest())
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.NOT_IMPLEMENTED);
 	}
@@ -80,7 +80,7 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/sms")
 				.build(INVALID_MUNICIPALITY_ID))
-			.bodyValue(new SmsRequest())
+			.bodyValue(createValidSmsRequest())
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
 	}
