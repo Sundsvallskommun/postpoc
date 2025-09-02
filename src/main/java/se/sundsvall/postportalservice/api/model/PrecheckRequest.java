@@ -10,7 +10,13 @@ import se.sundsvall.dept44.common.validators.annotation.ValidUuid;
 @Schema(description = "Precheck request model")
 public class PrecheckRequest {
 
-	@ArraySchema(schema = @Schema(description = "List of recipients", implementation = String.class))
+	@ArraySchema(
+		arraySchema = @Schema(
+			description = "List of recipients represented by their partyId. Each partyId is a unique identifier for a recipient and must be provided as a valid UUID string."),
+		schema = @Schema(
+			type = "string",
+			description = "Recipient partyId (UUID).",
+			example = "550e8400-e29b-41d4-a716-446655440000"))
 	@NotEmpty
 	private List<@ValidUuid String> recipients;
 

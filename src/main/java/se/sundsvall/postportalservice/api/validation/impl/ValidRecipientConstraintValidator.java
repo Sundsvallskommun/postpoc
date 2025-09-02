@@ -4,15 +4,12 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import java.util.Set;
 import se.sundsvall.postportalservice.api.model.Recipient;
 import se.sundsvall.postportalservice.api.validation.ValidRecipient;
 import se.sundsvall.postportalservice.api.validation.groups.SnailMailGroup;
 
 public class ValidRecipientConstraintValidator implements ConstraintValidator<ValidRecipient, Recipient> {
-
-	private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
 	@Override
 	public void initialize(ValidRecipient constraintAnnotation) {
@@ -22,9 +19,13 @@ public class ValidRecipientConstraintValidator implements ConstraintValidator<Va
 	@Override
 	public boolean isValid(final Recipient value, final ConstraintValidatorContext context) {
 		if (value.getDeliveryMethod() == Recipient.DeliveryMethod.SNAIL_MAIL) {
-			// Validates using SnailMailGroup
-			var violations = validator.validate(value, SnailMailGroup.class);
-			return buildConstraintViolation(violations, context);
+			try (var factory = Validation.buildDefaultValidatorFactory()) {
+				var validator = factory.getValidator();
+				// Validates using SnailMailGroup
+				var violations = validator.validate(value, SnailMailGroup.class);
+				return buildConstraintViolation(violations, context);
+
+			}
 		}
 		// Only require group validation for SNAIL_MAIL. For other delivery methods we rely on the default validation group.
 		return true;
@@ -40,7 +41,7 @@ public class ValidRecipientConstraintValidator implements ConstraintValidator<Va
 	boolean buildConstraintViolation(final Set<ConstraintViolation<Recipient>> violations, final ConstraintValidatorContext context) {
 		if (!violations.isEmpty()) {
 			context.disableDefaultConstraintViolation();
-			for (ConstraintViolation<Recipient> violation : violations) {
+			for (var violation : violations) {
 				context.buildConstraintViolationWithTemplate(violation.getMessage())
 					.addPropertyNode(violation.getPropertyPath().toString())
 					.addConstraintViolation();

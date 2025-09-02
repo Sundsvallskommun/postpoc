@@ -26,7 +26,7 @@ public class Recipient {
 	private Address address;
 
 	public enum DeliveryMethod {
-		DIGITAL_MAIL, SNAIL_MAIL, NO_CONTACT
+		DIGITAL_MAIL, SNAIL_MAIL, DELIVERY_NOT_POSSIBLE
 	}
 
 	public static Recipient create() {

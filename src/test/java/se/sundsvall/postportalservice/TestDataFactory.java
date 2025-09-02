@@ -10,10 +10,12 @@ import se.sundsvall.postportalservice.api.model.Recipient;
 import se.sundsvall.postportalservice.api.model.SmsRecipient;
 import se.sundsvall.postportalservice.api.model.SmsRequest;
 
-public class TestDataFactory {
+public final class TestDataFactory {
 
 	public static final String MUNICIPALITY_ID = "2281";
 	public static final String INVALID_MUNICIPALITY_ID = "NOT_A_VALID_MUNICIPALITY_ID";
+
+	private TestDataFactory() {}
 
 	public static Attachment createValidAttachment() {
 		return Attachment.create()

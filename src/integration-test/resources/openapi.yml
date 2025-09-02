@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:49303
+  - url: http://localhost:64453
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -634,8 +634,14 @@ components:
         recipients:
           minItems: 1
           type: array
+          description: List of recipients represented by their partyId. Each partyId
+            is a unique identifier for a recipient and must be provided as a valid
+            UUID string.
           items:
+            minLength: 1
             type: string
+            description: Recipient partyId (UUID).
+            example: 550e8400-e29b-41d4-a716-446655440000
       description: Precheck request model
     Problem:
       type: object
@@ -954,7 +960,7 @@ components:
           enum:
             - DIGITAL_MAIL
             - SNAIL_MAIL
-            - NO_CONTACT
+            - DELIVERY_NOT_POSSIBLE
         address:
           $ref: "#/components/schemas/Address"
       description: Recipient model

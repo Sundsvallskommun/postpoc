@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import jakarta.validation.ConstraintValidatorContext;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,10 +45,13 @@ class ValidRecipientConstraintValidatorTest {
 	@InjectMocks
 	private ValidRecipientConstraintValidator validator;
 
+	@BeforeEach
+	void beforeEach() {
+		validator.initialize(mockAnnotation);
+	}
+
 	@Test
 	void validateDigitalMailRecipient() {
-		validator.initialize(mockAnnotation);
-
 		var recipient = Recipient.create()
 			.withAddress(null)
 			.withPartyId(validPartyId)
@@ -60,12 +64,10 @@ class ValidRecipientConstraintValidatorTest {
 
 	@Test
 	void validateNoContactRecipient() {
-		validator.initialize(mockAnnotation);
-
 		var recipient = Recipient.create()
 			.withAddress(null)
 			.withPartyId(validPartyId)
-			.withDeliveryMethod(Recipient.DeliveryMethod.NO_CONTACT);
+			.withDeliveryMethod(Recipient.DeliveryMethod.DELIVERY_NOT_POSSIBLE);
 
 		var valid = validator.isValid(recipient, context);
 
@@ -74,8 +76,6 @@ class ValidRecipientConstraintValidatorTest {
 
 	@Test
 	void validateSnailMailRecipient_validAddress() {
-		validator.initialize(mockAnnotation);
-
 		var recipient = Recipient.create()
 			.withAddress(validAddress)
 			.withPartyId(validPartyId)
@@ -88,8 +88,6 @@ class ValidRecipientConstraintValidatorTest {
 
 	@Test
 	void validateSnailMailRecipient_invalidAddress() {
-		validator.initialize(mockAnnotation);
-
 		when(context.buildConstraintViolationWithTemplate(any())).thenReturn(violationBuilder);
 		when(violationBuilder.addPropertyNode(any())).thenReturn(nodeContext);
 
