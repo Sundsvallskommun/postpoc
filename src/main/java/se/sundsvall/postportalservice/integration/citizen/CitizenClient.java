@@ -5,10 +5,11 @@ import static se.sundsvall.postportalservice.integration.citizen.configuration.C
 
 import generated.se.sundsvall.citizen.CitizenExtended;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import java.util.Optional;
+import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import se.sundsvall.postportalservice.integration.citizen.configuration.CitizenConfiguration;
 
 @CircuitBreaker(name = CLIENT_ID)
@@ -18,8 +19,11 @@ import se.sundsvall.postportalservice.integration.citizen.configuration.CitizenC
 	configuration = CitizenConfiguration.class)
 public interface CitizenClient {
 
-	@GetMapping(path = "/{municipalityId}/{personId}", produces = APPLICATION_JSON_VALUE)
-	Optional<CitizenExtended> getCitizen(
-		@PathVariable(name = "municipalityId") String municipalityId,
-		@PathVariable(name = "personId") String personId);
+	@PostMapping(
+		path = "/{municipalityId}/batch",
+		consumes = APPLICATION_JSON_VALUE,
+		produces = APPLICATION_JSON_VALUE)
+	List<CitizenExtended> getCitizens(
+		@PathVariable("municipalityId") String municipalityId,
+		@RequestBody List<String> personIds);
 }
