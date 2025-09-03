@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:64453
+  - url: http://localhost:54571
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -115,8 +115,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DigitalRegisteredLetterRequest"
-        required: true
+              required:
+                - attachments
+                - request
+              type: object
+              properties:
+                request:
+                  $ref: "#/components/schemas/DigitalRegisteredLetterRequest"
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
       responses:
         "200":
           description: OK
@@ -159,8 +169,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LetterRequest"
-        required: true
+              required:
+                - attachments
+                - request
+              type: object
+              properties:
+                request:
+                  $ref: "#/components/schemas/LetterRequest"
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
       responses:
         "200":
           description: OK
@@ -807,41 +827,8 @@ components:
           items:
             $ref: "#/components/schemas/SmsRecipient"
       description: SMS request model
-    Attachment:
-      required:
-        - deliveryMode
-        - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Name of the attachment
-          example: attachment.pdf
-        contentType:
-          type: string
-          description: Content type of the attachment
-          example: application/pdf
-        content:
-          type: string
-          description: Base64 encoded content of the attachment
-          example: ZGV0dGEgw6RyIGJhc2U2NA==
-        deliveryMode:
-          type: string
-          description: How the attachment can be delivered
-          example: SNAIL_MAIL
-          enum:
-            - DIGITAL_MAIL
-            - SNAIL_MAIL
-            - ANY
-        deviation:
-          type: string
-          description: Describes any deviation for SNAIL_MAIL deliveries
-          example: A3 Ritning
-      description: Attachment model
     DigitalRegisteredLetterRequest:
       required:
-        - attachments
         - subject
       type: object
       properties:
@@ -854,12 +841,7 @@ components:
           type: string
           description: The subject of the letter
           example: This is the subject of the letter
-        attachments:
-          minItems: 1
-          type: array
-          items:
-            $ref: "#/components/schemas/Attachment"
-      description: Digital registered letter request model
+      description: Digital registered letter request as a JSON string
     Address:
       required:
         - city
@@ -911,7 +893,6 @@ components:
       description: Address model
     LetterRequest:
       required:
-        - attachments
         - recipients
         - subject
       type: object
@@ -929,11 +910,6 @@ components:
           type: string
           description: The content type of the body
           example: text/plain
-        attachments:
-          minItems: 1
-          type: array
-          items:
-            $ref: "#/components/schemas/Attachment"
         recipients:
           minItems: 1
           type: array
@@ -943,7 +919,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Address"
-      description: Letter request model
+      description: Letter request as a JSON string
     Recipient:
       required:
         - deliveryMethod
@@ -965,3 +941,4 @@ components:
           $ref: "#/components/schemas/Address"
       description: Recipient model
   securitySchemes: { }
+

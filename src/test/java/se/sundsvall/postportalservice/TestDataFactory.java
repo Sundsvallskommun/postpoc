@@ -2,7 +2,6 @@ package se.sundsvall.postportalservice;
 
 import java.util.List;
 import se.sundsvall.postportalservice.api.model.Address;
-import se.sundsvall.postportalservice.api.model.Attachment;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckRequest;
@@ -16,15 +15,6 @@ public final class TestDataFactory {
 	public static final String INVALID_MUNICIPALITY_ID = "NOT_A_VALID_MUNICIPALITY_ID";
 
 	private TestDataFactory() {}
-
-	public static Attachment createValidAttachment() {
-		return Attachment.create()
-			.withName("attachment.pdf")
-			.withContentType("application/pdf")
-			.withContent("ZGV0dGEgw6RyIGJhc2U2NA==")
-			.withDeliveryMode(Attachment.DeliveryMode.SNAIL_MAIL)
-			.withDeviation("A3 Ritning");
-	}
 
 	public static Recipient createValidRecipient() {
 		return Recipient.create()
@@ -53,7 +43,6 @@ public final class TestDataFactory {
 
 	public static DigitalRegisteredLetterRequest createValidDigitalRegisteredLetterRequest() {
 		return DigitalRegisteredLetterRequest.create()
-			.withAttachments(List.of(createValidAttachment()))
 			.withSubject("Test Subject")
 			.withPartyId("6d0773d6-3e7f-4552-81bc-f0007af95adf");
 	}
@@ -66,7 +55,6 @@ public final class TestDataFactory {
 
 	public static LetterRequest createValidLetterRequest() {
 		return LetterRequest.create()
-			.withAttachments(List.of(createValidAttachment()))
 			.withBody("body")
 			.withSubject("Test Subject")
 			.withRecipients(List.of(createValidRecipient()))

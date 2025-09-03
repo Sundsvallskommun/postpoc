@@ -8,19 +8,16 @@ import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetter
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.hamcrest.CoreMatchers.allOf;
-import static se.sundsvall.postportalservice.TestDataFactory.createValidAttachment;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class DigitalRegisteredLetterRequestTest {
 
 	private final String partyId = "6d0773d6-3e7f-4552-81bc-f0007af95adf";
 	private final String subject = "This is the subject of the letter";
-	private final List<Attachment> attachments = List.of(createValidAttachment());
 
 	private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -38,12 +35,10 @@ class DigitalRegisteredLetterRequestTest {
 	void builderPattern() {
 		final var request = DigitalRegisteredLetterRequest.create()
 			.withPartyId(partyId)
-			.withSubject(subject)
-			.withAttachments(attachments);
+			.withSubject(subject);
 
 		assertThat(request.getPartyId()).isEqualTo(partyId);
 		assertThat(request.getSubject()).isEqualTo(subject);
-		assertThat(request.getAttachments()).isEqualTo(attachments);
 		assertThat(request).hasNoNullFieldsOrProperties();
 	}
 
@@ -52,11 +47,9 @@ class DigitalRegisteredLetterRequestTest {
 		final var request = new DigitalRegisteredLetterRequest();
 		request.setPartyId(partyId);
 		request.setSubject(subject);
-		request.setAttachments(attachments);
 
 		assertThat(request.getPartyId()).isEqualTo(partyId);
 		assertThat(request.getSubject()).isEqualTo(subject);
-		assertThat(request.getAttachments()).isEqualTo(attachments);
 		assertThat(request).hasNoNullFieldsOrProperties();
 	}
 
@@ -66,12 +59,11 @@ class DigitalRegisteredLetterRequestTest {
 
 		final var violations = validator.validate(request);
 
-		assertThat(violations).hasSize(3)
+		assertThat(violations).hasSize(2)
 			.extracting(violation -> violation.getPropertyPath().toString(), ConstraintViolation::getMessage)
 			.containsExactlyInAnyOrder(
 				tuple("partyId", "not a valid UUID"),
-				tuple("subject", "must not be blank"),
-				tuple("attachments", "must not be empty"));
+				tuple("subject", "must not be blank"));
 		assertThat(request).hasAllNullFieldsOrProperties();
 	}
 
@@ -79,8 +71,7 @@ class DigitalRegisteredLetterRequestTest {
 	void validatePopulatedBean() {
 		final var request = DigitalRegisteredLetterRequest.create()
 			.withPartyId(partyId)
-			.withSubject(subject)
-			.withAttachments(attachments);
+			.withSubject(subject);
 
 		final var violations = validator.validate(request);
 

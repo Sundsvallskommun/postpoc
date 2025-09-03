@@ -21,10 +21,6 @@ public class LetterRequest {
 	@Schema(description = "The content type of the body", example = "text/plain")
 	private String contentType;
 
-	@ArraySchema(schema = @Schema(description = "List of attachments", implementation = Attachment.class))
-	@NotEmpty
-	private List<@Valid Attachment> attachments;
-
 	@ArraySchema(schema = @Schema(description = "List of recipients", implementation = Recipient.class))
 	@NotEmpty
 	private List<@Valid Recipient> recipients;
@@ -75,19 +71,6 @@ public class LetterRequest {
 		return this;
 	}
 
-	public List<Attachment> getAttachments() {
-		return attachments;
-	}
-
-	public void setAttachments(List<Attachment> attachments) {
-		this.attachments = attachments;
-	}
-
-	public LetterRequest withAttachments(List<Attachment> attachments) {
-		this.attachments = attachments;
-		return this;
-	}
-
 	public List<Recipient> getRecipients() {
 		return recipients;
 	}
@@ -120,7 +103,6 @@ public class LetterRequest {
 			"subject='" + subject + '\'' +
 			", body='" + body + '\'' +
 			", contentType='" + contentType + '\'' +
-			", attachments=" + attachments +
 			", recipients=" + recipients +
 			", addresses=" + addresses +
 			'}';
@@ -131,12 +113,12 @@ public class LetterRequest {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		LetterRequest that = (LetterRequest) o;
-		return Objects.equals(subject, that.subject) && Objects.equals(body, that.body) && Objects.equals(contentType, that.contentType) && Objects.equals(attachments, that.attachments) && Objects.equals(
-			recipients, that.recipients) && Objects.equals(addresses, that.addresses);
+		return Objects.equals(subject, that.subject) && Objects.equals(body, that.body) && Objects.equals(contentType, that.contentType) && Objects.equals(recipients, that.recipients) && Objects.equals(
+			addresses, that.addresses);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(subject, body, contentType, attachments, recipients, addresses);
+		return Objects.hash(subject, body, contentType, recipients, addresses);
 	}
 }

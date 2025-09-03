@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.CoreMatchers.allOf;
 import static se.sundsvall.postportalservice.TestDataFactory.createValidAddress;
-import static se.sundsvall.postportalservice.TestDataFactory.createValidAttachment;
 import static se.sundsvall.postportalservice.TestDataFactory.createValidRecipient;
 
 import jakarta.validation.ConstraintViolation;
@@ -23,7 +22,6 @@ class LetterRequestTest {
 	private final String subject = "This is the subject of the letter";
 	private final String body = "This is the body of the letter";
 	private final String contentType = "text/plain";
-	private final List<Attachment> attachments = List.of(createValidAttachment());
 	private final List<Recipient> recipients = List.of(createValidRecipient());
 	private final List<Address> addresses = List.of(createValidAddress());
 
@@ -45,14 +43,12 @@ class LetterRequestTest {
 			.withSubject(subject)
 			.withBody(body)
 			.withContentType(contentType)
-			.withAttachments(attachments)
 			.withRecipients(recipients)
 			.withAddresses(addresses);
 
 		assertThat(letterRequest.getSubject()).isEqualTo(subject);
 		assertThat(letterRequest.getBody()).isEqualTo(body);
 		assertThat(letterRequest.getContentType()).isEqualTo(contentType);
-		assertThat(letterRequest.getAttachments()).isEqualTo(attachments);
 		assertThat(letterRequest.getRecipients()).isEqualTo(recipients);
 		assertThat(letterRequest.getAddresses()).isEqualTo(addresses);
 		assertThat(letterRequest).hasNoNullFieldsOrProperties();
@@ -64,14 +60,12 @@ class LetterRequestTest {
 		letterRequest.setSubject(subject);
 		letterRequest.setBody(body);
 		letterRequest.setContentType(contentType);
-		letterRequest.setAttachments(attachments);
 		letterRequest.setRecipients(recipients);
 		letterRequest.setAddresses(addresses);
 
 		assertThat(letterRequest.getSubject()).isEqualTo(subject);
 		assertThat(letterRequest.getBody()).isEqualTo(body);
 		assertThat(letterRequest.getContentType()).isEqualTo(contentType);
-		assertThat(letterRequest.getAttachments()).isEqualTo(attachments);
 		assertThat(letterRequest.getRecipients()).isEqualTo(recipients);
 		assertThat(letterRequest.getAddresses()).isEqualTo(addresses);
 		assertThat(letterRequest).hasNoNullFieldsOrProperties();
@@ -83,11 +77,10 @@ class LetterRequestTest {
 
 		final var violations = validator.validate(letterRequest);
 
-		assertThat(violations).hasSize(3)
+		assertThat(violations).hasSize(2)
 			.extracting(violation -> violation.getPropertyPath().toString(), ConstraintViolation::getMessage)
 			.containsExactlyInAnyOrder(
 				tuple("subject", "must not be blank"),
-				tuple("attachments", "must not be empty"),
 				tuple("recipients", "must not be empty"));
 		assertThat(letterRequest).hasAllNullFieldsOrProperties();
 	}
@@ -98,7 +91,6 @@ class LetterRequestTest {
 			.withSubject(subject)
 			.withBody(body)
 			.withContentType(contentType)
-			.withAttachments(attachments)
 			.withRecipients(recipients)
 			.withAddresses(addresses);
 
