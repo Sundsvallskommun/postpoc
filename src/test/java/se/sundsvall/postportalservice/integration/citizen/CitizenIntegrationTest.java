@@ -2,11 +2,9 @@ package se.sundsvall.postportalservice.integration.citizen;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.zalando.problem.Status.NOT_FOUND;
 
 import generated.se.sundsvall.citizen.CitizenAddress;
 import generated.se.sundsvall.citizen.CitizenExtended;
@@ -17,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.zalando.problem.ThrowableProblem;
 
 @ExtendWith(MockitoExtension.class)
 class CitizenIntegrationTest {
@@ -50,20 +47,6 @@ class CitizenIntegrationTest {
 
 		assertThat(result).hasSize(2);
 		assertThat(result).containsExactly(citizen1, citizen2);
-		verify(citizenClientMock).getCitizens(MUNICIPALITY_ID, PARTY_IDS);
-	}
-
-	@Test
-	void getCitizens_throwsIfNoData() {
-		when(citizenClientMock.getCitizens(MUNICIPALITY_ID, PARTY_IDS)).thenReturn(null);
-
-		assertThatExceptionOfType(ThrowableProblem.class)
-			.isThrownBy(() -> citizenIntegration.getCitizens(MUNICIPALITY_ID, PARTY_IDS))
-			.satisfies(problem -> {
-				assertThat(problem.getStatus()).isEqualTo(NOT_FOUND);
-				assertThat(problem.getDetail()).isEqualTo("No citizen data found.");
-			});
-
 		verify(citizenClientMock).getCitizens(MUNICIPALITY_ID, PARTY_IDS);
 	}
 

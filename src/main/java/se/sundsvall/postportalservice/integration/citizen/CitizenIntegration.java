@@ -2,14 +2,12 @@ package se.sundsvall.postportalservice.integration.citizen;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
-import static org.zalando.problem.Status.NOT_FOUND;
 
 import generated.se.sundsvall.citizen.CitizenAddress;
 import generated.se.sundsvall.citizen.CitizenExtended;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
-import org.zalando.problem.Problem;
 
 @Component
 public class CitizenIntegration {
@@ -23,8 +21,7 @@ public class CitizenIntegration {
 	}
 
 	public List<CitizenExtended> getCitizens(final String municipalityId, final List<String> partyIds) {
-		return ofNullable(client.getCitizens(municipalityId, partyIds))
-			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "No citizen data found."));
+		return client.getCitizens(municipalityId, partyIds);
 	}
 
 	public Optional<CitizenAddress> getPopulationRegistrationAddress(final CitizenExtended citizen) {
