@@ -17,6 +17,9 @@ spring:
     oauth2:
       client:
         registration:
+          citizen:
+            authorization-grant-type: client_credentials
+            provider: citizen
           digitalregisteredletter:
             authorization-grant-type: client_credentials
             provider: digitalregisteredletter
