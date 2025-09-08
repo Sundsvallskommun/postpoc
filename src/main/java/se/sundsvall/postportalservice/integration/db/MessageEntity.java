@@ -3,6 +3,7 @@ package se.sundsvall.postportalservice.integration.db;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,25 +46,25 @@ public class MessageEntity {
 	@ManyToOne(cascade = {
 		CascadeType.MERGE, CascadeType.PERSIST
 	})
-	@JoinColumn(name = "user_id", columnDefinition = "VARCHAR(36)")
+	@JoinColumn(name = "user_id", columnDefinition = "VARCHAR(36)", foreignKey = @ForeignKey(name = "FK_MESSAGE_USER"))
 	private UserEntity user;
 
 	@ManyToOne(cascade = {
 		CascadeType.MERGE, CascadeType.PERSIST
 	})
-	@JoinColumn(name = "department_id", columnDefinition = "VARCHAR(36)")
+	@JoinColumn(name = "department_id", columnDefinition = "VARCHAR(36)", foreignKey = @ForeignKey(name = "FK_MESSAGE_DEPARTMENT"))
 	private DepartmentEntity department;
 
 	@OneToMany(cascade = {
 		CascadeType.MERGE, CascadeType.PERSIST
 	}, orphanRemoval = true)
-	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
+	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL", foreignKey = @ForeignKey(name = "FK_ATTACHMENT_MESSAGE"))
 	private List<AttachmentEntity> attachments = new ArrayList<>();
 
 	@OneToMany(cascade = {
 		CascadeType.MERGE, CascadeType.PERSIST
 	}, orphanRemoval = true)
-	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
+	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL", foreignKey = @ForeignKey(name = "FK_RECIPIENT_MESSAGE"))
 	private List<RecipientEntity> recipients = new ArrayList<>();
 
 	@PrePersist

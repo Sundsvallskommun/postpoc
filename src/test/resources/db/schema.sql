@@ -67,21 +67,21 @@
        on recipient (message_id);
 
     alter table if exists attachment 
-       add constraint FKoo11928qbsiolkc10dph1p214 
+       add constraint FK_ATTACHMENT_MESSAGE 
        foreign key (message_id) 
        references message (id);
 
     alter table if exists message 
-       add constraint FKmpryut9mxhpo7pducfuaag1g4 
+       add constraint FK_MESSAGE_DEPARTMENT 
        foreign key (department_id) 
        references department (id);
 
     alter table if exists message 
-       add constraint FKb3y6etti1cfougkdr0qiiemgv 
+       add constraint FK_MESSAGE_USER 
        foreign key (user_id) 
        references user (id);
 
     alter table if exists recipient 
-       add constraint FKk49rroxlffdqtn45s2hyss4ij 
+       add constraint FK_RECIPIENT_MESSAGE 
        foreign key (message_id) 
        references message (id);
