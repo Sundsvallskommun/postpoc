@@ -19,6 +19,8 @@ spring:
             token-uri: http://localhost:${wiremock.server.port:}/api-gateway/token
           messaging:
             token-uri: http://localhost:${wiremock.server.port:}/api-gateway/token
+          employee:
+            token-uri: http://localhost:${wiremock.server.port:}/api-gateway/token
         registration:
           citizen:
             client-id: the-client-id
@@ -32,6 +34,9 @@ spring:
           messaging:
             client-id: the-client-id
             client-secret: the-client-secret
+          employee:
+            client-id: the-client-id
+            client-secret: the-client-secret
 integration:
   citizen:
     url: http://localhost:${wiremock.server.port:}/api-citizen
@@ -41,3 +46,5 @@ integration:
     url: http://localhost:${wiremock.server.port:}/api-messagingsettings
   messaging:
     url: http://localhost:${wiremock.server.port:}/api-messaging
+  employee:
+    url: http://localhost:${wiremock.server.port:}/api-employee

@@ -1,5 +1,6 @@
 package se.sundsvall.postportalservice.integration.db;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,19 +42,27 @@ public class MessageEntity {
 	@Column(name = "created", columnDefinition = "DATETIME")
 	private OffsetDateTime created;
 
-	@ManyToOne
+	@ManyToOne(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	})
 	@JoinColumn(name = "user_id", columnDefinition = "VARCHAR(36)")
 	private UserEntity user;
 
-	@ManyToOne
+	@ManyToOne(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	})
 	@JoinColumn(name = "department_id", columnDefinition = "VARCHAR(36)")
 	private DepartmentEntity department;
 
-	@OneToMany
+	@OneToMany(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	})
 	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
 	private List<AttachmentEntity> attachments = new ArrayList<>();
 
-	@OneToMany
+	@OneToMany(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	})
 	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
 	private List<RecipientEntity> recipients = new ArrayList<>();
 

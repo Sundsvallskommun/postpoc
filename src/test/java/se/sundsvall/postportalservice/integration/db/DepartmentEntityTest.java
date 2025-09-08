@@ -15,6 +15,7 @@ class DepartmentEntityTest {
 
 	private static final String ID = "123e4567-e89b-12d3-a456-426614174000";
 	private static final String NAME = "name";
+	private static final String ORGANIZATION_ID = "1234567890";
 
 	@Test
 	void testBean() {
@@ -27,13 +28,28 @@ class DepartmentEntityTest {
 	}
 
 	@Test
+	void builderPattern() {
+		final var departmentEntity = DepartmentEntity.create()
+			.withId(ID)
+			.withName(NAME)
+			.withOrganizationId(ORGANIZATION_ID);
+
+		assertThat(departmentEntity.getId()).isEqualTo(ID);
+		assertThat(departmentEntity.getName()).isEqualTo(NAME);
+		assertThat(departmentEntity.getOrganizationId()).isEqualTo(ORGANIZATION_ID);
+		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
+	}
+
+	@Test
 	void testGettersAndSetters() {
 		final var departmentEntity = new DepartmentEntity();
 		departmentEntity.setId(ID);
 		departmentEntity.setName(NAME);
+		departmentEntity.setOrganizationId(ORGANIZATION_ID);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
+		assertThat(departmentEntity.getOrganizationId()).isEqualTo(ORGANIZATION_ID);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 

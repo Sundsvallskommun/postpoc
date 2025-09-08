@@ -20,12 +20,24 @@ public class DepartmentEntity {
 	@Column(name = "name", columnDefinition = "VARCHAR(100)")
 	private String name;
 
+	@Column(name = "organization_id", columnDefinition = "VARCHAR(10)")
+	private String organizationId;
+
+	public static DepartmentEntity create() {
+		return new DepartmentEntity();
+	}
+
 	public String getId() {
 		return id;
 	}
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public DepartmentEntity withId(String id) {
+		this.id = id;
+		return this;
 	}
 
 	public String getName() {
@@ -36,11 +48,30 @@ public class DepartmentEntity {
 		this.name = name;
 	}
 
+	public DepartmentEntity withName(String name) {
+		this.name = name;
+		return this;
+	}
+
+	public String getOrganizationId() {
+		return organizationId;
+	}
+
+	public void setOrganizationId(String orgId) {
+		this.organizationId = orgId;
+	}
+
+	public DepartmentEntity withOrganizationId(String organizationId) {
+		this.organizationId = organizationId;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		return "DepartmentEntity{" +
 			"id='" + id + '\'' +
 			", name='" + name + '\'' +
+			", organizationId='" + organizationId + '\'' +
 			'}';
 	}
 
@@ -49,11 +80,11 @@ public class DepartmentEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		DepartmentEntity that = (DepartmentEntity) o;
-		return Objects.equals(id, that.id) && Objects.equals(name, that.name);
+		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationId, that.organizationId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, name);
+		return Objects.hash(id, name, organizationId);
 	}
 }
