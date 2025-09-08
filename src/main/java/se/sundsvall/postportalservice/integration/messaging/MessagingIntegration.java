@@ -19,6 +19,7 @@ public class MessagingIntegration {
 	}
 
 	public boolean sendSms(final String municipalityId) {
+
 		// Used to send SMS.
 		// TODO: Implement the mapping and the call to messaging. Also, the response from messaging should be used to update the
 		// status of the message.
