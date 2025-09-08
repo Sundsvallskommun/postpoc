@@ -56,13 +56,13 @@ public class MessageEntity {
 
 	@OneToMany(cascade = {
 		CascadeType.MERGE, CascadeType.PERSIST
-	})
+	}, orphanRemoval = true)
 	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
 	private List<AttachmentEntity> attachments = new ArrayList<>();
 
 	@OneToMany(cascade = {
 		CascadeType.MERGE, CascadeType.PERSIST
-	})
+	}, orphanRemoval = true)
 	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
 	private List<RecipientEntity> recipients = new ArrayList<>();
 

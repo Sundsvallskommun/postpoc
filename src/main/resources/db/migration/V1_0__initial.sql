@@ -9,21 +9,11 @@ CREATE TABLE attachment
     CONSTRAINT pk_attachment PRIMARY KEY (id)
 );
 
-CREATE TABLE delivery
-(
-    id            VARCHAR(36) NOT NULL,
-    status        VARCHAR(50) NULL,
-    type          VARCHAR(50) NULL,
-    status_detail TEXT        NULL,
-    created       datetime    NULL,
-    recipient_id  VARCHAR(36) NOT NULL,
-    CONSTRAINT pk_delivery PRIMARY KEY (id)
-);
-
 CREATE TABLE department
 (
-    id   VARCHAR(36)  NOT NULL,
-    name VARCHAR(100) NULL,
+    id              VARCHAR(36)  NOT NULL,
+    name            VARCHAR(100) NULL,
+    organization_id VARCHAR(10)  NULL,
     CONSTRAINT pk_department PRIMARY KEY (id)
 );
 
@@ -53,6 +43,9 @@ CREATE TABLE recipient
     zip_code         VARCHAR(10)  NULL,
     city             VARCHAR(100) NULL,
     country          VARCHAR(100) NULL,
+    status           VARCHAR(50)  NULL,
+    type             VARCHAR(50)  NULL,
+    status_detail    TEXT         NULL,
     created          datetime     NULL,
     message_id       VARCHAR(36)  NOT NULL,
     CONSTRAINT pk_recipient PRIMARY KEY (id)
@@ -65,17 +58,10 @@ CREATE TABLE user
     CONSTRAINT pk_user PRIMARY KEY (id)
 );
 
-CREATE INDEX IDX_DELIVERY_TYPE_STATUS ON delivery (type, status);
-
 ALTER TABLE attachment
     ADD CONSTRAINT FK_ATTACHMENT_ON_MESSAGE FOREIGN KEY (message_id) REFERENCES message (id);
 
 CREATE INDEX IDX_ATTACHMENT_MESSAGE_ID ON attachment (message_id);
-
-ALTER TABLE delivery
-    ADD CONSTRAINT FK_DELIVERY_ON_RECIPIENT FOREIGN KEY (recipient_id) REFERENCES recipient (id);
-
-CREATE INDEX IDX_DELIVERY_RECIPIENT_ID ON delivery (recipient_id);
 
 ALTER TABLE message
     ADD CONSTRAINT FK_MESSAGE_ON_DEPARTMENT FOREIGN KEY (department_id) REFERENCES department (id);

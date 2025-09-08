@@ -12,10 +12,11 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Random;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import se.sundsvall.postportalservice.integration.db.converter.MessageStatus;
+import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 
 class RecipientEntityTest {
 
@@ -31,6 +32,9 @@ class RecipientEntityTest {
 	private static final String ZIP_CODE = "zipCode";
 	private static final String CITY = "city";
 	private static final String COUNTRY = "country";
+	private static final String STATUS_DETAIL = "statusDetail";
+	private static final MessageType MESSAGE_TYPE = MessageType.SNAIL_MAIL;
+	private static final MessageStatus MESSAGE_STATUS = MessageStatus.SENT;
 	private static final OffsetDateTime CREATED = now();
 
 	@BeforeAll
@@ -49,24 +53,24 @@ class RecipientEntityTest {
 	}
 
 	@Test
-	void getterAndSetterTest() {
-		var recipientEntity = new RecipientEntity();
-		var deliveries = new ArrayList<DeliveryEntity>();
-
-		recipientEntity.setId(ID);
-		recipientEntity.setPartyId(PARTY_ID);
-		recipientEntity.setEmail(EMAIL);
-		recipientEntity.setPhoneNumber(PHONE_NUMBER);
-		recipientEntity.setFirstName(FIRST_NAME);
-		recipientEntity.setLastName(LAST_NAME);
-		recipientEntity.setStreetAddress(STREET_ADDRESS);
-		recipientEntity.setApartmentNumber(APARTMENT_NUMBER);
-		recipientEntity.setCareOf(CARE_OF);
-		recipientEntity.setZipCode(ZIP_CODE);
-		recipientEntity.setCity(CITY);
-		recipientEntity.setCountry(COUNTRY);
-		recipientEntity.setCreated(CREATED);
-		recipientEntity.setDeliveries(deliveries);
+	void builderPattern() {
+		var recipientEntity = RecipientEntity.create()
+			.withId(ID)
+			.withPartyId(PARTY_ID)
+			.withEmail(EMAIL)
+			.withPhoneNumber(PHONE_NUMBER)
+			.withFirstName(FIRST_NAME)
+			.withLastName(LAST_NAME)
+			.withStreetAddress(STREET_ADDRESS)
+			.withApartmentNumber(APARTMENT_NUMBER)
+			.withCareOf(CARE_OF)
+			.withZipCode(ZIP_CODE)
+			.withCity(CITY)
+			.withCountry(COUNTRY)
+			.withCreated(CREATED)
+			.withStatusDetail(STATUS_DETAIL)
+			.withMessageType(MESSAGE_TYPE)
+			.withMessageStatus(MESSAGE_STATUS);
 
 		assertThat(recipientEntity.getId()).isEqualTo(ID);
 		assertThat(recipientEntity.getPartyId()).isEqualTo(PARTY_ID);
@@ -81,7 +85,49 @@ class RecipientEntityTest {
 		assertThat(recipientEntity.getCity()).isEqualTo(CITY);
 		assertThat(recipientEntity.getCountry()).isEqualTo(COUNTRY);
 		assertThat(recipientEntity.getCreated()).isEqualTo(CREATED);
-		assertThat(recipientEntity.getDeliveries()).isEqualTo(deliveries);
+		assertThat(recipientEntity.getStatusDetail()).isEqualTo(STATUS_DETAIL);
+		assertThat(recipientEntity.getMessageType()).isEqualTo(MESSAGE_TYPE);
+		assertThat(recipientEntity.getMessageStatus()).isEqualTo(MESSAGE_STATUS);
+		assertThat(recipientEntity).hasNoNullFieldsOrProperties();
+	}
+
+	@Test
+	void getterAndSetterTest() {
+		var recipientEntity = new RecipientEntity();
+
+		recipientEntity.setId(ID);
+		recipientEntity.setPartyId(PARTY_ID);
+		recipientEntity.setEmail(EMAIL);
+		recipientEntity.setPhoneNumber(PHONE_NUMBER);
+		recipientEntity.setFirstName(FIRST_NAME);
+		recipientEntity.setLastName(LAST_NAME);
+		recipientEntity.setStreetAddress(STREET_ADDRESS);
+		recipientEntity.setApartmentNumber(APARTMENT_NUMBER);
+		recipientEntity.setCareOf(CARE_OF);
+		recipientEntity.setZipCode(ZIP_CODE);
+		recipientEntity.setCity(CITY);
+		recipientEntity.setCountry(COUNTRY);
+		recipientEntity.setCreated(CREATED);
+		recipientEntity.setStatusDetail(STATUS_DETAIL);
+		recipientEntity.setMessageType(MESSAGE_TYPE);
+		recipientEntity.setMessageStatus(MESSAGE_STATUS);
+
+		assertThat(recipientEntity.getId()).isEqualTo(ID);
+		assertThat(recipientEntity.getPartyId()).isEqualTo(PARTY_ID);
+		assertThat(recipientEntity.getEmail()).isEqualTo(EMAIL);
+		assertThat(recipientEntity.getPhoneNumber()).isEqualTo(PHONE_NUMBER);
+		assertThat(recipientEntity.getFirstName()).isEqualTo(FIRST_NAME);
+		assertThat(recipientEntity.getLastName()).isEqualTo(LAST_NAME);
+		assertThat(recipientEntity.getStreetAddress()).isEqualTo(STREET_ADDRESS);
+		assertThat(recipientEntity.getApartmentNumber()).isEqualTo(APARTMENT_NUMBER);
+		assertThat(recipientEntity.getCareOf()).isEqualTo(CARE_OF);
+		assertThat(recipientEntity.getZipCode()).isEqualTo(ZIP_CODE);
+		assertThat(recipientEntity.getCity()).isEqualTo(CITY);
+		assertThat(recipientEntity.getCountry()).isEqualTo(COUNTRY);
+		assertThat(recipientEntity.getCreated()).isEqualTo(CREATED);
+		assertThat(recipientEntity.getStatusDetail()).isEqualTo(STATUS_DETAIL);
+		assertThat(recipientEntity.getMessageType()).isEqualTo(MESSAGE_TYPE);
+		assertThat(recipientEntity.getMessageStatus()).isEqualTo(MESSAGE_STATUS);
 		assertThat(recipientEntity).hasNoNullFieldsOrProperties();
 	}
 
