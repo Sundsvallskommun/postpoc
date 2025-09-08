@@ -11,6 +11,8 @@ spring:
     oauth2:
       client:
         provider:
+          citizen:
+            token-uri: http://token.url
           digitalregisteredletter:
             token-uri: http://token.url
           messagingsettings:
@@ -18,6 +20,9 @@ spring:
           messaging:
             token-uri: http://token.url
         registration:
+          citizen:
+            client-id: the-client-id
+            client-secret: the-client-secret
           digitalregisteredletter:
             client-id: the-client-id
             client-secret: the-client-secret
@@ -28,15 +33,19 @@ spring:
             client-id: the-client-id
             client-secret: the-client-secret
 integration:
+  citizen:
+    url: http://citizen.local
+    connect-timeout: 10
+    read-timeout: 20
   digitalregisteredletter:
-    url: http://digitalregisteredletter.com
+    url: http://digitalregisteredletter.local
     connect-timeout: 10
     read-timeout: 20
   messagingsettings:
-    url: http://messagingsettings.api
+    url: http://messagingsettings.local
     connect-timeout: 10
     read-timeout: 20
   messaging:
-    url: http://messaging.api
+    url: http://messaging.local
     connect-timeout: 10
     read-timeout: 20
