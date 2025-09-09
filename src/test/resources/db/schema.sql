@@ -12,7 +12,7 @@
     create table department (
         id VARCHAR(36) not null,
         name VARCHAR(100),
-        organization_id VARCHAR(10),
+        organization_id VARCHAR(12),
         primary key (id)
     ) engine=InnoDB;
 

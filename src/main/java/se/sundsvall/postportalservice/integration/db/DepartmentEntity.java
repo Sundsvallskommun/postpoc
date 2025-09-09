@@ -20,7 +20,7 @@ public class DepartmentEntity {
 	@Column(name = "name", columnDefinition = "VARCHAR(100)")
 	private String name;
 
-	@Column(name = "organization_id", columnDefinition = "VARCHAR(10)")
+	@Column(name = "organization_id", columnDefinition = "VARCHAR(12)")
 	private String organizationId;
 
 	public static DepartmentEntity create() {

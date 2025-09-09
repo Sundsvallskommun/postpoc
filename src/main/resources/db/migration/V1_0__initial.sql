@@ -13,7 +13,7 @@ CREATE TABLE department
 (
     id              VARCHAR(36)  NOT NULL,
     name            VARCHAR(100) NULL,
-    organization_id VARCHAR(10)  NULL,
+    organization_id VARCHAR(12)  NULL,
     CONSTRAINT pk_department PRIMARY KEY (id)
 );
 
