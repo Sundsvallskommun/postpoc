@@ -2,8 +2,22 @@ spring:
   flyway:
     enabled: true
   jpa:
-    hibernate:
-      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        hbm2ddl:
+          schema-generation:
+            script:
+              append: false
+      jakarta:
+        persistence:
+          schema-generation:
+            create-source: metadata
+            database:
+              action: update
+            scripts:
+              action: create
+              create-target: target/database/generated-schema.sql
   datasource:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     url: jdbc:tc:mariadb:10.6:///
@@ -19,6 +33,8 @@ spring:
             token-uri: http://token.url
           messaging:
             token-uri: http://token.url
+          employee:
+            token-uri: http://token.url
         registration:
           citizen:
             client-id: the-client-id
@@ -30,6 +46,9 @@ spring:
             client-id: the-client-id
             client-secret: the-client-secret
           messaging:
+            client-id: the-client-id
+            client-secret: the-client-secret
+          employee:
             client-id: the-client-id
             client-secret: the-client-secret
 integration:
@@ -47,5 +66,9 @@ integration:
     read-timeout: 20
   messaging:
     url: http://messaging.local
+    connect-timeout: 10
+    read-timeout: 20
+  employee:
+    url: http://employee.local
     connect-timeout: 10
     read-timeout: 20

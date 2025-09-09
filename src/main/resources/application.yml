@@ -5,6 +5,10 @@ spring:
     name: api-service-postportalservice
   flyway:
     enabled: true
+  cache:
+    cache-names: portalPersonDataCache
+    caffeine:
+      spec: maximumSize=500, expireAfterWrite=600s
   jpa:
     hibernate:
       ddl-auto: none
@@ -29,6 +33,9 @@ spring:
           messaging:
             authorization-grant-type: client_credentials
             provider: messaging
+          employee:
+            authorization-grant-type: client_credentials
+            provider: employee
 openapi:
   title: Postportalservice
   name: postportalservice

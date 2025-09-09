@@ -1,7 +1,9 @@
 package se.sundsvall.postportalservice.integration.db;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,20 +43,28 @@ public class MessageEntity {
 	@Column(name = "created", columnDefinition = "DATETIME")
 	private OffsetDateTime created;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", columnDefinition = "VARCHAR(36)")
+	@ManyToOne(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	})
+	@JoinColumn(name = "user_id", columnDefinition = "VARCHAR(36)", foreignKey = @ForeignKey(name = "FK_MESSAGE_USER"))
 	private UserEntity user;
 
-	@ManyToOne
-	@JoinColumn(name = "department_id", columnDefinition = "VARCHAR(36)")
+	@ManyToOne(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	})
+	@JoinColumn(name = "department_id", columnDefinition = "VARCHAR(36)", foreignKey = @ForeignKey(name = "FK_MESSAGE_DEPARTMENT"))
 	private DepartmentEntity department;
 
-	@OneToMany
-	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
+	@OneToMany(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	}, orphanRemoval = true)
+	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL", foreignKey = @ForeignKey(name = "FK_ATTACHMENT_MESSAGE"))
 	private List<AttachmentEntity> attachments = new ArrayList<>();
 
-	@OneToMany
-	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL")
+	@OneToMany(cascade = {
+		CascadeType.MERGE, CascadeType.PERSIST
+	}, orphanRemoval = true)
+	@JoinColumn(name = "message_id", columnDefinition = "VARCHAR(36) NOT NULL", foreignKey = @ForeignKey(name = "FK_RECIPIENT_MESSAGE"))
 	private List<RecipientEntity> recipients = new ArrayList<>();
 
 	@PrePersist
@@ -144,7 +154,6 @@ public class MessageEntity {
 			", created=" + created +
 			", user=" + user +
 			", department=" + department +
-			", attachments=" + attachments +
 			", recipients=" + recipients +
 			'}';
 	}
@@ -155,11 +164,11 @@ public class MessageEntity {
 			return false;
 		MessageEntity that = (MessageEntity) o;
 		return Objects.equals(id, that.id) && Objects.equals(messagingId, that.messagingId) && originalMessageType == that.originalMessageType && Objects.equals(text, that.text) && Objects.equals(created, that.created)
-			&& Objects.equals(user, that.user) && Objects.equals(department, that.department) && Objects.equals(attachments, that.attachments) && Objects.equals(recipients, that.recipients);
+			&& Objects.equals(user, that.user) && Objects.equals(department, that.department) && Objects.equals(recipients, that.recipients);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, messagingId, originalMessageType, text, created, user, department, attachments, recipients);
+		return Objects.hash(id, messagingId, originalMessageType, text, created, user, department, recipients);
 	}
 }

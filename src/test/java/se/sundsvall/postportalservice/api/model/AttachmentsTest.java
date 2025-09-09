@@ -26,7 +26,7 @@ class AttachmentsTest {
 	}
 
 	@Test
-	void attachmentsBuilderTest() {
+	void builderPattern() {
 		var multiPartFile = Mockito.mock(MultipartFile.class);
 
 		var files = List.of(multiPartFile);
@@ -39,7 +39,7 @@ class AttachmentsTest {
 	}
 
 	@Test
-	void attachmentsConstructorTest() {
+	void constructorTest() {
 		var multiPartFile = Mockito.mock(MultipartFile.class);
 
 		var files = List.of(multiPartFile);

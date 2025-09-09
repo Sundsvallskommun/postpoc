@@ -25,6 +25,15 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Caching -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
 		<!-- Framework -->
 		<dependency>
 			<groupId>se.sundsvall.dept44</groupId>
@@ -104,6 +113,18 @@
 							<inputSpec>${project.basedir}/src/main/resources/integrations/citizen.yml</inputSpec>
 							<configOptions>
 								<modelPackage>generated.se.sundsvall.citizen</modelPackage>
+							</configOptions>
+						</configuration>
+					</execution>
+					<execution>
+						<id>employee-api</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/integrations/employee.yml</inputSpec>
+							<configOptions>
+								<modelPackage>generated.se.sundsvall.employee</modelPackage>
 							</configOptions>
 						</configuration>
 					</execution>
