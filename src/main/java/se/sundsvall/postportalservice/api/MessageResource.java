@@ -23,16 +23,19 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.zalando.problem.Problem;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
+import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.api.model.Attachments;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.api.model.SmsRequest;
+import se.sundsvall.postportalservice.api.validation.ValidIdentifier;
 import se.sundsvall.postportalservice.service.MessageService;
 
 @Validated
@@ -92,10 +95,12 @@ class MessageResource {
 	})
 	@PostMapping(value = "/sms", produces = ALL_VALUE)
 	ResponseEntity<Void> sendSms(
+		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
 		@RequestBody @Valid final SmsRequest request) {
+		Identifier.set(Identifier.parse(xSentBy));
 
-		final var messageId = messageService.sendSms(municipalityId, request);
+		final var messageId = messageService.processRequest(municipalityId, request);
 
 		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
 			.buildAndExpand(municipalityId, messageId).toUri())
