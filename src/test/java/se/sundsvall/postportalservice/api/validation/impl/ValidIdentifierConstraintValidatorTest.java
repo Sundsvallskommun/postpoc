@@ -3,9 +3,11 @@ package se.sundsvall.postportalservice.api.validation.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import jakarta.validation.ConstraintValidatorContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,15 +30,17 @@ class ValidIdentifierConstraintValidatorTest {
 	@Mock
 	private ConstraintValidatorContext.ConstraintViolationBuilder violationBuilder;
 
-	@Mock
-	private ConstraintValidatorContext.ConstraintViolationBuilder.NodeBuilderCustomizableContext nodeContext;
-
 	@InjectMocks
 	private ValidIdentifierConstraintValidator validator;
 
 	@BeforeEach
 	void beforeEach() {
 		validator.initialize(mockAnnotation);
+	}
+
+	@AfterEach
+	void afterEach() {
+		verifyNoMoreInteractions(mockAnnotation, context, violationBuilder);
 	}
 
 	@Test
@@ -56,6 +60,7 @@ class ValidIdentifierConstraintValidatorTest {
 
 		assertThat(valid).isFalse();
 
+		verify(context).disableDefaultConstraintViolation();
 		verify(context).buildConstraintViolationWithTemplate("X-Sent-By must be in the format: [type=TYPE; VALUE]");
 		verify(violationBuilder).addConstraintViolation();
 	}
@@ -70,6 +75,7 @@ class ValidIdentifierConstraintValidatorTest {
 
 		assertThat(valid).isFalse();
 
+		verify(context).disableDefaultConstraintViolation();
 		verify(context).buildConstraintViolationWithTemplate("X-Sent-By must be of type [adAccount]");
 		verify(violationBuilder).addConstraintViolation();
 	}
