@@ -10,12 +10,11 @@ public enum MessageStatus {
 	NO_CONTACT_WANTED;
 
 	public static MessageStatus fromValue(final String value) {
-		for (final var status : MessageStatus.values()) {
-			if (status.toString().equalsIgnoreCase(value)) {
-				return status;
-			}
+		try {
+			return MessageStatus.valueOf(value.toUpperCase());
+		} catch (IllegalArgumentException | NullPointerException e) {
+			// If we don't recognize the value, we default to FAILED.
+			return MessageStatus.FAILED;
 		}
-		// If we don't recognize the value, we default to FAILED.
-		return MessageStatus.FAILED;
 	}
 }
