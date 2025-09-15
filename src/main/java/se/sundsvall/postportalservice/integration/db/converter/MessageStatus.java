@@ -15,6 +15,7 @@ public enum MessageStatus {
 				return status;
 			}
 		}
-		throw new IllegalArgumentException("Unknown enum type " + value);
+		// If we don't recognize the value, we default to FAILED.
+		return MessageStatus.FAILED;
 	}
 }
