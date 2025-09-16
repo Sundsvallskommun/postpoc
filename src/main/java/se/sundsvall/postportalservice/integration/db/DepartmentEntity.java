@@ -23,6 +23,18 @@ public class DepartmentEntity {
 	@Column(name = "organization_id", columnDefinition = "VARCHAR(12)")
 	private String organizationId;
 
+	@Column(name = "support_text", columnDefinition = "VARCHAR(255)")
+	private String supportText;
+
+	@Column(name = "contact_information_url", columnDefinition = "VARCHAR(255)")
+	private String contactInformationUrl;
+
+	@Column(name = "contact_information_phone_number", columnDefinition = "VARCHAR(30)")
+	private String contactInformationPhoneNumber;
+
+	@Column(name = "contact_information_email", columnDefinition = "VARCHAR(100)")
+	private String contactInformationEmail;
+
 	public static DepartmentEntity create() {
 		return new DepartmentEntity();
 	}
@@ -66,12 +78,68 @@ public class DepartmentEntity {
 		return this;
 	}
 
+	public String getSupportText() {
+		return supportText;
+	}
+
+	public void setSupportText(String supportText) {
+		this.supportText = supportText;
+	}
+
+	public DepartmentEntity withSupportText(String supportText) {
+		this.supportText = supportText;
+		return this;
+	}
+
+	public String getContactInformationUrl() {
+		return contactInformationUrl;
+	}
+
+	public void setContactInformationUrl(String contactInformationUrl) {
+		this.contactInformationUrl = contactInformationUrl;
+	}
+
+	public DepartmentEntity withContactInformationUrl(String contactInformationUrl) {
+		this.contactInformationUrl = contactInformationUrl;
+		return this;
+	}
+
+	public String getContactInformationPhoneNumber() {
+		return contactInformationPhoneNumber;
+	}
+
+	public void setContactInformationPhoneNumber(String contactInformationPhoneNumber) {
+		this.contactInformationPhoneNumber = contactInformationPhoneNumber;
+	}
+
+	public DepartmentEntity withContactInformationPhoneNumber(String contactInformationPhoneNumber) {
+		this.contactInformationPhoneNumber = contactInformationPhoneNumber;
+		return this;
+	}
+
+	public String getContactInformationEmail() {
+		return contactInformationEmail;
+	}
+
+	public void setContactInformationEmail(String contactInformationEmail) {
+		this.contactInformationEmail = contactInformationEmail;
+	}
+
+	public DepartmentEntity withContactInformationEmail(String contactInformationEmail) {
+		this.contactInformationEmail = contactInformationEmail;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		return "DepartmentEntity{" +
 			"id='" + id + '\'' +
 			", name='" + name + '\'' +
 			", organizationId='" + organizationId + '\'' +
+			", supportText='" + supportText + '\'' +
+			", contactInformationUrl='" + contactInformationUrl + '\'' +
+			", contactInformationPhoneNumber='" + contactInformationPhoneNumber + '\'' +
+			", contactInformationEmail='" + contactInformationEmail + '\'' +
 			'}';
 	}
 
@@ -80,11 +148,12 @@ public class DepartmentEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		DepartmentEntity that = (DepartmentEntity) o;
-		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationId, that.organizationId);
+		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationId, that.organizationId) && Objects.equals(supportText, that.supportText) && Objects.equals(
+			contactInformationUrl, that.contactInformationUrl) && Objects.equals(contactInformationPhoneNumber, that.contactInformationPhoneNumber) && Objects.equals(contactInformationEmail, that.contactInformationEmail);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, name, organizationId);
+		return Objects.hash(id, name, organizationId, supportText, contactInformationUrl, contactInformationPhoneNumber, contactInformationEmail);
 	}
 }

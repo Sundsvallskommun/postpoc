@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:50695
+  - url: http://localhost:52930
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -163,6 +163,11 @@ paths:
         mail is always preferred if possible.
       operationId: sendLetter
       parameters:
+        - name: X-Sent-By
+          in: header
+          required: true
+          schema:
+            type: string
         - name: municipalityId
           in: path
           description: Municipality ID
@@ -683,18 +688,18 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
-        title:
-          type: string
         detail:
+          type: string
+        title:
           type: string
     StatusType:
       type: object
       properties:
+        reasonPhrase:
+          type: string
         statusCode:
           type: integer
           format: int32
-        reasonPhrase:
-          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -898,7 +903,6 @@ components:
       description: Address model
     LetterRequest:
       required:
-        - recipients
         - subject
       type: object
       properties:
@@ -916,7 +920,6 @@ components:
           description: The content type of the body
           example: text/plain
         recipients:
-          minItems: 1
           type: array
           items:
             $ref: "#/components/schemas/Recipient"

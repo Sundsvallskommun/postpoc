@@ -10,20 +10,26 @@
     ) engine=InnoDB;
 
     create table department (
+        contact_information_email VARCHAR(100),
+        contact_information_phone_number VARCHAR(30),
+        contact_information_url VARCHAR(255),
         id VARCHAR(36) not null,
         name VARCHAR(100),
         organization_id VARCHAR(12),
+        support_text VARCHAR(255),
         primary key (id)
     ) engine=InnoDB;
 
     create table message (
         created DATETIME,
+        body TEXT,
+        content_type VARCHAR(100),
         department_id VARCHAR(36),
         display_name VARCHAR(100),
         id VARCHAR(36) not null,
         message_type VARCHAR(50),
         municipality_id VARCHAR(6),
-        text TEXT,
+        subject VARCHAR(255),
         user_id VARCHAR(36),
         primary key (id)
     ) engine=InnoDB;

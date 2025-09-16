@@ -2,6 +2,7 @@ package se.sundsvall.postportalservice.api;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
 import static org.springframework.web.reactive.function.BodyInserters.fromMultipartData;
@@ -33,7 +34,7 @@ class MessageResourceTest {
 	private WebTestClient webTestClient;
 
 	@Test
-	void sendLetter_OK() {
+	void sendLetter_Created() {
 		final var userId = "12345";
 		final var messageId = "12345";
 
@@ -44,10 +45,11 @@ class MessageResourceTest {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/letter")
 				.build(MUNICIPALITY_ID, userId, messageId))
+			.header("X-Sent-By", "type=adAccount; joe01doe")
 			.contentType(MULTIPART_FORM_DATA)
 			.body(fromMultipartData(multipartBodyBuilder.build()))
 			.exchange()
-			.expectStatus().isEqualTo(HttpStatus.NOT_IMPLEMENTED);
+			.expectStatus().isEqualTo(CREATED);
 	}
 
 	@Test
@@ -86,20 +88,21 @@ class MessageResourceTest {
 	}
 
 	@Test
-	void processRequest_OK() {
+	void sendSms_Created() {
 		var request = createValidSmsRequest();
 		when(messageServiceMock.processRequest(MUNICIPALITY_ID, request)).thenReturn("messageId");
+
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/sms")
 				.build(MUNICIPALITY_ID))
 			.header("X-Sent-By", "type=adAccount; joe01doe")
 			.bodyValue(request)
 			.exchange()
-			.expectStatus().isEqualTo(HttpStatus.CREATED);
+			.expectStatus().isEqualTo(CREATED);
 	}
 
 	@Test
-	void processRequest_BadRequest() {
+	void sendSms_BadRequest() {
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/sms")
 				.build(INVALID_MUNICIPALITY_ID))

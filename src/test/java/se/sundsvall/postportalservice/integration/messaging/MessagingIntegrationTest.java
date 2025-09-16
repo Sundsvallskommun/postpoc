@@ -1,6 +1,7 @@
 package se.sundsvall.postportalservice.integration.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -8,9 +9,14 @@ import static org.mockito.Mockito.when;
 import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
 
 import generated.se.sundsvall.messaging.DeliveryResult;
+import generated.se.sundsvall.messaging.DigitalMailAttachment;
+import generated.se.sundsvall.messaging.DigitalMailRequest;
+import generated.se.sundsvall.messaging.MessageBatchResult;
 import generated.se.sundsvall.messaging.MessageResult;
 import generated.se.sundsvall.messaging.MessageStatus;
 import generated.se.sundsvall.messaging.SmsRequest;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -20,12 +26,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import se.sundsvall.postportalservice.integration.db.AttachmentEntity;
 import se.sundsvall.postportalservice.integration.db.DepartmentEntity;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 import se.sundsvall.postportalservice.integration.db.UserEntity;
-import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
+import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 
 @ExtendWith(MockitoExtension.class)
 class MessagingIntegrationTest {
@@ -33,11 +41,11 @@ class MessagingIntegrationTest {
 	@Mock
 	private MessagingClient messagingClientMock;
 
-	@Mock
-	private MessagingSettingsIntegration messagingSettingsIntegrationMock;
-
 	@Captor
 	private ArgumentCaptor<SmsRequest> smsRequestCaptor;
+
+	@Captor
+	private ArgumentCaptor<DigitalMailRequest> digitalMailRequestArgumentCaptor;
 
 	@InjectMocks
 	private MessagingIntegration messagingIntegration;
@@ -48,8 +56,47 @@ class MessagingIntegrationTest {
 	}
 
 	@Test
-	void sendDigitalMail() {
-		assertThat(messagingIntegration.sendDigitalMail(MUNICIPALITY_ID)).isTrue();
+	void sendDigitalMail() throws SQLException {
+		var blob = Mockito.mock(Blob.class);
+		when(blob.length()).thenReturn(123L);
+		when(blob.getBytes(1, (int) blob.length())).thenReturn(new byte[123]);
+		var departmentEntity = DepartmentEntity.create()
+			.withName("Jönssonligan")
+			.withOrganizationId("123");
+		var userEntity = UserEntity.create()
+			.withName("John Wick");
+		var attachmentEntity = AttachmentEntity.create()
+			.withContent(blob)
+			.withFileName("fileName.pdf")
+			.withContentType("application/pdf");
+		var messageEntity = MessageEntity.create()
+			.withDepartment(departmentEntity)
+			.withUser(userEntity)
+			.withContentType("text/plain")
+			.withMunicipalityId(MUNICIPALITY_ID)
+			.withAttachments(List.of(attachmentEntity));
+		var recipientEntity = RecipientEntity.create()
+			.withPartyId("00000000-0000-0000-0000-000000000001")
+			.withMessageType(MessageType.DIGITAL_MAIL);
+
+		var messageBatchResult = new MessageBatchResult();
+
+		when(messagingClientMock.sendDigitalMail(eq("type=adAccount; John Wick"), eq("Jönssonligan"), eq(MUNICIPALITY_ID), digitalMailRequestArgumentCaptor.capture()))
+			.thenReturn(messageBatchResult);
+
+		var result = messagingIntegration.sendDigitalMail(messageEntity, recipientEntity);
+
+		var digitalMailRequest = digitalMailRequestArgumentCaptor.getValue();
+		assertThat(digitalMailRequest.getParty()).satisfies(party -> {
+			assertThat(party.getPartyIds()).containsExactly(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+		});
+		assertThat(digitalMailRequest.getAttachments()).allSatisfy(attachment -> {
+			assertThat(attachment.getFilename()).isEqualTo("fileName.pdf");
+			assertThat(attachment.getContentType()).isEqualTo(DigitalMailAttachment.ContentTypeEnum.APPLICATION_PDF);
+		});
+
+		assertThat(result).isNotNull().isEqualTo(messageBatchResult);
+		verify(messagingClientMock).sendDigitalMail("type=adAccount; John Wick", "Jönssonligan", MUNICIPALITY_ID, digitalMailRequest);
 	}
 
 	@Test
@@ -61,7 +108,7 @@ class MessagingIntegrationTest {
 			.withDepartment(DepartmentEntity.create().withName("Jönssonligan").withOrganizationId("123"))
 			.withUser(UserEntity.create().withName("John Wick"))
 			.withRecipients(List.of(recipientEntity))
-			.withText("This is a text message")
+			.withBody("This is a text message")
 			.withDisplayName("Sundsvalls Kommun");
 
 		var messageResult = new MessageResult().messageId(UUID.randomUUID())
@@ -73,7 +120,7 @@ class MessagingIntegrationTest {
 		var result = messagingIntegration.sendSms(messageEntity, recipientEntity);
 
 		var smsRequest = smsRequestCaptor.getValue();
-		assertThat(smsRequest.getMessage()).isEqualTo(messageEntity.getText());
+		assertThat(smsRequest.getMessage()).isEqualTo(messageEntity.getBody());
 		assertThat(smsRequest.getMobileNumber()).isEqualTo(recipientEntity.getPhoneNumber());
 		assertThat(smsRequest.getDepartment()).isEqualTo(messageEntity.getDepartment().getName());
 		assertThat(smsRequest.getSender()).isEqualTo(messageEntity.getDisplayName());
@@ -89,7 +136,19 @@ class MessagingIntegrationTest {
 
 	@Test
 	void sendSnailMail() {
-		assertThat(messagingIntegration.sendSnailMail(MUNICIPALITY_ID)).isTrue();
+		var recipientEntity = RecipientEntity.create()
+			.withPhoneNumber("123456789");
+		var messageEntity = MessageEntity.create()
+			.withMunicipalityId(MUNICIPALITY_ID)
+			.withDepartment(DepartmentEntity.create().withName("Jönssonligan").withOrganizationId("123"))
+			.withUser(UserEntity.create().withName("John Wick"))
+			.withRecipients(List.of(recipientEntity))
+			.withBody("This is a text message")
+			.withDisplayName("Sundsvalls Kommun");
+
+		assertThat(messagingIntegration.sendSnailMail(messageEntity, recipientEntity)).isInstanceOf(MessageResult.class);
+
+		verify(messagingClientMock).sendSnailMail(any(), any(), any());
 	}
 
 	@Test

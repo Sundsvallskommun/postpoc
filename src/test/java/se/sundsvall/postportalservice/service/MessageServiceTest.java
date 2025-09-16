@@ -27,9 +27,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 import org.zalando.problem.Problem;
 import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.TestDataFactory;
+import se.sundsvall.postportalservice.api.model.Attachments;
+import se.sundsvall.postportalservice.integration.db.AttachmentEntity;
 import se.sundsvall.postportalservice.integration.db.DepartmentEntity;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
@@ -42,6 +45,7 @@ import se.sundsvall.postportalservice.integration.db.dao.UserRepository;
 import se.sundsvall.postportalservice.integration.employee.EmployeeIntegration;
 import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration;
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
+import se.sundsvall.postportalservice.service.mapper.AttachmentMapper;
 
 @ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
@@ -54,6 +58,9 @@ class MessageServiceTest {
 
 	@Mock
 	private DepartmentRepository departmentRepositoryMock;
+
+	@Mock
+	private AttachmentMapper attachmentMapperMock;
 
 	@Mock
 	private UserRepository userRepositoryMock;
@@ -83,7 +90,44 @@ class MessageServiceTest {
 	}
 
 	@Test
-	void processRequest() {
+	void processRequest_letter() {
+		var spy = Mockito.spy(messageService);
+		var multipartFile = Mockito.mock(MultipartFile.class);
+		var attachments = new Attachments().withFiles(List.of(multipartFile));
+		var letterRequest = TestDataFactory.createValidLetterRequest();
+		var sentBy = new MessageService.SentBy("username", "organizationId", "departmentName");
+		var userEntity = new UserEntity().withName("username");
+		var departmentEntity = new DepartmentEntity().withName("departmentName").withOrganizationId("organizationId");
+		var messageEntity = new MessageEntity().withId("adc63e5c-b92f-4c75-b14f-819473cef5b6");
+		var attachmentEntity = new AttachmentEntity().withFileName("filename").withContentType("contentType").withContent(null);
+
+		when(attachmentMapperMock.toAttachmentEntities(attachments)).thenReturn(List.of(attachmentEntity));
+		when(messagingSettingsIntegrationMock.getSenderInfo(MUNICIPALITY_ID, departmentEntity.getOrganizationId()))
+			.thenReturn(new SenderInfoResponse()
+				.supportText("supportText")
+				.contactInformationUrl("contactInformationUrl")
+				.contactInformationEmail("contactInformationEmail")
+				.contactInformationPhoneNumber("contactInformationPhoneNumber"));
+
+		doReturn(sentBy).when(spy).getSentBy(MUNICIPALITY_ID);
+		doReturn(userEntity).when(spy).getOrCreateUser(sentBy.userName());
+		doReturn(departmentEntity).when(spy).getOrCreateDepartment(sentBy);
+		doReturn(new CompletableFuture<>()).when(spy).processRecipients(any());
+		when(messageRepositoryMock.save(any())).thenReturn(messageEntity);
+
+		var result = spy.processRequest(MUNICIPALITY_ID, letterRequest, attachments);
+
+		assertThat(result).isEqualTo(messageEntity.getId());
+		verify(attachmentMapperMock).toAttachmentEntities(attachments);
+		verify(spy).getSentBy(MUNICIPALITY_ID);
+		verify(spy).getOrCreateUser(sentBy.userName());
+		verify(spy).getOrCreateDepartment(sentBy);
+		verify(spy).processRecipients(any());
+		verify(messageRepositoryMock).save(any());
+	}
+
+	@Test
+	void processRequest_sms() {
 		var spy = Mockito.spy(messageService);
 		var smsRequest = TestDataFactory.createValidSmsRequest();
 		var sentBy = new MessageService.SentBy("username", "organizationId", "departmentName");
@@ -197,6 +241,32 @@ class MessageServiceTest {
 		spy.sendMessageToRecipient(messageEntity, recipient1);
 
 		verify(spy).sendSmsToRecipient(messageEntity, recipient1);
+	}
+
+	@Test
+	void sendMessageToRecipient_digitalMail() {
+		var spy = Mockito.spy(messageService);
+
+		var recipient1 = new RecipientEntity().withFirstName("john").withMessageType(MessageType.DIGITAL_MAIL);
+		var messageEntity = MessageEntity.create().withRecipients(List.of(recipient1));
+		doReturn(new CompletableFuture<>()).when(spy).sendDigitalMailToRecipient(messageEntity, recipient1);
+
+		spy.sendMessageToRecipient(messageEntity, recipient1);
+
+		verify(spy).sendDigitalMailToRecipient(messageEntity, recipient1);
+	}
+
+	@Test
+	void sendMessageToRecipient_snailMail() {
+		var spy = Mockito.spy(messageService);
+
+		var recipient1 = new RecipientEntity().withFirstName("john").withMessageType(MessageType.SNAIL_MAIL);
+		var messageEntity = MessageEntity.create().withRecipients(List.of(recipient1));
+		doReturn(new CompletableFuture<>()).when(spy).sendSnailMailToRecipient(messageEntity, recipient1);
+
+		spy.sendMessageToRecipient(messageEntity, recipient1);
+
+		verify(spy).sendSnailMailToRecipient(messageEntity, recipient1);
 	}
 
 	@Test

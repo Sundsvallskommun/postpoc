@@ -24,7 +24,9 @@ class MessageEntityTest {
 	private static final String MUNICIPALITY_ID = "municipalityId";
 	private static final String DISPLAY_NAME = "displayName";
 	private static final MessageType MESSAGE_TYPE = MessageType.SMS;
-	private static final String TEXT = "text";
+	private static final String BODY = "body";
+	private static final String CONTENT_TYPE = "contentType";
+	private static final String SUBJECT = "subject";
 	private static final OffsetDateTime CREATED = now();
 
 	@BeforeAll
@@ -43,6 +45,42 @@ class MessageEntityTest {
 	}
 
 	@Test
+	void builderPattern() {
+		var userEntity = new UserEntity();
+		var departmentEntity = new DepartmentEntity();
+		var attachments = new ArrayList<AttachmentEntity>();
+		var recipientEntities = new ArrayList<RecipientEntity>();
+
+		var messageEntity = MessageEntity.create()
+			.withId(ID)
+			.withMunicipalityId(MUNICIPALITY_ID)
+			.withMessageType(MESSAGE_TYPE)
+			.withBody(BODY)
+			.withContentType(CONTENT_TYPE)
+			.withSubject(SUBJECT)
+			.withCreated(CREATED)
+			.withDisplayName(DISPLAY_NAME)
+			.withUser(userEntity)
+			.withDepartment(departmentEntity)
+			.withAttachments(attachments)
+			.withRecipients(recipientEntities);
+
+		assertThat(messageEntity.getId()).isEqualTo(ID);
+		assertThat(messageEntity.getMunicipalityId()).isEqualTo(MUNICIPALITY_ID);
+		assertThat(messageEntity.getMessageType()).isEqualTo(MESSAGE_TYPE);
+		assertThat(messageEntity.getBody()).isEqualTo(BODY);
+		assertThat(messageEntity.getContentType()).isEqualTo(CONTENT_TYPE);
+		assertThat(messageEntity.getSubject()).isEqualTo(SUBJECT);
+		assertThat(messageEntity.getCreated()).isEqualTo(CREATED);
+		assertThat(messageEntity.getDisplayName()).isEqualTo(DISPLAY_NAME);
+		assertThat(messageEntity.getUser()).isEqualTo(userEntity);
+		assertThat(messageEntity.getDepartment()).isEqualTo(departmentEntity);
+		assertThat(messageEntity.getAttachments()).isEqualTo(attachments);
+		assertThat(messageEntity.getRecipients()).isEqualTo(recipientEntities);
+		assertThat(messageEntity).hasNoNullFieldsOrProperties();
+	}
+
+	@Test
 	void getterAndSetterTest() {
 		var messageEntity = new MessageEntity();
 		var userEntity = new UserEntity();
@@ -53,7 +91,9 @@ class MessageEntityTest {
 		messageEntity.setId(ID);
 		messageEntity.setMunicipalityId(MUNICIPALITY_ID);
 		messageEntity.setMessageType(MESSAGE_TYPE);
-		messageEntity.setText(TEXT);
+		messageEntity.setBody(BODY);
+		messageEntity.setContentType(CONTENT_TYPE);
+		messageEntity.setSubject(SUBJECT);
 		messageEntity.setCreated(CREATED);
 		messageEntity.setDisplayName(DISPLAY_NAME);
 		messageEntity.setUser(userEntity);
@@ -64,7 +104,9 @@ class MessageEntityTest {
 		assertThat(messageEntity.getId()).isEqualTo(ID);
 		assertThat(messageEntity.getMunicipalityId()).isEqualTo(MUNICIPALITY_ID);
 		assertThat(messageEntity.getMessageType()).isEqualTo(MESSAGE_TYPE);
-		assertThat(messageEntity.getText()).isEqualTo(TEXT);
+		assertThat(messageEntity.getBody()).isEqualTo(BODY);
+		assertThat(messageEntity.getContentType()).isEqualTo(CONTENT_TYPE);
+		assertThat(messageEntity.getSubject()).isEqualTo(SUBJECT);
 		assertThat(messageEntity.getCreated()).isEqualTo(CREATED);
 		assertThat(messageEntity.getDisplayName()).isEqualTo(DISPLAY_NAME);
 		assertThat(messageEntity.getUser()).isEqualTo(userEntity);

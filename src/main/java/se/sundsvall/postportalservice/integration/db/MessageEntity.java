@@ -41,8 +41,14 @@ public class MessageEntity {
 	@Column(name = "message_type", columnDefinition = "VARCHAR(50)")
 	private MessageType messageType;
 
-	@Column(name = "text", columnDefinition = "TEXT")
-	private String text;
+	@Column(name = "body", columnDefinition = "TEXT")
+	private String body;
+
+	@Column(name = "subject", columnDefinition = "VARCHAR(255)")
+	private String subject;
+
+	@Column(name = "content_type", columnDefinition = "VARCHAR(100)")
+	private String contentType;
 
 	@Column(name = "created", columnDefinition = "DATETIME")
 	private OffsetDateTime created;
@@ -106,6 +112,32 @@ public class MessageEntity {
 		return this;
 	}
 
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public MessageEntity withSubject(String subject) {
+		this.subject = subject;
+		return this;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
+
+	public MessageEntity withContentType(String contentType) {
+		this.contentType = contentType;
+		return this;
+	}
+
 	public String getMunicipalityId() {
 		return municipalityId;
 	}
@@ -132,16 +164,16 @@ public class MessageEntity {
 		return this;
 	}
 
-	public String getText() {
-		return text;
+	public String getBody() {
+		return body;
 	}
 
-	public void setText(String text) {
-		this.text = text;
+	public void setBody(String text) {
+		this.body = text;
 	}
 
-	public MessageEntity withText(String text) {
-		this.text = text;
+	public MessageEntity withBody(String body) {
+		this.body = body;
 		return this;
 	}
 
@@ -217,7 +249,9 @@ public class MessageEntity {
 			", municipalityId='" + municipalityId + '\'' +
 			", displayName='" + displayName + '\'' +
 			", messageType=" + messageType +
-			", text='" + text + '\'' +
+			", body='" + body + '\'' +
+			", subject='" + subject + '\'' +
+			", contentType='" + contentType + '\'' +
 			", created=" + created +
 			", user=" + user +
 			", department=" + department +
@@ -230,12 +264,13 @@ public class MessageEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		MessageEntity that = (MessageEntity) o;
-		return Objects.equals(id, that.id) && Objects.equals(municipalityId, that.municipalityId) && Objects.equals(displayName, that.displayName) && messageType == that.messageType && Objects.equals(text, that.text)
-			&& Objects.equals(created, that.created) && Objects.equals(user, that.user) && Objects.equals(department, that.department) && Objects.equals(recipients, that.recipients);
+		return Objects.equals(id, that.id) && Objects.equals(municipalityId, that.municipalityId) && Objects.equals(displayName, that.displayName) && messageType == that.messageType && Objects.equals(body, that.body)
+			&& Objects.equals(subject, that.subject) && Objects.equals(contentType, that.contentType) && Objects.equals(created, that.created) && Objects.equals(user, that.user) && Objects.equals(department,
+				that.department) && Objects.equals(recipients, that.recipients);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, municipalityId, displayName, messageType, text, created, user, department, recipients);
+		return Objects.hash(id, municipalityId, displayName, messageType, body, subject, contentType, created, user, department, recipients);
 	}
 }

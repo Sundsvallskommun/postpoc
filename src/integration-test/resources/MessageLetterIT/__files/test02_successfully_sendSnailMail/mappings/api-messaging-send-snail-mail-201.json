@@ -1,0 +1,13 @@
+{
+	"request": {
+		"url": "/api-messaging/2281/snail-mail",
+		"method": "POST"
+	},
+	"response": {
+		"status": 201,
+		"headers": {
+			"Content-Type": "application/json"
+		},
+		"bodyFileName": "test02_successfully_sendSnailMail/responses/messaging-send-snail-mail.json"
+	}
+}

@@ -1,20 +1,26 @@
 package se.sundsvall.postportalservice.service;
 
+import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.zalando.problem.Status.BAD_GATEWAY;
 import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
+import static se.sundsvall.postportalservice.integration.db.converter.MessageType.LETTER;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.SMS;
 
 import generated.se.sundsvall.messaging.DeliveryResult;
 import generated.se.sundsvall.messaging.MessageResult;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.zalando.problem.Problem;
 import se.sundsvall.dept44.support.Identifier;
+import se.sundsvall.postportalservice.api.model.Attachments;
+import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.api.model.SmsRequest;
 import se.sundsvall.postportalservice.integration.db.DepartmentEntity;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
@@ -28,6 +34,7 @@ import se.sundsvall.postportalservice.integration.employee.EmployeeIntegration;
 import se.sundsvall.postportalservice.integration.employee.EmployeeUtil;
 import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration;
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
+import se.sundsvall.postportalservice.service.mapper.AttachmentMapper;
 import se.sundsvall.postportalservice.service.mapper.EntityMapper;
 
 @Service
@@ -39,6 +46,8 @@ public class MessageService {
 	private final MessagingSettingsIntegration messagingSettingsIntegration;
 	private final EmployeeIntegration employeeIntegration;
 
+	private final AttachmentMapper attachmentMapper;
+
 	private final DepartmentRepository departmentRepository;
 	private final UserRepository userRepository;
 	private final MessageRepository messageRepository;
@@ -47,15 +56,58 @@ public class MessageService {
 		final MessagingIntegration messagingIntegration,
 		final MessagingSettingsIntegration messagingSettingsIntegration,
 		final EmployeeIntegration employeeIntegration,
+		final AttachmentMapper attachmentMapper,
 		final DepartmentRepository departmentRepository,
 		final UserRepository userRepository,
 		final MessageRepository messageRepository) {
 		this.messagingIntegration = messagingIntegration;
 		this.messagingSettingsIntegration = messagingSettingsIntegration;
 		this.employeeIntegration = employeeIntegration;
+		this.attachmentMapper = attachmentMapper;
 		this.departmentRepository = departmentRepository;
 		this.userRepository = userRepository;
 		this.messageRepository = messageRepository;
+	}
+
+	public String processRequest(final String municipalityId, final LetterRequest letterRequest, final Attachments attachments) {
+		var sentBy = getSentBy(municipalityId);
+
+		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId);
+
+		var user = getOrCreateUser(sentBy.userName);
+		var department = getOrCreateDepartment(sentBy)
+			.withSupportText(senderInfo.getSupportText())
+			.withContactInformationUrl(senderInfo.getContactInformationUrl())
+			.withContactInformationEmail(senderInfo.getContactInformationEmail())
+			.withContactInformationPhoneNumber(senderInfo.getContactInformationPhoneNumber());
+
+		var recipientEntities = Optional.ofNullable(letterRequest.getRecipients()).orElse(emptyList()).stream()
+			.map(EntityMapper::toRecipientEntity)
+			.filter(Objects::nonNull);
+
+		var addressRecipients = Optional.ofNullable(letterRequest.getAddresses()).orElse(emptyList()).stream()
+			.map(EntityMapper::toRecipientEntity)
+			.filter(Objects::nonNull);
+
+		var recipients = Stream.concat(recipientEntities, addressRecipients).toList();
+
+		var attachmentEntities = attachmentMapper.toAttachmentEntities(attachments);
+
+		var message = MessageEntity.create()
+			.withMunicipalityId(municipalityId)
+			.withUser(user)
+			.withDepartment(department)
+			.withRecipients(recipients)
+			.withAttachments(attachmentEntities)
+			.withBody(letterRequest.getBody())
+			.withContentType(letterRequest.getContentType())
+			.withSubject(letterRequest.getSubject())
+			.withMessageType(LETTER);
+
+		message = messageRepository.save(message);
+
+		processRecipients(message);
+		return message.getId();
 	}
 
 	/**
@@ -81,7 +133,7 @@ public class MessageService {
 			.withUser(user)
 			.withDepartment(department)
 			.withRecipients(recipients)
-			.withText(smsRequest.getMessage())
+			.withBody(smsRequest.getMessage())
 			.withMessageType(SMS);
 
 		message = messageRepository.save(message);
@@ -108,19 +160,41 @@ public class MessageService {
 	CompletableFuture<Void> sendMessageToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
 		return switch (recipientEntity.getMessageType()) {
 			case SMS -> sendSmsToRecipient(messageEntity, recipientEntity);
-			// case DIGITAL_MAIL -> sendDigitalMailToRecipient(messageEntity, recipientEntity);
-			// case SNAIL_MAIL -> sendSnailMailToRecipient(messageEntity, recipientEntity);
+			case DIGITAL_MAIL -> sendDigitalMailToRecipient(messageEntity, recipientEntity);
+			case SNAIL_MAIL -> sendSnailMailToRecipient(messageEntity, recipientEntity);
 			default -> {
 				recipientEntity.setMessageStatus(MessageStatus.FAILED);
 				recipientEntity.setStatusDetail("Unsupported message type: " + recipientEntity.getMessageType());
 				yield CompletableFuture.completedFuture(null);
 			}
 		};
-
 	}
 
 	CompletableFuture<Void> sendSmsToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
 		return supplyAsync(() -> messagingIntegration.sendSms(messageEntity, recipientEntity))
+			.thenAccept(messageResult -> updateRecipient(messageResult, recipientEntity))
+			.exceptionally(throwable -> {
+				recipientEntity.setMessageStatus(MessageStatus.FAILED);
+				recipientEntity.setStatusDetail(throwable.getMessage());
+				return null;
+			});
+	}
+
+	CompletableFuture<Void> sendDigitalMailToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
+		return supplyAsync(() -> messagingIntegration.sendDigitalMail(messageEntity, recipientEntity))
+			.thenAccept(messageBatchResult -> {
+				var messageResult = messageBatchResult.getMessages().getFirst();
+				updateRecipient(messageResult, recipientEntity);
+			})
+			.exceptionally(throwable -> {
+				recipientEntity.setMessageStatus(MessageStatus.FAILED);
+				recipientEntity.setStatusDetail(throwable.getMessage());
+				return null;
+			});
+	}
+
+	CompletableFuture<Void> sendSnailMailToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
+		return supplyAsync(() -> messagingIntegration.sendSnailMail(messageEntity, recipientEntity))
 			.thenAccept(messageResult -> updateRecipient(messageResult, recipientEntity))
 			.exceptionally(throwable -> {
 				recipientEntity.setMessageStatus(MessageStatus.FAILED);
