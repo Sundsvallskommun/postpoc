@@ -48,7 +48,7 @@ public class BlobUtil {
 	 * @param  blob the Blob to convert
 	 * @return      the Base64 encoded string representation of the Blob
 	 */
-	public String convertBlobToBase64String(final Blob blob) {
+	public static String convertBlobToBase64String(final Blob blob) {
 		try {
 			var bytes = blob.getBytes(1, (int) blob.length());
 			return Base64.getEncoder().encodeToString(bytes);

@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +21,6 @@ public class LetterRequest {
 	private String contentType;
 
 	@ArraySchema(schema = @Schema(description = "List of recipients", implementation = Recipient.class))
-	@NotEmpty
 	private List<@Valid Recipient> recipients;
 
 	@ArraySchema(schema = @Schema(description = "List of addresses", implementation = Address.class))

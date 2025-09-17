@@ -16,6 +16,10 @@ class DepartmentEntityTest {
 	private static final String ID = "123e4567-e89b-12d3-a456-426614174000";
 	private static final String NAME = "name";
 	private static final String ORGANIZATION_ID = "1234567890";
+	private static final String SUPPORT_TEXT = "supportText";
+	private static final String CONTACT_INFORMATION_URL = "contactInformationUrl";
+	private static final String CONTACT_INFORMATION_EMAIL = "contactInformationEmail";
+	private static final String CONTACT_INFORMATION_PHONE_NUMBER = "contactInformationPhoneNumber";
 
 	@Test
 	void testBean() {
@@ -32,11 +36,19 @@ class DepartmentEntityTest {
 		final var departmentEntity = DepartmentEntity.create()
 			.withId(ID)
 			.withName(NAME)
-			.withOrganizationId(ORGANIZATION_ID);
+			.withOrganizationId(ORGANIZATION_ID)
+			.withSupportText(SUPPORT_TEXT)
+			.withContactInformationUrl(CONTACT_INFORMATION_URL)
+			.withContactInformationEmail(CONTACT_INFORMATION_EMAIL)
+			.withContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
 		assertThat(departmentEntity.getOrganizationId()).isEqualTo(ORGANIZATION_ID);
+		assertThat(departmentEntity.getSupportText()).isEqualTo(SUPPORT_TEXT);
+		assertThat(departmentEntity.getContactInformationUrl()).isEqualTo(CONTACT_INFORMATION_URL);
+		assertThat(departmentEntity.getContactInformationEmail()).isEqualTo(CONTACT_INFORMATION_EMAIL);
+		assertThat(departmentEntity.getContactInformationPhoneNumber()).isEqualTo(CONTACT_INFORMATION_PHONE_NUMBER);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 
@@ -46,10 +58,18 @@ class DepartmentEntityTest {
 		departmentEntity.setId(ID);
 		departmentEntity.setName(NAME);
 		departmentEntity.setOrganizationId(ORGANIZATION_ID);
+		departmentEntity.setSupportText(SUPPORT_TEXT);
+		departmentEntity.setContactInformationUrl(CONTACT_INFORMATION_URL);
+		departmentEntity.setContactInformationEmail(CONTACT_INFORMATION_EMAIL);
+		departmentEntity.setContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
 		assertThat(departmentEntity.getOrganizationId()).isEqualTo(ORGANIZATION_ID);
+		assertThat(departmentEntity.getSupportText()).isEqualTo(SUPPORT_TEXT);
+		assertThat(departmentEntity.getContactInformationUrl()).isEqualTo(CONTACT_INFORMATION_URL);
+		assertThat(departmentEntity.getContactInformationEmail()).isEqualTo(CONTACT_INFORMATION_EMAIL);
+		assertThat(departmentEntity.getContactInformationPhoneNumber()).isEqualTo(CONTACT_INFORMATION_PHONE_NUMBER);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 

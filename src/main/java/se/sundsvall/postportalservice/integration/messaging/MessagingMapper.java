@@ -1,30 +1,63 @@
 package se.sundsvall.postportalservice.integration.messaging;
 
+import generated.se.sundsvall.messaging.DigitalMailAttachment;
+import generated.se.sundsvall.messaging.DigitalMailParty;
 import generated.se.sundsvall.messaging.DigitalMailRequest;
+import generated.se.sundsvall.messaging.DigitalMailSender;
+import generated.se.sundsvall.messaging.DigitalMailSenderSupportInfo;
 import generated.se.sundsvall.messaging.SmsBatchRequest;
 import generated.se.sundsvall.messaging.SmsRequest;
 import generated.se.sundsvall.messaging.SmsRequestParty;
+import java.util.List;
+import java.util.UUID;
+import se.sundsvall.postportalservice.integration.db.AttachmentEntity;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
+import se.sundsvall.postportalservice.service.util.BlobUtil;
 
 public final class MessagingMapper {
 
 	private MessagingMapper() {}
 
-	public static SmsRequest toSmsRequest(final MessageEntity messageEntity, final RecipientEntity recipient) {
+	public static SmsRequest toSmsRequest(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
 		return new SmsRequest()
-			.message(messageEntity.getText())
+			.message(messageEntity.getBody())
 			.department(messageEntity.getDepartment().getName())
-			.mobileNumber(recipient.getPhoneNumber())
-			.party(new SmsRequestParty().partyId(recipient.getPartyId()));
+			.mobileNumber(recipientEntity.getPhoneNumber())
+			.party(new SmsRequestParty().partyId(recipientEntity.getPartyId()));
 	}
 
 	public static SmsBatchRequest toSmsBatchRequest() {
 		return new SmsBatchRequest();
 	}
 
-	public static DigitalMailRequest toDigitalMailRequest() {
-		return new DigitalMailRequest();
+	public static DigitalMailRequest toDigitalMailRequest(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
+		return new DigitalMailRequest()
+			.contentType(DigitalMailRequest.ContentTypeEnum.fromValue(messageEntity.getContentType()))
+			.body(messageEntity.getBody())
+			.subject(messageEntity.getSubject())
+			.department(messageEntity.getDepartment().getName())
+			.party(new DigitalMailParty().partyIds(List.of(UUID.fromString(recipientEntity.getPartyId()))))
+			.attachments(toDigitalMailAttachments(messageEntity.getAttachments()))
+			.sender(new DigitalMailSender().supportInfo(new DigitalMailSenderSupportInfo()
+				.emailAddress(messageEntity.getDepartment().getContactInformationEmail())
+				.phoneNumber(messageEntity.getDepartment().getContactInformationPhoneNumber())
+				.url(messageEntity.getDepartment().getContactInformationUrl())
+				.text(messageEntity.getDepartment().getSupportText())));
+
+	}
+
+	public static List<DigitalMailAttachment> toDigitalMailAttachments(final List<AttachmentEntity> attachmentEntities) {
+		return attachmentEntities.stream()
+			.map(MessagingMapper::toDigitalMailAttachment)
+			.toList();
+	}
+
+	public static DigitalMailAttachment toDigitalMailAttachment(final AttachmentEntity attachmentEntity) {
+		return new DigitalMailAttachment()
+			.filename(attachmentEntity.getFileName())
+			.content(BlobUtil.convertBlobToBase64String(attachmentEntity.getContent()))
+			.contentType(DigitalMailAttachment.ContentTypeEnum.fromValue(attachmentEntity.getContentType()));
 	}
 
 }

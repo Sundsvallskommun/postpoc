@@ -1,9 +1,12 @@
 package se.sundsvall.postportalservice.service.mapper;
 
+import static se.sundsvall.postportalservice.integration.db.converter.MessageStatus.PENDING;
+
 import java.util.Optional;
+import se.sundsvall.postportalservice.api.model.Address;
+import se.sundsvall.postportalservice.api.model.Recipient;
 import se.sundsvall.postportalservice.api.model.SmsRecipient;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
-import se.sundsvall.postportalservice.integration.db.converter.MessageStatus;
 import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 
 public final class EntityMapper {
@@ -13,9 +16,55 @@ public final class EntityMapper {
 	public static RecipientEntity toRecipientEntity(final SmsRecipient smsRecipient) {
 		return Optional.ofNullable(smsRecipient).map(recipient -> RecipientEntity.create()
 			.withMessageType(MessageType.SMS)
-			.withMessageStatus(MessageStatus.PENDING)
+			.withMessageStatus(PENDING)
 			.withPartyId(recipient.getPartyId())
 			.withPhoneNumber(recipient.getPhoneNumber()))
 			.orElse(null);
+	}
+
+	public static RecipientEntity toRecipientEntity(final Recipient recipient) {
+		if (recipient == null) {
+			return null;
+		}
+		var messageType = switch (recipient.getDeliveryMethod()) {
+			case DIGITAL_MAIL -> MessageType.DIGITAL_MAIL;
+			case SNAIL_MAIL -> MessageType.SNAIL_MAIL;
+			default -> null;
+		};
+
+		var recipientEntity = new RecipientEntity();
+
+		if (messageType == MessageType.SNAIL_MAIL) {
+			recipientEntity
+				.withFirstName(recipient.getAddress().getFirstName())
+				.withLastName(recipient.getAddress().getLastName())
+				.withStreetAddress(recipient.getAddress().getStreet())
+				.withApartmentNumber(recipient.getAddress().getApartmentNumber())
+				.withCareOf(recipient.getAddress().getCareOf())
+				.withZipCode(recipient.getAddress().getZipCode())
+				.withCity(recipient.getAddress().getCity())
+				.withCountry(recipient.getAddress().getCountry());
+		}
+
+		return recipientEntity
+			.withMessageType(messageType)
+			.withMessageStatus(PENDING)
+			.withPartyId(recipient.getPartyId());
+	}
+
+	public static RecipientEntity toRecipientEntity(final Address address) {
+		return Optional.ofNullable(address).map(address1 -> RecipientEntity.create()
+			.withCountry(address1.getCountry())
+			.withCity(address1.getCity())
+			.withStreetAddress(address1.getStreet())
+			.withZipCode(address1.getZipCode())
+			.withFirstName(address1.getFirstName())
+			.withLastName(address1.getLastName())
+			.withApartmentNumber(address1.getApartmentNumber())
+			.withCareOf(address1.getCareOf())
+			.withMessageType(MessageType.SNAIL_MAIL)
+			.withMessageStatus(PENDING))
+			.orElse(null);
+
 	}
 }

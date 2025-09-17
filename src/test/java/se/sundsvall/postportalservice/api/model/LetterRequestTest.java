@@ -77,11 +77,10 @@ class LetterRequestTest {
 
 		final var violations = validator.validate(letterRequest);
 
-		assertThat(violations).hasSize(2)
+		assertThat(violations).hasSize(1)
 			.extracting(violation -> violation.getPropertyPath().toString(), ConstraintViolation::getMessage)
 			.containsExactlyInAnyOrder(
-				tuple("subject", "must not be blank"),
-				tuple("recipients", "must not be empty"));
+				tuple("subject", "must not be blank"));
 		assertThat(letterRequest).hasAllNullFieldsOrProperties();
 	}
 

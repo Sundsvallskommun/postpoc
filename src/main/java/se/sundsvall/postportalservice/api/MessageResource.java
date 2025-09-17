@@ -60,9 +60,11 @@ class MessageResource {
 	})
 	@PostMapping(value = "/letter", produces = ALL_VALUE)
 	ResponseEntity<Void> sendLetter(
+		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
 		@RequestPart(name = "request") @Schema(description = "Letter request as a JSON string", implementation = LetterRequest.class) final String request,
 		@RequestPart(name = "attachments") final List<MultipartFile> files) {
+		Identifier.set(Identifier.parse(xSentBy));
 
 		var letterRequest = parseLetterRequest(request);
 		validate(letterRequest);
@@ -71,9 +73,12 @@ class MessageResource {
 			.withFiles(files);
 		validate(attachments);
 
-		// Should return created and a location header.
-		// /{municipalityId}/history/messages/{messageId}
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+		final var messageId = messageService.processLetterRequest(municipalityId, letterRequest, attachments);
+
+		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
+			.buildAndExpand(municipalityId, messageId).toUri())
+			.header(CONTENT_TYPE, ALL_VALUE)
+			.build();
 	}
 
 	@Operation(summary = "Send a digital registered letter.", responses = {
@@ -100,7 +105,7 @@ class MessageResource {
 		@RequestBody @Valid final SmsRequest request) {
 		Identifier.set(Identifier.parse(xSentBy));
 
-		final var messageId = messageService.processRequest(municipalityId, request);
+		final var messageId = messageService.processSmsRequest(municipalityId, request);
 
 		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
 			.buildAndExpand(municipalityId, messageId).toUri())

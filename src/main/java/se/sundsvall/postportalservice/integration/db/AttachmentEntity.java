@@ -45,6 +45,10 @@ public class AttachmentEntity {
 		created = OffsetDateTime.now();
 	}
 
+	public static AttachmentEntity create() {
+		return new AttachmentEntity();
+	}
+
 	public String getId() {
 		return id;
 	}

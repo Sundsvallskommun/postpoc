@@ -11,9 +11,13 @@ CREATE TABLE attachment
 
 CREATE TABLE department
 (
-    id              VARCHAR(36)  NOT NULL,
-    name            VARCHAR(100) NULL,
-    organization_id VARCHAR(12)  NULL,
+    id                               VARCHAR(36)  NOT NULL,
+    name                             VARCHAR(100) NULL,
+    organization_id                  VARCHAR(12)  NULL,
+    support_text                     VARCHAR(255) NULL,
+    contact_information_url          VARCHAR(255) NULL,
+    contact_information_phone_number VARCHAR(30)  NULL,
+    contact_information_email        VARCHAR(100) NULL,
     CONSTRAINT pk_department PRIMARY KEY (id)
 );
 
@@ -23,7 +27,9 @@ CREATE TABLE message
     municipality_id VARCHAR(6)   NULL,
     display_name    VARCHAR(100) NULL,
     message_type    VARCHAR(50)  NULL,
-    text            TEXT         NULL,
+    body            TEXT         NULL,
+    subject         VARCHAR(255) NULL,
+    content_type    VARCHAR(100) NULL,
     created         datetime     NULL,
     user_id         VARCHAR(36)  NULL,
     department_id   VARCHAR(36)  NULL,
