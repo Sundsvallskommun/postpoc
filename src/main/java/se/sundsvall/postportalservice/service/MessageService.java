@@ -69,7 +69,7 @@ public class MessageService {
 		this.messageRepository = messageRepository;
 	}
 
-	public String processRequest(final String municipalityId, final LetterRequest letterRequest, final Attachments attachments) {
+	public String processLetterRequest(final String municipalityId, final LetterRequest letterRequest, final Attachments attachments) {
 		var sentBy = getSentBy(municipalityId);
 
 		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId);
@@ -115,7 +115,7 @@ public class MessageService {
 	 * database. Sends a message to each recipient asynchronously. Returns the MessageEntity ID that can be used to read the
 	 * message.
 	 */
-	public String processRequest(final String municipalityId, final SmsRequest smsRequest) {
+	public String processSmsRequest(final String municipalityId, final SmsRequest smsRequest) {
 		var sentBy = getSentBy(municipalityId);
 
 		var user = getOrCreateUser(sentBy.userName);

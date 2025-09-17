@@ -90,7 +90,7 @@ class MessageResourceTest {
 	@Test
 	void sendSms_Created() {
 		var request = createValidSmsRequest();
-		when(messageServiceMock.processRequest(MUNICIPALITY_ID, request)).thenReturn("messageId");
+		when(messageServiceMock.processSmsRequest(MUNICIPALITY_ID, request)).thenReturn("messageId");
 
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/sms")

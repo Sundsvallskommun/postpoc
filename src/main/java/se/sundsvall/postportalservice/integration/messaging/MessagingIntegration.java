@@ -10,6 +10,7 @@ import generated.se.sundsvall.messaging.MessageStatus;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
+import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 
@@ -17,7 +18,6 @@ import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 public class MessagingIntegration {
 
 	private final MessagingClient client;
-	private static final String IDENTIFIER = "type=adAccount; %s";
 
 	public MessagingIntegration(final MessagingClient client) {
 		this.client = client;
@@ -26,7 +26,7 @@ public class MessagingIntegration {
 	public MessageBatchResult sendDigitalMail(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
 		var digitalMailRequest = toDigitalMailRequest(messageEntity, recipientEntity);
 
-		return client.sendDigitalMail(IDENTIFIER.formatted(messageEntity.getUser().getName()),
+		return client.sendDigitalMail(getIdentifierHeaderValue(messageEntity.getUser().getName()),
 			messageEntity.getDepartment().getName(),
 			messageEntity.getMunicipalityId(),
 			digitalMailRequest);
@@ -36,7 +36,7 @@ public class MessagingIntegration {
 		// TODO: Implement mapping to snailmail request, call messaging and return the result.
 
 		// Temporary hardcoded response until implementation is done, this is done for integration testing purposes.
-		client.sendSnailMail(IDENTIFIER.formatted(messageEntity.getUser().getName()),
+		client.sendSnailMail(getIdentifierHeaderValue(messageEntity.getUser().getName()),
 			messageEntity.getDepartment().getName(),
 			messageEntity.getMunicipalityId());
 		return new MessageResult()
@@ -48,7 +48,7 @@ public class MessagingIntegration {
 		var smsRequest = toSmsRequest(messageEntity, recipientEntity);
 		smsRequest.setSender(messageEntity.getDisplayName());
 
-		return client.sendSms(IDENTIFIER.formatted(messageEntity.getUser().getName()),
+		return client.sendSms(getIdentifierHeaderValue(messageEntity.getUser().getName()),
 			messageEntity.getDepartment().getName(),
 			messageEntity.getMunicipalityId(),
 			smsRequest);
@@ -66,6 +66,13 @@ public class MessagingIntegration {
 		// TODO: When messaging exposes the new precheck endpoint, implement the mapping and the call to messaging. The return
 		// value should include which recipients that have an eligible digital-mailbox.
 		return true;
+	}
+
+	String getIdentifierHeaderValue(final String userName) {
+		return Identifier.create()
+			.withType(Identifier.Type.AD_ACCOUNT)
+			.withValue(userName)
+			.toHeaderValue();
 	}
 
 }

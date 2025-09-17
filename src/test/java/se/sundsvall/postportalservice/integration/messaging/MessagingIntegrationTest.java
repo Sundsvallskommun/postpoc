@@ -81,7 +81,7 @@ class MessagingIntegrationTest {
 
 		var messageBatchResult = new MessageBatchResult();
 
-		when(messagingClientMock.sendDigitalMail(eq("type=adAccount; John Wick"), eq("Jönssonligan"), eq(MUNICIPALITY_ID), digitalMailRequestArgumentCaptor.capture()))
+		when(messagingClientMock.sendDigitalMail(eq("John Wick; type=adAccount"), eq("Jönssonligan"), eq(MUNICIPALITY_ID), digitalMailRequestArgumentCaptor.capture()))
 			.thenReturn(messageBatchResult);
 
 		var result = messagingIntegration.sendDigitalMail(messageEntity, recipientEntity);
@@ -96,7 +96,7 @@ class MessagingIntegrationTest {
 		});
 
 		assertThat(result).isNotNull().isEqualTo(messageBatchResult);
-		verify(messagingClientMock).sendDigitalMail("type=adAccount; John Wick", "Jönssonligan", MUNICIPALITY_ID, digitalMailRequest);
+		verify(messagingClientMock).sendDigitalMail("John Wick; type=adAccount", "Jönssonligan", MUNICIPALITY_ID, digitalMailRequest);
 	}
 
 	@Test
@@ -114,7 +114,7 @@ class MessagingIntegrationTest {
 		var messageResult = new MessageResult().messageId(UUID.randomUUID())
 			.deliveries(List.of(new DeliveryResult()
 				.status(MessageStatus.SENT)));
-		when(messagingClientMock.sendSms(eq("type=adAccount; John Wick"), eq("Jönssonligan"), eq(MUNICIPALITY_ID), smsRequestCaptor.capture()))
+		when(messagingClientMock.sendSms(eq("John Wick; type=adAccount"), eq("Jönssonligan"), eq(MUNICIPALITY_ID), smsRequestCaptor.capture()))
 			.thenReturn(messageResult);
 
 		var result = messagingIntegration.sendSms(messageEntity, recipientEntity);
@@ -126,7 +126,7 @@ class MessagingIntegrationTest {
 		assertThat(smsRequest.getSender()).isEqualTo(messageEntity.getDisplayName());
 
 		assertThat(result).isEqualTo(messageResult);
-		verify(messagingClientMock).sendSms("type=adAccount; John Wick", "Jönssonligan", MUNICIPALITY_ID, smsRequest);
+		verify(messagingClientMock).sendSms("John Wick; type=adAccount", "Jönssonligan", MUNICIPALITY_ID, smsRequest);
 	}
 
 	@Test

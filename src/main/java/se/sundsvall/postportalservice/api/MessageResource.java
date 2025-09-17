@@ -73,7 +73,7 @@ class MessageResource {
 			.withFiles(files);
 		validate(attachments);
 
-		final var messageId = messageService.processRequest(municipalityId, letterRequest, attachments);
+		final var messageId = messageService.processLetterRequest(municipalityId, letterRequest, attachments);
 
 		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
 			.buildAndExpand(municipalityId, messageId).toUri())
@@ -105,7 +105,7 @@ class MessageResource {
 		@RequestBody @Valid final SmsRequest request) {
 		Identifier.set(Identifier.parse(xSentBy));
 
-		final var messageId = messageService.processRequest(municipalityId, request);
+		final var messageId = messageService.processSmsRequest(municipalityId, request);
 
 		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
 			.buildAndExpand(municipalityId, messageId).toUri())

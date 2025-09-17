@@ -90,7 +90,7 @@ class MessageServiceTest {
 	}
 
 	@Test
-	void processRequest_letter() {
+	void processLetterRequest() {
 		var spy = Mockito.spy(messageService);
 		var multipartFile = Mockito.mock(MultipartFile.class);
 		var attachments = new Attachments().withFiles(List.of(multipartFile));
@@ -115,7 +115,7 @@ class MessageServiceTest {
 		doReturn(new CompletableFuture<>()).when(spy).processRecipients(any());
 		when(messageRepositoryMock.save(any())).thenReturn(messageEntity);
 
-		var result = spy.processRequest(MUNICIPALITY_ID, letterRequest, attachments);
+		var result = spy.processLetterRequest(MUNICIPALITY_ID, letterRequest, attachments);
 
 		assertThat(result).isEqualTo(messageEntity.getId());
 		verify(attachmentMapperMock).toAttachmentEntities(attachments);
@@ -127,7 +127,7 @@ class MessageServiceTest {
 	}
 
 	@Test
-	void processRequest_sms() {
+	void processSmsRequest() {
 		var spy = Mockito.spy(messageService);
 		var smsRequest = TestDataFactory.createValidSmsRequest();
 		var sentBy = new MessageService.SentBy("username", "organizationId", "departmentName");
@@ -144,7 +144,7 @@ class MessageServiceTest {
 		doReturn(new CompletableFuture<>()).when(spy).processRecipients(any());
 		when(messageRepositoryMock.save(any())).thenReturn(messageEntity);
 
-		var result = spy.processRequest(MUNICIPALITY_ID, smsRequest);
+		var result = spy.processSmsRequest(MUNICIPALITY_ID, smsRequest);
 
 		assertThat(result).isEqualTo(messageEntity.getId());
 		verify(spy).getSentBy(MUNICIPALITY_ID);
@@ -281,7 +281,7 @@ class MessageServiceTest {
 	}
 
 	@Test
-	void processRequestToRecipient() {
+	void processSmsRequestToRecipient() {
 		var spy = Mockito.spy(messageService);
 		var recipient1 = new RecipientEntity().withFirstName("john");
 		var messageEntity = MessageEntity.create().withRecipients(List.of(recipient1));
@@ -303,7 +303,7 @@ class MessageServiceTest {
 	}
 
 	@Test
-	void processRequestToRecipient_exception() {
+	void processSmsRequestToRecipient_exception() {
 		var spy = Mockito.spy(messageService);
 		var recipient1 = new RecipientEntity().withFirstName("john");
 		var messageEntity = MessageEntity.create().withRecipients(List.of(recipient1));
