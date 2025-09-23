@@ -1,14 +1,12 @@
 package se.sundsvall.postportalservice.integration.messaging;
 
+import static se.sundsvall.postportalservice.Constants.ORIGIN;
 import static se.sundsvall.postportalservice.integration.messaging.MessagingMapper.toDigitalMailRequest;
 import static se.sundsvall.postportalservice.integration.messaging.MessagingMapper.toSmsRequest;
+import static se.sundsvall.postportalservice.integration.messaging.MessagingMapper.toSnailmailRequest;
 
-import generated.se.sundsvall.messaging.DeliveryResult;
 import generated.se.sundsvall.messaging.MessageBatchResult;
 import generated.se.sundsvall.messaging.MessageResult;
-import generated.se.sundsvall.messaging.MessageStatus;
-import java.util.List;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
@@ -27,21 +25,23 @@ public class MessagingIntegration {
 		var digitalMailRequest = toDigitalMailRequest(messageEntity, recipientEntity);
 
 		return client.sendDigitalMail(getIdentifierHeaderValue(messageEntity.getUser().getName()),
-			messageEntity.getDepartment().getName(),
+			ORIGIN,
 			messageEntity.getMunicipalityId(),
 			digitalMailRequest);
 	}
 
 	public MessageResult sendSnailMail(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
-		// TODO: Implement mapping to snailmail request, call messaging and return the result.
+		var snailmailRequest = toSnailmailRequest(messageEntity, recipientEntity);
 
-		// Temporary hardcoded response until implementation is done, this is done for integration testing purposes.
-		client.sendSnailMail(getIdentifierHeaderValue(messageEntity.getUser().getName()),
-			messageEntity.getDepartment().getName(),
-			messageEntity.getMunicipalityId());
-		return new MessageResult()
-			.messageId(UUID.fromString("550e8400-e29b-41d4-a716-446655440002"))
-			.deliveries(List.of(new DeliveryResult().status(MessageStatus.SENT)));
+		return client.sendSnailMail(getIdentifierHeaderValue(messageEntity.getUser().getName()),
+			ORIGIN,
+			messageEntity.getMunicipalityId(),
+			snailmailRequest,
+			messageEntity.getId());
+	}
+
+	public void triggerSnailMailBatchProcessing(final String municipalityId, final String batchId) {
+		client.triggerSnailMailBatchProcessing(municipalityId, batchId);
 	}
 
 	public MessageResult sendSms(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
@@ -49,7 +49,7 @@ public class MessagingIntegration {
 		smsRequest.setSender(messageEntity.getDisplayName());
 
 		return client.sendSms(getIdentifierHeaderValue(messageEntity.getUser().getName()),
-			messageEntity.getDepartment().getName(),
+			ORIGIN,
 			messageEntity.getMunicipalityId(),
 			smsRequest);
 	}

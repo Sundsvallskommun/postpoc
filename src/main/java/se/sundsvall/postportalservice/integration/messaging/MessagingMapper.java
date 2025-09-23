@@ -1,5 +1,6 @@
 package se.sundsvall.postportalservice.integration.messaging;
 
+import generated.se.sundsvall.messaging.Address;
 import generated.se.sundsvall.messaging.DigitalMailAttachment;
 import generated.se.sundsvall.messaging.DigitalMailParty;
 import generated.se.sundsvall.messaging.DigitalMailRequest;
@@ -8,6 +9,8 @@ import generated.se.sundsvall.messaging.DigitalMailSenderSupportInfo;
 import generated.se.sundsvall.messaging.SmsBatchRequest;
 import generated.se.sundsvall.messaging.SmsRequest;
 import generated.se.sundsvall.messaging.SmsRequestParty;
+import generated.se.sundsvall.messaging.SnailmailAttachment;
+import generated.se.sundsvall.messaging.SnailmailRequest;
 import java.util.List;
 import java.util.UUID;
 import se.sundsvall.postportalservice.integration.db.AttachmentEntity;
@@ -58,6 +61,38 @@ public final class MessagingMapper {
 			.filename(attachmentEntity.getFileName())
 			.content(BlobUtil.convertBlobToBase64String(attachmentEntity.getContent()))
 			.contentType(DigitalMailAttachment.ContentTypeEnum.fromValue(attachmentEntity.getContentType()));
+	}
+
+	public static SnailmailRequest toSnailmailRequest(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
+		return new SnailmailRequest()
+			.address(toAddress(recipientEntity))
+			.attachments(toSnailmailAttachments(messageEntity.getAttachments()))
+			.department(messageEntity.getDepartment().getName());
+	}
+
+	public static List<SnailmailAttachment> toSnailmailAttachments(final List<AttachmentEntity> attachmentEntities) {
+		return attachmentEntities.stream()
+			.map(MessagingMapper::toSnailmailAttachment)
+			.toList();
+	}
+
+	public static SnailmailAttachment toSnailmailAttachment(final AttachmentEntity attachmentEntity) {
+		return new SnailmailAttachment()
+			.filename(attachmentEntity.getFileName())
+			.content(BlobUtil.convertBlobToBase64String(attachmentEntity.getContent()))
+			.contentType(attachmentEntity.getContentType());
+	}
+
+	public static Address toAddress(final RecipientEntity recipientEntity) {
+		return new Address()
+			.address(recipientEntity.getStreetAddress())
+			.apartmentNumber(recipientEntity.getApartmentNumber())
+			.careOf(recipientEntity.getCareOf())
+			.city(recipientEntity.getCity())
+			.country(recipientEntity.getCountry())
+			.firstName(recipientEntity.getFirstName())
+			.lastName(recipientEntity.getLastName())
+			.zipCode(recipientEntity.getZipCode());
 	}
 
 }
