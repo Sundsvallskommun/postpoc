@@ -161,8 +161,7 @@ class MessagingIntegrationTest {
 
 		var result = messagingIntegration.sendSnailMail(messageEntity, recipientEntity);
 
-		assertThat(result).isNotNull();
-		assertThat(result).isEqualTo(messageResult);
+		assertThat(result).isNotNull().isEqualTo(messageResult);
 
 		var request = snailmailRequestCaptor.getValue();
 		assertThat(request.getAttachments()).hasSameSizeAs(messageEntity.getAttachments());
