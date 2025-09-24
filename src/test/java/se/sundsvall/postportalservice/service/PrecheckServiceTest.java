@@ -260,7 +260,7 @@ class PrecheckServiceTest {
 			personId2, "timeout");
 
 		when(precheckMapper.toFailureByPersonId(anyList())).thenReturn(failures);
-		when(precheckMapper.toRecipientsWithoutPartyIds(eq(personIds), eq(failures))).thenReturn(List.of(
+		when(precheckMapper.toRecipientsWithoutPartyIds(personIds, failures)).thenReturn(List.of(
 			new PrecheckRecipient(personId1, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, "not found"),
 			new PrecheckRecipient(personId2, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, "timeout")));
 		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, List.of(personId1, personId2))).thenReturn(List.of(

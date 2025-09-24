@@ -63,13 +63,6 @@ public class MessagingIntegration {
 		return true;
 	}
 
-	public boolean sendSnailMail(final String municipalityId) {
-		// Used to send snail mail.
-		// TODO: When messaging exposes the new snail mail endpoint, implement the mapping and the call to messaging. Also, the
-		// response from messaging should be used to update the status of the message.
-		return true;
-	}
-
 	public List<Mailbox> precheckMailboxes(final String municipalityId, final String organizationNumber, final List<String> partyIds) {
 		return client.precheckMailboxes(municipalityId, organizationNumber, partyIds);
 	}

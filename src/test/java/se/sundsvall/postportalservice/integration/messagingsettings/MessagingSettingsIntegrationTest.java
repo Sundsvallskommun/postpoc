@@ -106,8 +106,7 @@ class MessagingSettingsIntegrationTest {
 
 		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
 
-		assertThat(result).isNotEmpty();
-		assertThat(result.get()).isEqualTo(organizationNumber);
+		assertThat(result).contains(organizationNumber);
 		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 
