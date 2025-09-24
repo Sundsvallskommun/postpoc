@@ -1,7 +1,21 @@
 {
 	"request": {
 		"url": "/api-messaging/2281/snail-mail",
-		"method": "POST"
+		"method": "POST",
+		"headers": {
+			"Authorization": {
+				"equalTo": "Bearer MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
+			},
+			"x-origin": {
+				"equalTo": "PostPortalService"
+			},
+			"X-Sent-By": {
+				"equalTo": "TestUser; type=adAccount"
+			},
+			"Content-Type": {
+				"equalTo": "application/json"
+			}
+		}
 	},
 	"response": {
 		"status": 201,

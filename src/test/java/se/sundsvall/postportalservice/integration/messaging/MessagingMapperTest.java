@@ -73,7 +73,7 @@ class MessagingMapperTest {
 		var recipientEntity = RecipientEntity.create()
 			.withPartyId("00000000-0000-0000-0000-000000000001");
 
-		var result = MessagingMapper.toDigitalMailRequest(messageEntity, recipientEntity);
+		var result = MessagingMapper.toDigitalMailRequest(messageEntity, recipientEntity.getPartyId());
 
 		assertThat(result).isNotNull();
 		assertThat(result.getSender()).isNotNull();

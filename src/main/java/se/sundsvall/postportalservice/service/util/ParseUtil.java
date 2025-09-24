@@ -17,7 +17,7 @@ public final class ParseUtil {
 	public static LetterRequest parseLetterRequest(final String requestString) {
 		try {
 			return OBJECT_MAPPER.readValue(requestString, LetterRequest.class);
-		} catch (JsonProcessingException e) {
+		} catch (JsonProcessingException ignored) {
 			throw Problem.valueOf(BAD_REQUEST, "Couldn't parse letter request");
 		}
 	}
@@ -25,7 +25,7 @@ public final class ParseUtil {
 	public static DigitalRegisteredLetterRequest parseDigitalRegisteredLetterRequest(final String requestString) {
 		try {
 			return OBJECT_MAPPER.readValue(requestString, DigitalRegisteredLetterRequest.class);
-		} catch (JsonProcessingException e) {
+		} catch (JsonProcessingException ignored) {
 			throw Problem.valueOf(BAD_REQUEST, "Couldn't parse digital registered letter request");
 		}
 	}

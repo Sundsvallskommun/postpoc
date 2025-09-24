@@ -6,6 +6,8 @@ import static org.zalando.problem.Status.BAD_GATEWAY;
 import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.LETTER;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.SMS;
+import static se.sundsvall.postportalservice.integration.db.converter.MessageType.SNAIL_MAIL;
+import static se.sundsvall.postportalservice.service.util.SemaphoreUtil.withPermit;
 
 import generated.se.sundsvall.messaging.DeliveryResult;
 import generated.se.sundsvall.messaging.MessageResult;
@@ -13,6 +15,9 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +46,9 @@ import se.sundsvall.postportalservice.service.mapper.EntityMapper;
 public class MessageService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(MessageService.class);
+
+	private final ExecutorService executor = Executors.newFixedThreadPool(64);
+	private final Semaphore permits = new Semaphore(32);
 
 	private final MessagingIntegration messagingIntegration;
 	private final MessagingSettingsIntegration messagingSettingsIntegration;
@@ -125,6 +133,7 @@ public class MessageService {
 
 		var recipients = smsRequest.getRecipients().stream()
 			.map(EntityMapper::toRecipientEntity)
+			.filter(Objects::nonNull)
 			.toList();
 
 		var message = MessageEntity.create()
@@ -143,12 +152,17 @@ public class MessageService {
 	}
 
 	CompletableFuture<Void> processRecipients(final MessageEntity messageEntity) {
-		var futures = messageEntity.getRecipients().stream()
-			.map(recipientEntity -> sendMessageToRecipient(messageEntity, recipientEntity))
+		var futures = Optional.ofNullable(messageEntity.getRecipients()).orElse(emptyList()).stream()
+			.map(recipientEntity -> withPermit(() -> sendMessageToRecipient(messageEntity, recipientEntity), permits, executor))
 			.toArray(CompletableFuture[]::new);
 
 		return CompletableFuture.allOf(futures)
 			.handle((v, throwable) -> {
+				var triggerSnailmailBatch = messageEntity.getRecipients().stream()
+					.anyMatch(recipientEntity -> recipientEntity.getMessageType() == SNAIL_MAIL);
+				if (triggerSnailmailBatch) {
+					messagingIntegration.triggerSnailMailBatchProcessing(messageEntity.getMunicipalityId(), messageEntity.getId());
+				}
 				messageRepository.save(messageEntity);
 				if (throwable != null) {
 					LOG.error(throwable.getMessage(), throwable);
