@@ -6,7 +6,7 @@
 			"Authorization": {
 				"equalTo": "Bearer MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
 			},
-			"origin": {
+			"x-origin": {
 				"equalTo": "PostPortalService"
 			},
 			"X-Sent-By": {

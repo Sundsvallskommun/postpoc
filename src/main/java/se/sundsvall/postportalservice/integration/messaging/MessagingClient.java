@@ -29,28 +29,28 @@ public interface MessagingClient {
 	@PostMapping(path = "/{municipalityId}/digital-mail", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	MessageBatchResult sendDigitalMail(
 		@RequestHeader(Identifier.HEADER_NAME) String identifier,
-		@RequestHeader final String origin,
+		@RequestHeader("x-origin") final String origin,
 		@PathVariable final String municipalityId,
 		@RequestBody final DigitalMailRequest request);
 
 	@PostMapping(path = "/{municipalityId}/sms", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	MessageResult sendSms(
 		@RequestHeader(Identifier.HEADER_NAME) final String identifier,
-		@RequestHeader final String origin,
+		@RequestHeader("x-origin") final String origin,
 		@PathVariable final String municipalityId,
 		@RequestBody final SmsRequest request);
 
 	@PostMapping(path = "/{municipalityId}/sms/batch", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	MessageBatchResult sendSmsBatch(
 		@RequestHeader(Identifier.HEADER_NAME) String identifier,
-		@RequestHeader final String origin,
+		@RequestHeader("x-origin") final String origin,
 		@PathVariable final String municipalityId,
 		@RequestBody final SmsBatchRequest request);
 
 	@PostMapping(path = "/{municipalityId}/snail-mail", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	MessageResult sendSnailMail(
 		@RequestHeader(Identifier.HEADER_NAME) String identifier,
-		@RequestHeader final String origin,
+		@RequestHeader("x-origin") final String origin,
 		@PathVariable final String municipalityId,
 		@RequestBody final SnailmailRequest request,
 		@RequestParam final String batchId);
