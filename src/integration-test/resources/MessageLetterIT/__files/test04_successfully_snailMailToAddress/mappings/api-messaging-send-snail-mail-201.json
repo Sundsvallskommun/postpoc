@@ -1,7 +1,12 @@
 {
 	"request": {
 		"url": "/api-messaging/2281/snail-mail",
-		"method": "POST"
+		"method": "POST",
+		"headers": {
+			"Authorization": {
+				"equalTo": "Bearer MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
+			}
+		}
 	},
 	"response": {
 		"status": 201,

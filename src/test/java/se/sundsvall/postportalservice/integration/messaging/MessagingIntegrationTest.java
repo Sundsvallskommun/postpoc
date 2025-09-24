@@ -39,6 +39,8 @@ import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 @ExtendWith(MockitoExtension.class)
 class MessagingIntegrationTest {
 
+	private static final String HEADER_VALUE = "John Wick; type=adAccount";
+
 	@Mock
 	private MessagingClient messagingClientMock;
 
@@ -85,7 +87,7 @@ class MessagingIntegrationTest {
 
 		var messageBatchResult = new MessageBatchResult();
 
-		when(messagingClientMock.sendDigitalMail(eq("John Wick; type=adAccount"), eq(ORIGIN), eq(MUNICIPALITY_ID), digitalMailRequestArgumentCaptor.capture()))
+		when(messagingClientMock.sendDigitalMail(eq(HEADER_VALUE), eq(ORIGIN), eq(MUNICIPALITY_ID), digitalMailRequestArgumentCaptor.capture()))
 			.thenReturn(messageBatchResult);
 
 		var result = messagingIntegration.sendDigitalMail(messageEntity, recipientEntity);
@@ -100,7 +102,7 @@ class MessagingIntegrationTest {
 		});
 
 		assertThat(result).isNotNull().isEqualTo(messageBatchResult);
-		verify(messagingClientMock).sendDigitalMail("John Wick; type=adAccount", ORIGIN, MUNICIPALITY_ID, digitalMailRequest);
+		verify(messagingClientMock).sendDigitalMail(HEADER_VALUE, ORIGIN, MUNICIPALITY_ID, digitalMailRequest);
 	}
 
 	@Test
@@ -118,7 +120,7 @@ class MessagingIntegrationTest {
 		var messageResult = new MessageResult().messageId(UUID.randomUUID())
 			.deliveries(List.of(new DeliveryResult()
 				.status(MessageStatus.SENT)));
-		when(messagingClientMock.sendSms(eq("John Wick; type=adAccount"), eq(ORIGIN), eq(MUNICIPALITY_ID), smsRequestCaptor.capture()))
+		when(messagingClientMock.sendSms(eq(HEADER_VALUE), eq(ORIGIN), eq(MUNICIPALITY_ID), smsRequestCaptor.capture()))
 			.thenReturn(messageResult);
 
 		var result = messagingIntegration.sendSms(messageEntity, recipientEntity);
@@ -130,7 +132,7 @@ class MessagingIntegrationTest {
 		assertThat(smsRequest.getSender()).isEqualTo(messageEntity.getDisplayName());
 
 		assertThat(result).isEqualTo(messageResult);
-		verify(messagingClientMock).sendSms("John Wick; type=adAccount", ORIGIN, MUNICIPALITY_ID, smsRequest);
+		verify(messagingClientMock).sendSms(HEADER_VALUE, ORIGIN, MUNICIPALITY_ID, smsRequest);
 	}
 
 	@Test
@@ -156,7 +158,7 @@ class MessagingIntegrationTest {
 			.deliveries(List.of(new DeliveryResult()
 				.status(MessageStatus.SENT)));
 
-		when(messagingClientMock.sendSnailMail(eq("John Wick; type=adAccount"), eq(ORIGIN), eq(MUNICIPALITY_ID), snailmailRequestCaptor.capture(), eq(batchId)))
+		when(messagingClientMock.sendSnailMail(eq(HEADER_VALUE), eq(ORIGIN), eq(MUNICIPALITY_ID), snailmailRequestCaptor.capture(), eq(batchId)))
 			.thenReturn(messageResult);
 
 		var result = messagingIntegration.sendSnailMail(messageEntity, recipientEntity);
@@ -177,7 +179,7 @@ class MessagingIntegrationTest {
 			assertThat(address.getZipCode()).isEqualTo(recipientEntity.getZipCode());
 		});
 
-		verify(messagingClientMock).sendSnailMail("John Wick; type=adAccount", ORIGIN, MUNICIPALITY_ID, request, batchId);
+		verify(messagingClientMock).sendSnailMail(HEADER_VALUE, ORIGIN, MUNICIPALITY_ID, request, batchId);
 	}
 
 	@Test

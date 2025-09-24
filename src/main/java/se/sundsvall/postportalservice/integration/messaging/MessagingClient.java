@@ -35,7 +35,7 @@ public interface MessagingClient {
 
 	@PostMapping(path = "/{municipalityId}/sms", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	MessageResult sendSms(
-		@RequestHeader final String identifier,
+		@RequestHeader(Identifier.HEADER_NAME) final String identifier,
 		@RequestHeader final String origin,
 		@PathVariable final String municipalityId,
 		@RequestBody final SmsRequest request);

@@ -133,6 +133,7 @@ public class MessageService {
 
 		var recipients = smsRequest.getRecipients().stream()
 			.map(EntityMapper::toRecipientEntity)
+			.filter(Objects::nonNull)
 			.toList();
 
 		var message = MessageEntity.create()
@@ -151,7 +152,7 @@ public class MessageService {
 	}
 
 	CompletableFuture<Void> processRecipients(final MessageEntity messageEntity) {
-		var futures = messageEntity.getRecipients().stream()
+		var futures = Optional.ofNullable(messageEntity.getRecipients()).orElse(emptyList()).stream()
 			.map(recipientEntity -> withPermit(() -> sendMessageToRecipient(messageEntity, recipientEntity), permits, executor))
 			.toArray(CompletableFuture[]::new);
 

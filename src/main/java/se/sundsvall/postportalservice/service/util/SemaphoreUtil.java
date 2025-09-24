@@ -23,13 +23,9 @@ public final class SemaphoreUtil {
 	 * @param  <T>       The type of the result produced by the task.
 	 * @return           A CompletableFuture representing the result of the task.
 	 */
-	public static <T> CompletableFuture<T> withPermit(
-		final Supplier<CompletableFuture<T>> task,
-		final Semaphore semaphore,
-		final Executor executor) {
-
+	public static <T> CompletableFuture<T> withPermit(final Supplier<CompletableFuture<T>> task, final Semaphore semaphore, final Executor executor) {
 		return CompletableFuture.runAsync(semaphore::acquireUninterruptibly, executor)
-			.thenCompose(v -> task.get())
-			.whenComplete((r, t) -> semaphore.release());
+			.thenCompose(ignored -> task.get())
+			.whenComplete((type, throwable) -> semaphore.release());
 	}
 }

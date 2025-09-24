@@ -22,7 +22,7 @@ public class MessagingIntegration {
 	}
 
 	public MessageBatchResult sendDigitalMail(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
-		var digitalMailRequest = toDigitalMailRequest(messageEntity, recipientEntity);
+		var digitalMailRequest = toDigitalMailRequest(messageEntity, recipientEntity.getPartyId());
 
 		return client.sendDigitalMail(getIdentifierHeaderValue(messageEntity.getUser().getName()),
 			ORIGIN,
