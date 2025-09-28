@@ -22,7 +22,7 @@ public class CitizenIntegration {
 	}
 
 	public List<PersonGuidBatch> getPartyIds(final String municipalityId, final List<String> personIds) {
-		if (personIds.isEmpty()) {
+		if (ofNullable(personIds).orElse(emptyList()).isEmpty()) {
 			return emptyList();
 		}
 
@@ -30,7 +30,7 @@ public class CitizenIntegration {
 	}
 
 	public List<CitizenExtended> getCitizens(final String municipalityId, final List<String> partyIds) {
-		if (partyIds.isEmpty()) {
+		if (ofNullable(partyIds).orElse(emptyList()).isEmpty()) {
 			return emptyList();
 		}
 

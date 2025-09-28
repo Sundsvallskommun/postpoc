@@ -2,6 +2,8 @@ package se.sundsvall.postportalservice.service.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 import static se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod.DELIVERY_NOT_POSSIBLE;
 import static se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod.DIGITAL_MAIL;
 import static se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod.SNAIL_MAIL;
@@ -18,20 +20,23 @@ public final class PrecheckUtil {
 	private PrecheckUtil() {}
 
 	public static List<PersonGuidBatch> filterSuccessfulPersonGuidBatches(List<PersonGuidBatch> batches) {
-		return batches.stream()
+		return ofNullable(batches).orElse(emptyList())
+			.stream()
 			.filter(batch -> TRUE.equals(batch.getSuccess()))
 			.toList();
 	}
 
 	public static List<String> filterNonNull(Map<String, String> pinToParty) {
-		return pinToParty.values()
+		return ofNullable(pinToParty).orElse(Map.of())
+			.values()
 			.stream()
 			.filter(Objects::nonNull)
 			.toList();
 	}
 
 	public static List<String> filterReachableMailboxes(List<Mailbox> mailboxes) {
-		return mailboxes.stream()
+		return ofNullable(mailboxes).orElse(emptyList())
+			.stream()
 			.filter(mailbox -> TRUE.equals(mailbox.getReachable()))
 			.map(Mailbox::getPartyId)
 			.filter(Objects::nonNull)
@@ -39,7 +44,8 @@ public final class PrecheckUtil {
 	}
 
 	public static List<String> filterUnreachableMailboxes(List<Mailbox> mailboxes) {
-		return mailboxes.stream()
+		return ofNullable(mailboxes).orElse(emptyList())
+			.stream()
 			.filter(mailbox -> FALSE.equals(mailbox.getReachable()))
 			.map(Mailbox::getPartyId)
 			.filter(Objects::nonNull)

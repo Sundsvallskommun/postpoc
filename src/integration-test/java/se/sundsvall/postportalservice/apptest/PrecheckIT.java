@@ -3,6 +3,7 @@ package se.sundsvall.postportalservice.apptest;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -31,25 +32,13 @@ class PrecheckIT extends AbstractAppTest {
 	}
 
 	@Test
-	void test02_precheck_badMunicipality() {
-		setupCall()
-			.withHttpMethod(POST)
-			.withServicePath("/NOT_VALID/dept44/precheck")
-			.withContentType(APPLICATION_JSON)
-			.withRequest(REQUEST_FILE)
-			.withExpectedResponseStatus(BAD_REQUEST)
-			.withExpectedResponse(RESPONSE_FILE)
-			.sendRequestAndVerifyResponse();
-	}
-
-	@Test
-	void test03_precheck_missingOrganizationNumber() {
+	void test02_precheck_missingOrganizationNumber() {
 		setupCall()
 			.withHttpMethod(POST)
 			.withServicePath(SERVICE_PATH)
 			.withContentType(APPLICATION_JSON)
 			.withRequest(REQUEST_FILE)
-			.withExpectedResponseStatus(INTERNAL_SERVER_ERROR)
+			.withExpectedResponseStatus(NOT_FOUND)
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}

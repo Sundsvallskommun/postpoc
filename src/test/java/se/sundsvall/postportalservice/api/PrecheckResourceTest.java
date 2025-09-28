@@ -1,5 +1,9 @@
 package se.sundsvall.postportalservice.api;
 
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -50,6 +54,8 @@ class PrecheckResourceTest {
 			.exchange()
 			.expectStatus().isOk()
 			.expectBody().jsonPath("$.recipients.length()").isEqualTo(2);
+
+		verify(precheckService).precheck(eq(MUNICIPALITY_ID), eq(DEPARTMENT_ID), anyList());
 	}
 
 	@Test
@@ -63,5 +69,7 @@ class PrecheckResourceTest {
 			.bodyValue(request)
 			.exchange()
 			.expectStatus().isBadRequest();
+
+		verifyNoInteractions(precheckService);
 	}
 }

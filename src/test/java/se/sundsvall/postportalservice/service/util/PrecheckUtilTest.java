@@ -56,6 +56,14 @@ class PrecheckUtilTest {
 		assertThat(PrecheckUtil.getDeliveryMethod(party, emptyList(), emptyList())).isEqualTo(DELIVERY_NOT_POSSIBLE);
 	}
 
+	@Test
+	void nullInputs() {
+		assertThat(PrecheckUtil.filterSuccessfulPersonGuidBatches(null)).isEmpty();
+		assertThat(PrecheckUtil.filterReachableMailboxes(null)).isEmpty();
+		assertThat(PrecheckUtil.filterUnreachableMailboxes(null)).isEmpty();
+		assertThat(PrecheckUtil.filterNonNull(null)).isEmpty();
+	}
+
 	private PersonGuidBatch createPersonGuidBatch(boolean success) {
 		final var personGuidBatch = new PersonGuidBatch();
 

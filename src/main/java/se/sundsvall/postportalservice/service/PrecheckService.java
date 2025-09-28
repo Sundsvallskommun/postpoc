@@ -1,7 +1,7 @@
 package se.sundsvall.postportalservice.service;
 
 import static java.util.Collections.emptyList;
-import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
+import static org.zalando.problem.Status.NOT_FOUND;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ public class PrecheckService {
 		}
 
 		final var orgNumber = messagingSettingsIntegration.getOrganizationNumber(municipalityId, departmentId)
-			.orElseThrow(() -> Problem.valueOf(INTERNAL_SERVER_ERROR, "Organization number not found."));
+			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Organization number not found."));
 
 		final var mailboxes = messagingIntegration.precheckMailboxes(municipalityId, orgNumber, partyIds);
 		final var reachable = PrecheckUtil.filterReachableMailboxes(mailboxes);

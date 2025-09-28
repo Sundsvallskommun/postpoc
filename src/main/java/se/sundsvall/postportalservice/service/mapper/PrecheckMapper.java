@@ -1,6 +1,7 @@
 package se.sundsvall.postportalservice.service.mapper;
 
 import static java.lang.Boolean.FALSE;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static se.sundsvall.postportalservice.service.PrecheckService.FAILURE_REASON_PARTY_ID_NOT_FOUND;
 import static se.sundsvall.postportalservice.service.PrecheckService.FAILURE_REASON_UNKNOWN_ERROR;
@@ -21,20 +22,23 @@ import se.sundsvall.postportalservice.api.model.PrecheckResponse.PrecheckRecipie
 public final class PrecheckMapper {
 
 	public Map<String, String> toFailureByPersonId(List<PersonGuidBatch> batches) {
-		return batches.stream()
+		return ofNullable(batches)
+			.orElse(emptyList())
+			.stream()
 			.filter(personGuidBatch -> FALSE.equals(personGuidBatch.getSuccess()))
 			.collect(LinkedHashMap::new,
 				(map, personGuidBatch) -> map.put(
 					personGuidBatch.getPersonNumber(),
 					ofNullable(personGuidBatch.getErrorMessage())
-						.map(String::trim)
 						.filter(errorMessage -> !errorMessage.isEmpty())
 						.orElse(FAILURE_REASON_UNKNOWN_ERROR)),
 				Map::putAll);
 	}
 
 	public List<PrecheckRecipient> toRecipientsWithoutPartyIds(List<String> personIds, Map<String, String> failureByPersonId) {
-		return personIds.stream()
+		return ofNullable(personIds)
+			.orElse(emptyList())
+			.stream()
 			.map(personId -> {
 				final var failure = failureByPersonId.get(personId);
 				final var reason = failure != null
@@ -46,7 +50,8 @@ public final class PrecheckMapper {
 	}
 
 	public List<String> toSnailMailEligiblePartyIds(List<CitizenExtended> citizens, Predicate<CitizenExtended> isEligible) {
-		return citizens.stream()
+		return ofNullable(citizens).orElse(emptyList())
+			.stream()
 			.filter(isEligible)
 			.map(CitizenExtended::getPersonId)
 			.filter(Objects::nonNull)
@@ -55,7 +60,8 @@ public final class PrecheckMapper {
 	}
 
 	public Map<String, String> mapPersonIdToPartyId(List<PersonGuidBatch> personGuidBatches) {
-		return personGuidBatches.stream()
+		return ofNullable(personGuidBatches).orElse(emptyList())
+			.stream()
 			.collect(LinkedHashMap::new,
 				(map, personGuidBatch) -> map.put(personGuidBatch.getPersonNumber(), personGuidBatch.getPersonId() == null
 					? null

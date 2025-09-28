@@ -62,9 +62,10 @@ class PrecheckServiceTest {
 
 	@AfterEach
 	void noMoreInteractions() {
-		verifyNoMoreInteractions(citizenIntegrationMock);
-		verifyNoMoreInteractions(messagingSettingsIntegrationMock);
-		verifyNoMoreInteractions(messagingIntegrationMock);
+		verifyNoMoreInteractions(
+			citizenIntegrationMock,
+			messagingSettingsIntegrationMock,
+			messagingIntegrationMock);
 	}
 
 	@Test

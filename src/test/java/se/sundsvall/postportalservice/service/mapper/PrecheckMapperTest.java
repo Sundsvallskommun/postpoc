@@ -76,6 +76,14 @@ class PrecheckMapperTest {
 		assertThat(results).containsExactly("11111111-1111-1111-1111-111111111111");
 	}
 
+	@Test
+	void nullInputs() {
+		assertThat(precheckMapper.toFailureByPersonId(null)).isEmpty();
+		assertThat(precheckMapper.toRecipientsWithoutPartyIds(null, null)).isEmpty();
+		assertThat(precheckMapper.mapPersonIdToPartyId(null)).isEmpty();
+		assertThat(precheckMapper.toSnailMailEligiblePartyIds(null, c -> true)).isEmpty();
+	}
+
 	private PersonGuidBatch createPersonGuidBatch(String personNumber, boolean success, String errorMessage, UUID personId) {
 		final var personGuidBatch = new PersonGuidBatch();
 
