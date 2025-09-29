@@ -46,26 +46,23 @@ class PrecheckServiceTest {
 	private static final String ORGANIZATION_NUMBER = "5555555555";
 
 	@Mock
-	CitizenIntegration citizenIntegrationMock;
+	private CitizenIntegration citizenIntegrationMock;
 
 	@Mock
-	MessagingSettingsIntegration messagingSettingsIntegrationMock;
+	private MessagingSettingsIntegration messagingSettingsIntegrationMock;
 
 	@Mock
-	MessagingIntegration messagingIntegrationMock;
+	private MessagingIntegration messagingIntegrationMock;
 
 	@Mock
-	PrecheckMapper precheckMapper;
+	private PrecheckMapper precheckMapper;
 
 	@InjectMocks
-	PrecheckService precheckService;
+	private PrecheckService precheckService;
 
 	@AfterEach
 	void noMoreInteractions() {
-		verifyNoMoreInteractions(
-			citizenIntegrationMock,
-			messagingSettingsIntegrationMock,
-			messagingIntegrationMock);
+		verifyNoMoreInteractions(citizenIntegrationMock, messagingSettingsIntegrationMock, messagingIntegrationMock, precheckMapper);
 	}
 
 	@Test
@@ -126,6 +123,9 @@ class PrecheckServiceTest {
 			eq(ORGANIZATION_NUMBER),
 			argThat(ids -> ids.size() == partyIds.size() && ids.containsAll(partyIds) && partyIds.containsAll(ids)));
 		verify(citizenIntegrationMock).getCitizens(eq(MUNICIPALITY_ID), anyList());
+		verify(precheckMapper).toFailureByPersonId(anyList());
+		verify(precheckMapper).mapPersonIdToPartyId(anyList());
+		verify(precheckMapper).toSnailMailEligiblePartyIds(anyList(), any());
 	}
 
 	@Test
@@ -280,6 +280,9 @@ class PrecheckServiceTest {
 				tuple(personId2, DeliveryMethod.DELIVERY_NOT_POSSIBLE, null, "timeout"));
 
 		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, List.of(personId1, personId2));
+		verify(precheckMapper).toFailureByPersonId(anyList());
+		verify(precheckMapper).mapPersonIdToPartyId(anyList());
+		verify(precheckMapper).toRecipientsWithoutPartyIds(personIds, failures);
 	}
 
 	private static List<PersonGuidBatch> okBatches(String... personIds) {

@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -11,6 +12,7 @@ import static se.sundsvall.postportalservice.TestDataFactory.INVALID_MUNICIPALIT
 import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
 
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +37,11 @@ class PrecheckResourceTest {
 
 	@Autowired
 	private WebTestClient webTestClient;
+
+	@AfterEach
+	void verifyNoUnexpectedMockInteractions() {
+		verifyNoMoreInteractions(precheckService);
+	}
 
 	@Test
 	void precheck() {

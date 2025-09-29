@@ -2,6 +2,7 @@ package se.sundsvall.postportalservice.integration.digitalregisteredletter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -39,7 +40,7 @@ class DigitalRegisteredLetterIntegrationTest {
 
 	@AfterEach
 	void noMoreInteractions() {
-		verifyNoMoreInteractions(clientMock);
+		verifyNoMoreInteractions(clientMock, digitalRegisteredLetterMapperMock);
 	}
 
 	@Test
@@ -55,6 +56,7 @@ class DigitalRegisteredLetterIntegrationTest {
 
 		assertThat(result).hasSameElementsAs(partyIds);
 		verify(clientMock).checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest);
+		verify(digitalRegisteredLetterMapperMock, times(2)).toEligibilityRequest(partyIds);
 	}
 
 	@Test
@@ -72,6 +74,7 @@ class DigitalRegisteredLetterIntegrationTest {
 
 		assertThat(result).isEmpty();
 		verify(clientMock).checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest);
+		verify(digitalRegisteredLetterMapperMock, times(2)).toEligibilityRequest(partyIds);
 	}
 
 	@Test
@@ -89,6 +92,7 @@ class DigitalRegisteredLetterIntegrationTest {
 
 		assertThat(result).hasSameElementsAs(eligiblePartyIds);
 		verify(clientMock).checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest);
+		verify(digitalRegisteredLetterMapperMock, times(2)).toEligibilityRequest(partyIds);
 	}
 
 	@Test

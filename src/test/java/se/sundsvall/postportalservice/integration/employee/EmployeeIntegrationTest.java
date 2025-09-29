@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import generated.se.sundsvall.employee.PortalPersonData;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,11 @@ class EmployeeIntegrationTest {
 
 	@InjectMocks
 	private EmployeeIntegration employeeIntegration;
+
+	@AfterEach
+	void verifyNoUnexpectedMockInteractions() {
+		verifyNoMoreInteractions(employeeClient);
+	}
 
 	@Test
 	void getPortalPersonData() {

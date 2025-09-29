@@ -1,8 +1,10 @@
 package se.sundsvall.postportalservice.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -16,6 +18,7 @@ import static se.sundsvall.postportalservice.TestDataFactory.createValidDigitalR
 import static se.sundsvall.postportalservice.TestDataFactory.createValidLetterRequest;
 import static se.sundsvall.postportalservice.TestDataFactory.createValidSmsRequest;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -28,7 +31,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import se.sundsvall.postportalservice.Application;
 import se.sundsvall.postportalservice.api.model.Attachments;
-import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.service.MessageService;
 
@@ -43,13 +45,15 @@ class MessageResourceTest {
 	private ArgumentCaptor<LetterRequest> letterRequestCaptor;
 
 	@Captor
-	private ArgumentCaptor<DigitalRegisteredLetterRequest> digitalRegisteredLetterRequestCaptor;
-
-	@Captor
 	private ArgumentCaptor<Attachments> attachmentsArgumentCaptor;
 
 	@Autowired
 	private WebTestClient webTestClient;
+
+	@AfterEach
+	void verifyNoUnexpectedMockInteractions() {
+		verifyNoMoreInteractions(messageServiceMock);
+	}
 
 	@Test
 	void sendLetter_Created() {
@@ -109,6 +113,8 @@ class MessageResourceTest {
 			.body(fromMultipartData(multipartBodyBuilder.build()))
 			.exchange()
 			.expectStatus().isEqualTo(CREATED);
+
+		verify(messageServiceMock).processDigitalRegisteredLetterRequest(any(), any(), any());
 	}
 
 	@Test
@@ -138,6 +144,8 @@ class MessageResourceTest {
 			.bodyValue(request)
 			.exchange()
 			.expectStatus().isEqualTo(CREATED);
+
+		verify(messageServiceMock).processSmsRequest(MUNICIPALITY_ID, request);
 	}
 
 	@Test
