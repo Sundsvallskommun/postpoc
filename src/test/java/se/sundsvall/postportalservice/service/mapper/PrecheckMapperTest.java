@@ -28,7 +28,7 @@ class PrecheckMapperTest {
 		final var result = precheckMapper.toFailureByPersonId(personGuidBatches);
 
 		assertThat(result).containsOnlyKeys("192222222222", "193333333333");
-		assertThat(result.get("192222222222")).isEqualTo("some random error");
+		assertThat(result.get("192222222222")).isEqualTo(FAILURE_REASON_UNKNOWN_ERROR);
 		assertThat(result.get("193333333333")).isEqualTo(FAILURE_REASON_UNKNOWN_ERROR);
 	}
 
