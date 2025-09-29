@@ -1,13 +1,13 @@
 openapi: 3.0.1
 info:
   title: Postportalservice
-  contact: {}
+  contact: { }
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:42905
+  - url: http://localhost:54195
     description: Generated server url
 paths:
   /{municipalityId}/{departmentId}/precheck:
@@ -120,6 +120,11 @@ paths:
       summary: Send a digital registered letter.
       operationId: sendDigitalRegisteredLetter
       parameters:
+        - name: X-Sent-By
+          in: header
+          required: true
+          schema:
+            type: string
         - name: municipalityId
           in: path
           description: Municipality ID
@@ -129,7 +134,7 @@ paths:
           example: 2281
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               required:
                 - attachments
@@ -687,10 +692,6 @@ components:
     Problem:
       type: object
       properties:
-        title:
-          type: string
-        detail:
-          type: string
         instance:
           type: string
           format: uri
@@ -703,6 +704,10 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
+        detail:
+          type: string
+        title:
+          type: string
     StatusType:
       type: object
       properties:
@@ -885,9 +890,19 @@ components:
       description: SMS request model
     DigitalRegisteredLetterRequest:
       required:
+        - body
         - subject
       type: object
       properties:
+        body:
+          minLength: 1
+          type: string
+          description: The body of the letter in HTML format
+          example: <h1>This is the body of the letter</h1>
+        contentType:
+          type: string
+          description: The content type of the body
+          example: text/html
         partyId:
           type: string
           description: The party id of the recipient
@@ -897,7 +912,7 @@ components:
           type: string
           description: The subject of the letter
           example: This is the subject of the letter
-      description: Digital registered letter request as a JSON string
+      description: Digital registered letter request model
     Address:
       required:
         - city
@@ -973,7 +988,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Address"
-      description: Letter request as a JSON string
+      description: Letter request model
     Recipient:
       required:
         - deliveryMethod
@@ -994,4 +1009,4 @@ components:
         address:
           $ref: "#/components/schemas/Address"
       description: Recipient model
-  securitySchemes: {}
+  securitySchemes: { }

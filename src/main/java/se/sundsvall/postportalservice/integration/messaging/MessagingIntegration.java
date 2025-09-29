@@ -4,13 +4,13 @@ import static se.sundsvall.postportalservice.Constants.ORIGIN;
 import static se.sundsvall.postportalservice.integration.messaging.MessagingMapper.toDigitalMailRequest;
 import static se.sundsvall.postportalservice.integration.messaging.MessagingMapper.toSmsRequest;
 import static se.sundsvall.postportalservice.integration.messaging.MessagingMapper.toSnailmailRequest;
+import static se.sundsvall.postportalservice.service.util.IdentifierUtil.getIdentifierHeaderValue;
 
 import generated.se.sundsvall.messaging.Mailbox;
 import generated.se.sundsvall.messaging.MessageBatchResult;
 import generated.se.sundsvall.messaging.MessageResult;
 import java.util.List;
 import org.springframework.stereotype.Component;
-import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 
@@ -65,13 +65,6 @@ public class MessagingIntegration {
 
 	public List<Mailbox> precheckMailboxes(final String municipalityId, final String organizationNumber, final List<String> partyIds) {
 		return client.precheckMailboxes(municipalityId, organizationNumber, partyIds);
-	}
-
-	String getIdentifierHeaderValue(final String userName) {
-		return Identifier.create()
-			.withType(Identifier.Type.AD_ACCOUNT)
-			.withValue(userName)
-			.toHeaderValue();
 	}
 
 }
