@@ -30,6 +30,7 @@ public final class PrecheckMapper {
 				(map, personGuidBatch) -> map.put(
 					personGuidBatch.getPersonNumber(),
 					ofNullable(personGuidBatch.getErrorMessage())
+						.filter(String::isBlank)
 						.filter(errorMessage -> !errorMessage.isEmpty())
 						.orElse(FAILURE_REASON_UNKNOWN_ERROR)),
 				Map::putAll);
