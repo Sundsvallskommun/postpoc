@@ -86,3 +86,9 @@ ALTER TABLE recipient
     ADD CONSTRAINT FK_RECIPIENT_ON_MESSAGE FOREIGN KEY (message_id) REFERENCES message (id);
 
 CREATE INDEX IDX_RECIPIENT_MESSAGE_ID ON recipient (message_id);
+
+CREATE INDEX IDX_MESSAGE_DEPARTMENT_CREATED ON message (department_id, created);
+
+CREATE INDEX IDX_MESSAGE_CREATED ON message (created);
+
+CREATE INDEX IDX_RECIPIENT_MESSAGE_TYPE ON recipient (message_id, type);

@@ -24,6 +24,8 @@ import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 @Table(name = "message", indexes = {
 	@Index(name = "IDX_MESSAGE_DEPARTMENT_ID", columnList = "department_id"),
 	@Index(name = "IDX_MESSAGE_USER_ID", columnList = "user_id"),
+	@Index(name = "IDX_MESSAGE_DEPARTMENT_CREATED", columnList = "department_id, created"),
+	@Index(name = "IDX_MESSAGE_CREATED", columnList = "created")
 })
 public class MessageEntity {
 
