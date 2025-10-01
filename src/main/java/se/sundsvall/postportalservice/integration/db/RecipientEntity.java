@@ -14,7 +14,8 @@ import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 
 @Entity
 @Table(name = "recipient", indexes = {
-	@Index(name = "IDX_RECIPIENT_MESSAGE_ID", columnList = "message_id")
+	@Index(name = "IDX_RECIPIENT_MESSAGE_ID", columnList = "message_id"),
+	@Index(name = "IDX_RECIPIENT_MESSAGE_TYPE", columnList = "type")
 })
 public class RecipientEntity {
 

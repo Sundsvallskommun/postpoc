@@ -1,13 +1,13 @@
 openapi: 3.0.1
 info:
-  title: api-service-messaging-settings
+  title: messaging-settings
   contact: { }
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
   version: "1.3"
 servers:
-  - url: http://localhost:54815
+  - url: https://messaging-settings-af-messaging-settings.apps.ocp101.sundsvall.se
     description: Generated server url
 paths:
   /{municipalityId}/{namespace}/{departmentName}/sender-info:
@@ -560,6 +560,10 @@ components:
           type: string
           description: Name of SMS sender
           example: Sundsvall
+        folderName:
+          type: string
+          description: Folder name
+          example: Foo
       description: SenderInfo response
     CallbackEmailResponse:
       type: object

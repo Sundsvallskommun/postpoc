@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:54195
+  - url: http://localhost:60027
     description: Generated server url
 paths:
   /{municipalityId}/{departmentId}/precheck:
@@ -230,93 +230,6 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-  /{municipalityId}/statistics/users:
-    get:
-      tags:
-        - Statistics Resources
-      summary: Get general statistics for each user within the municipality
-      operationId: getStatisticsByUser
-      parameters:
-        - name: municipalityId
-          in: path
-          description: Municipality ID
-          required: true
-          schema:
-            type: string
-          example: 2281
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          content:
-            application/problem+json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "502":
-          description: Bad Gateway
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-  /{municipalityId}/statistics/users/{userId}:
-    get:
-      tags:
-        - Statistics Resources
-      summary: Get statistics for a specific user within the municipality
-      operationId: getUserStatistics
-      parameters:
-        - name: municipalityId
-          in: path
-          description: Municipality ID
-          required: true
-          schema:
-            type: string
-          example: 2281
-        - name: userId
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: string
-          example: joe12doe
-      responses:
-        "200":
-          description: OK
-        "404":
-          description: Not Found
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "400":
-          description: Bad Request
-          content:
-            application/problem+json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "502":
-          description: Bad Gateway
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
   /{municipalityId}/statistics/departments:
     get:
       tags:
@@ -331,59 +244,27 @@ paths:
           schema:
             type: string
           example: 2281
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          content:
-            application/problem+json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "502":
-          description: Bad Gateway
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-  /{municipalityId}/statistics/departments/{departmentId}:
-    get:
-      tags:
-        - Statistics Resources
-      summary: Get statistics for a specific department within the municipality
-      operationId: getDepartmentStatistics
-      parameters:
-        - name: municipalityId
-          in: path
-          description: Municipality ID
+        - name: year
+          in: query
+          description: Filter statistics by year
           required: true
           schema:
             type: string
-          example: 2281
-        - name: departmentId
-          in: path
-          description: Department ID
+        - name: month
+          in: query
+          description: Filter statistics by month
           required: true
           schema:
             type: string
-          example: 1337
       responses:
         "200":
           description: OK
-        "404":
-          description: Not Found
           content:
-            application/problem+json:
+            '*/*':
               schema:
-                $ref: "#/components/schemas/Problem"
+                type: array
+                items:
+                  $ref: "#/components/schemas/Statistics"
         "400":
           description: Bad Request
           content:
@@ -704,18 +585,18 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
     StatusType:
       type: object
       properties:
+        reasonPhrase:
+          type: string
         statusCode:
           type: integer
           format: int32
-        reasonPhrase:
-          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -1009,4 +890,36 @@ components:
         address:
           $ref: "#/components/schemas/Address"
       description: Recipient model
+    Statistics:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity id
+          example: f40e6975-a82a-4167-8622-4b0e71ab8d92
+        name:
+          type: string
+          description: Entity name
+          example: Test Department
+        snailMail:
+          type: integer
+          description: Number of snail mail sent
+          format: int64
+          example: 50
+        digitalMail:
+          type: integer
+          description: Number of digital mail sent
+          format: int64
+          example: 30
+        sms:
+          type: integer
+          description: Number of text messages
+          format: int64
+          example: 20
+        digitalRegisteredLetter:
+          type: integer
+          description: Number of registered letters sent
+          format: int64
+          example: 5
+      description: Statistics model
   securitySchemes: { }

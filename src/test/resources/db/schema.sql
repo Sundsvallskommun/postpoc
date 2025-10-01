@@ -72,8 +72,17 @@
     create index IDX_MESSAGE_USER_ID 
        on message (user_id);
 
+    create index IDX_MESSAGE_DEPARTMENT_CREATED 
+       on message (department_id, created);
+
+    create index IDX_MESSAGE_CREATED 
+       on message (created);
+
     create index IDX_RECIPIENT_MESSAGE_ID 
        on recipient (message_id);
+
+    create index IDX_RECIPIENT_MESSAGE_TYPE 
+       on recipient (type);
 
     alter table if exists attachment 
        add constraint FK_ATTACHMENT_MESSAGE 

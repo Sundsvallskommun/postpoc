@@ -1,6 +1,7 @@
 package se.sundsvall.postportalservice.api;
 
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
+import static org.springframework.http.ResponseEntity.ok;
 
 import generated.se.sundsvall.messaging.ConstraintViolationProblem;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,15 +10,18 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.zalando.problem.Problem;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
+import se.sundsvall.postportalservice.api.model.Statistics;
+import se.sundsvall.postportalservice.service.StatisticsService;
 
 @Validated
 @RestController
@@ -30,50 +34,23 @@ import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 @ApiResponse(responseCode = "502", description = "Bad Gateway", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
 class StatisticsResource {
 
-	StatisticsResource() {}
+	private final StatisticsService statisticsService;
+
+	StatisticsResource(final StatisticsService statisticsService) {
+		this.statisticsService = statisticsService;
+	}
 
 	@Operation(summary = "Get general statistics for each department within the municipality", responses = {
 		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true)
 	})
 	@GetMapping("/departments")
-	ResponseEntity<Void> getStatisticsByDepartment(
-		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId) {
-
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-	}
-
-	@Operation(summary = "Get statistics for a specific department within the municipality", responses = {
-		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true),
-		@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	})
-	@GetMapping("/departments/{departmentId}")
-	ResponseEntity<Void> getDepartmentStatistics(
+	ResponseEntity<List<Statistics>> getStatisticsByDepartment(
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
-		@Parameter(name = "departmentId", description = "Department ID", example = "1337") @PathVariable final String departmentId) {
+		@Parameter(name = "year", description = "Filter statistics by year") @RequestParam final String year,
+		@Parameter(name = "month", description = "Filter statistics by month") @RequestParam final String month) {
 
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-	}
-
-	@Operation(summary = "Get general statistics for each user within the municipality", responses = {
-		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true)
-	})
-	@GetMapping("/users")
-	ResponseEntity<Void> getStatisticsByUser(
-		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId) {
-
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-	}
-
-	@Operation(summary = "Get statistics for a specific user within the municipality", responses = {
-		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true),
-		@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
-	})
-	@GetMapping("/users/{userId}")
-	ResponseEntity<Void> getUserStatistics(
-		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
-		@Parameter(name = "userId", description = "User ID", example = "joe12doe") @PathVariable final String userId) {
-
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+		var statistics = statisticsService.getDepartmentStatistics(year, month);
+		return ok(statistics);
 	}
 
 }
