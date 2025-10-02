@@ -2,6 +2,7 @@ package se.sundsvall.postportalservice.service.mapper;
 
 import static java.util.Collections.emptyList;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,9 +26,9 @@ public class HistoryMapper {
 	public Message toMessage(final MessageEntity messageEntity) {
 		return Optional.ofNullable(messageEntity).map(present -> Message.create()
 			.withMessageId(messageEntity.getId())
-			.withType(messageEntity.getMessageType().toString())
+			.withType(Optional.ofNullable(messageEntity.getMessageType()).map(Objects::toString).orElse(null))
 			.withSubject(messageEntity.getSubject())
-			.withSentAt(messageEntity.getCreated().toLocalDateTime()))
+			.withSentAt(Optional.ofNullable(messageEntity.getCreated()).map(OffsetDateTime::toLocalDateTime).orElse(null)))
 			.orElse(null);
 	}
 
