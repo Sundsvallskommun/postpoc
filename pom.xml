@@ -43,6 +43,11 @@
 			<groupId>se.sundsvall.dept44</groupId>
 			<artifactId>dept44-common-validators</artifactId>
 		</dependency>
+		<!-- Pagination model classes -->
+		<dependency>
+			<groupId>se.sundsvall.dept44</groupId>
+			<artifactId>dept44-models</artifactId>
+		</dependency>
 		<!-- Database -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
