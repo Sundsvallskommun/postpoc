@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import java.util.Objects;
 import se.sundsvall.dept44.models.api.paging.PagingMetaData;
 
 @Schema(description = "Messages model")
@@ -46,5 +47,26 @@ public class Messages {
 
 	public void setMessages(List<Message> messages) {
 		this.messages = messages;
+	}
+
+	@Override
+	public String toString() {
+		return "Messages{" +
+			"metaData=" + metaData +
+			", messages=" + messages +
+			'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Messages messages1 = (Messages) o;
+		return Objects.equals(metaData, messages1.metaData) && Objects.equals(messages, messages1.messages);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(metaData, messages);
 	}
 }

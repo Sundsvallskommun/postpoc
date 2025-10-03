@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Schema(description = "Message details model")
 public class MessageDetails {
@@ -76,6 +77,29 @@ public class MessageDetails {
 		this.recipients = recipients;
 	}
 
+	@Override
+	public String toString() {
+		return "MessageDetails{" +
+			"subject='" + subject + '\'' +
+			", sentAt=" + sentAt +
+			", attachments=" + attachments +
+			", recipients=" + recipients +
+			'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass())
+			return false;
+		MessageDetails that = (MessageDetails) o;
+		return Objects.equals(subject, that.subject) && Objects.equals(sentAt, that.sentAt) && Objects.equals(attachments, that.attachments) && Objects.equals(recipients, that.recipients);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(subject, sentAt, attachments, recipients);
+	}
+
 	public static class Attachment {
 
 		@Schema(description = "Attachment ID", accessMode = Schema.AccessMode.READ_ONLY, example = "123e4567-e89b-12d3-a456-426614174000")
@@ -128,6 +152,28 @@ public class MessageDetails {
 
 		public void setContentType(String contentType) {
 			this.contentType = contentType;
+		}
+
+		@Override
+		public String toString() {
+			return "Attachment{" +
+				"attachmentId='" + attachmentId + '\'' +
+				", fileName='" + fileName + '\'' +
+				", contentType='" + contentType + '\'' +
+				'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || getClass() != o.getClass())
+				return false;
+			Attachment that = (Attachment) o;
+			return Objects.equals(attachmentId, that.attachmentId) && Objects.equals(fileName, that.fileName) && Objects.equals(contentType, that.contentType);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(attachmentId, fileName, contentType);
 		}
 	}
 
@@ -247,6 +293,33 @@ public class MessageDetails {
 
 		public void setMessageType(String messageType) {
 			this.messageType = messageType;
+		}
+
+		@Override
+		public String toString() {
+			return "Recipient{" +
+				"name='" + name + '\'' +
+				", partyId='" + partyId + '\'' +
+				", mobileNumber='" + mobileNumber + '\'' +
+				", streetAddress='" + streetAddress + '\'' +
+				", zipCode='" + zipCode + '\'' +
+				", city='" + city + '\'' +
+				", messageType='" + messageType + '\'' +
+				'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || getClass() != o.getClass())
+				return false;
+			Recipient recipient = (Recipient) o;
+			return Objects.equals(name, recipient.name) && Objects.equals(partyId, recipient.partyId) && Objects.equals(mobileNumber, recipient.mobileNumber) && Objects.equals(streetAddress, recipient.streetAddress)
+				&& Objects.equals(zipCode, recipient.zipCode) && Objects.equals(city, recipient.city) && Objects.equals(messageType, recipient.messageType);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(name, partyId, mobileNumber, streetAddress, zipCode, city, messageType);
 		}
 	}
 

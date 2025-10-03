@@ -2,6 +2,7 @@ package se.sundsvall.postportalservice.api.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Schema(description = "Message model")
 public class Message {
@@ -72,5 +73,28 @@ public class Message {
 
 	public void setSentAt(final LocalDateTime sentAt) {
 		this.sentAt = sentAt;
+	}
+
+	@Override
+	public String toString() {
+		return "Message{" +
+			"messageId='" + messageId + '\'' +
+			", subject='" + subject + '\'' +
+			", type='" + type + '\'' +
+			", sentAt=" + sentAt +
+			'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Message message = (Message) o;
+		return Objects.equals(messageId, message.messageId) && Objects.equals(subject, message.subject) && Objects.equals(type, message.type) && Objects.equals(sentAt, message.sentAt);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(messageId, subject, type, sentAt);
 	}
 }

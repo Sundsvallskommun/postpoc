@@ -1,16 +1,26 @@
 package se.sundsvall.postportalservice.api.model;
 
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
+import static com.google.code.beanmatchers.BeanMatchers.registerValueGenerator;
+import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.allOf;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class MessageDetailsTest {
 
 	// MessageDetails attributes
 	private static final String SUBJECT = "subject";
-	private static final LocalDateTime SENT_AT = LocalDateTime.now();
+	private static final LocalDateTime SENT_AT = now();
 	private static final List<MessageDetails.Attachment> ATTACHMENTS = List.of(new MessageDetails.Attachment());
 	private static final List<MessageDetails.Recipient> RECIPIENTS = List.of(new MessageDetails.Recipient());
 
@@ -27,6 +37,41 @@ class MessageDetailsTest {
 	private static final String ZIP_CODE = "zipCode";
 	private static final String CITY = "city";
 	private static final String MESSAGE_TYPE = "messageType";
+
+	@BeforeAll
+	static void setup() {
+		registerValueGenerator(() -> now().plusDays(new Random().nextInt()), LocalDateTime.class);
+	}
+
+	@Test
+	void testMessageDetails() {
+		org.hamcrest.MatcherAssert.assertThat(MessageDetails.class, allOf(
+			hasValidBeanConstructor(),
+			hasValidGettersAndSetters(),
+			hasValidBeanHashCode(),
+			hasValidBeanEquals(),
+			hasValidBeanToString()));
+	}
+
+	@Test
+	void testMessageDetailsAttachment() {
+		org.hamcrest.MatcherAssert.assertThat(MessageDetails.Attachment.class, allOf(
+			hasValidBeanConstructor(),
+			hasValidGettersAndSetters(),
+			hasValidBeanHashCode(),
+			hasValidBeanEquals(),
+			hasValidBeanToString()));
+	}
+
+	@Test
+	void testMessageDetailsRecipient() {
+		org.hamcrest.MatcherAssert.assertThat(MessageDetails.Recipient.class, allOf(
+			hasValidBeanConstructor(),
+			hasValidGettersAndSetters(),
+			hasValidBeanHashCode(),
+			hasValidBeanEquals(),
+			hasValidBeanToString()));
+	}
 
 	@Test
 	void MessageDetails_getterAndSetterTest() {
