@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:60027
+  - url: http://localhost:65510
     description: Generated server url
 paths:
   /{municipalityId}/{departmentId}/precheck:
@@ -306,9 +306,18 @@ paths:
           schema:
             type: string
           example: joe01doe
+        - name: pageable
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Pageable"
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Messages"
         "404":
           description: Not Found
           content:
@@ -339,8 +348,8 @@ paths:
     get:
       tags:
         - History Resources
-      summary: Get messages sent by user
-      operationId: getUserMessage
+      summary: Get messages details
+      operationId: getMessageDetails
       parameters:
         - name: municipalityId
           in: path
@@ -366,56 +375,10 @@ paths:
       responses:
         "200":
           description: OK
-        "404":
-          description: Not Found
           content:
-            application/problem+json:
+            application/json:
               schema:
-                $ref: "#/components/schemas/Problem"
-        "400":
-          description: Bad Request
-          content:
-            application/problem+json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "502":
-          description: Bad Gateway
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-  /{municipalityId}/history/messages/{messageId}:
-    get:
-      tags:
-        - History Resources
-      summary: Get message by ID
-      operationId: getMessageById
-      parameters:
-        - name: municipalityId
-          in: path
-          description: Municipality ID
-          required: true
-          schema:
-            type: string
-          example: 2281
-        - name: messageId
-          in: path
-          description: Message ID
-          required: true
-          schema:
-            type: string
-          example: 123456
-      responses:
-        "200":
-          description: OK
+                $ref: "#/components/schemas/MessageDetails"
         "404":
           description: Not Found
           content:
@@ -592,11 +555,11 @@ components:
     StatusType:
       type: object
       properties:
-        reasonPhrase:
-          type: string
         statusCode:
           type: integer
           format: int32
+        reasonPhrase:
+          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -922,4 +885,135 @@ components:
           format: int64
           example: 5
       description: Statistics model
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    Message:
+      type: object
+      properties:
+        messageId:
+          type: string
+          description: Message ID
+          readOnly: true
+          example: "123456"
+        subject:
+          type: string
+          description: The subject
+          readOnly: true
+          example: Viktig information
+        type:
+          type: string
+          description: Type of message
+          readOnly: true
+          example: SMS|LETTER|DIGITAL_REGISTERED_LETTER
+        sentAt:
+          type: string
+          description: When the message was sent
+          format: date-time
+          readOnly: true
+      description: Message model
+      readOnly: true
+    Messages:
+      type: object
+      properties:
+        messages:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Message"
+        _meta:
+          $ref: "#/components/schemas/PagingMetaData"
+      description: Messages model
+    PagingMetaData:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page
+          format: int32
+          readOnly: true
+          example: 5
+        limit:
+          type: integer
+          description: Displayed objects per page
+          format: int32
+          readOnly: true
+          example: 20
+        count:
+          type: integer
+          description: Displayed objects on current page
+          format: int32
+          readOnly: true
+          example: 13
+        totalRecords:
+          type: integer
+          description: Total amount of hits based on provided search parameters
+          format: int64
+          readOnly: true
+          example: 98
+        totalPages:
+          type: integer
+          description: Total amount of pages based on provided search parameters
+          format: int32
+          readOnly: true
+          example: 23
+      description: PagingMetaData model
+      readOnly: true
+    Attachment:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+          description: Attachment ID
+          readOnly: true
+          example: 123e4567-e89b-12d3-a456-426614174000
+        fileName:
+          type: string
+          description: File name of the attachment
+          readOnly: true
+          example: document.pdf
+        contentType:
+          type: string
+          description: MIME type of the attachment
+          readOnly: true
+          example: application/pdf
+      description: List of attachments
+      readOnly: true
+    MessageDetails:
+      type: object
+      properties:
+        subject:
+          type: string
+          description: Message subject
+          readOnly: true
+          example: This is a subject
+        sentAt:
+          type: string
+          description: When the message was sent
+          format: date-time
+          readOnly: true
+        attachments:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Attachment"
+        recipients:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Recipient"
+      description: Message details model
   securitySchemes: { }
+

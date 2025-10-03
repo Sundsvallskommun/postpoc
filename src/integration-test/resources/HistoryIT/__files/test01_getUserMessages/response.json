@@ -1,0 +1,34 @@
+{
+	"messages": [
+		{
+			"messageId": "message1",
+			"subject": "This is the subject",
+			"type": "LETTER",
+			"sentAt": "2025-09-05T10:00:00"
+		},
+		{
+			"messageId": "message101",
+			"type": "LETTER",
+			"sentAt": "2025-08-05T10:00:00"
+		},
+		{
+			"messageId": "message2",
+			"subject": "This is the subject",
+			"type": "LETTER",
+			"sentAt": "2025-09-06T11:00:00"
+		},
+		{
+			"messageId": "message5",
+			"subject": "This is the subject",
+			"type": "LETTER",
+			"sentAt": "2025-09-09T14:00:00"
+		}
+	],
+	"_meta": {
+		"page": 1,
+		"limit": 20,
+		"count": 4,
+		"totalRecords": 4,
+		"totalPages": 1
+	}
+}
