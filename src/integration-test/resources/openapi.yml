@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:65510
+  - url: http://localhost:57399
     description: Generated server url
 paths:
   /{municipalityId}/{departmentId}/precheck:
@@ -409,69 +409,28 @@ paths:
     get:
       tags:
         - Attachment Resources
-      summary: Stream attachment by attachmentId
-      operationId: streamAttachment
+      summary: Downloads letter attachment content
+      description: Retrieves attachment content by id
+      operationId: downloadAttachment
       parameters:
         - name: municipalityId
           in: path
-          description: Municipality ID
           required: true
           schema:
             type: string
-          example: 2281
         - name: attachmentId
           in: path
-          description: Attachment ID
           required: true
           schema:
             type: string
-          example: 123456
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/problem+json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/Problem"
-                  - $ref: "#/components/schemas/ConstraintViolationProblem"
-        "500":
-          description: Internal Server Error
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        "502":
-          description: Bad Gateway
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-  /{municipalityId}/attachments/messages/{messageId}:
-    get:
-      tags:
-        - Attachment Resources
-      summary: "Get the name and id of attachments by messageId, the actual attachment\
-        \ can be streamed using the attachmentId"
-      operationId: getAttachmentsByMessageId
-      parameters:
-        - name: municipalityId
-          in: path
-          description: Municipality ID
-          required: true
-          schema:
-            type: string
-          example: 2281
-        - name: messageId
-          in: path
-          description: Message ID
-          required: true
-          schema:
-            type: string
-          example: 123456
       responses:
         "200":
-          description: OK
+          description: Successful Operation - OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
         "404":
           description: Not Found
           content:
@@ -536,6 +495,12 @@ components:
     Problem:
       type: object
       properties:
+        status:
+          $ref: "#/components/schemas/StatusType"
+        title:
+          type: string
+        detail:
+          type: string
         instance:
           type: string
           format: uri
@@ -546,20 +511,14 @@ components:
           type: object
           additionalProperties:
             type: object
-        status:
-          $ref: "#/components/schemas/StatusType"
-        title:
-          type: string
-        detail:
-          type: string
     StatusType:
       type: object
       properties:
+        reasonPhrase:
+          type: string
         statusCode:
           type: integer
           format: int32
-        reasonPhrase:
-          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -1016,4 +975,3 @@ components:
             $ref: "#/components/schemas/Recipient"
       description: Message details model
   securitySchemes: { }
-
