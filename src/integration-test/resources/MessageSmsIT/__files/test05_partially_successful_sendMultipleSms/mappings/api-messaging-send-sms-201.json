@@ -5,7 +5,7 @@
 		"urlPath": "/api-messaging/2281/sms",
 		"bodyPatterns": [
 			{
-				"matchesJsonPath": "$[?(@.mobileNumber == '+46701234561')]"
+				"matchesJsonPath": "$[?(@.mobileNumber == '+46701740605')]"
 			}
 		],
 		"headers": {

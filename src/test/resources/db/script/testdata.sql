@@ -61,7 +61,7 @@ INSERT INTO recipient (id, message_id, type, status, created, phone_number, addr
 VALUES ('recipient12', 'message5', 'SNAIL_MAIL', 'SENT', '2025-09-09 14:01:00', null, 'Testgatan 1', '12345',
         'Testsvall'),
        ('recipient13', 'message5', 'DIGITAL_MAIL', 'FAILED', '2025-09-09 14:01:00', null, null, null, null),
-       ('recipient14', 'message5', 'SMS', 'SENT', '2025-09-09 14:02:00', '+46123456789', null, null, null);
+       ('recipient14', 'message5', 'SMS', 'SENT', '2025-09-09 14:02:00', '+46701740605', null, null, null);
 
 
 
@@ -82,53 +82,53 @@ INSERT INTO recipient (id, first_name, last_name, message_id, type, status, crea
                        city)
 VALUES
 -- 25 snail mail
-('recipient101', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient101', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 12', '12345', 'Testsvall'),
-('recipient102', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient102', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 13', '12345', 'Testsvall'),
-('recipient103', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient103', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 14', '12345', 'Testsvall'),
-('recipient104', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient104', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 15', '12345', 'Testsvall'),
-('recipient105', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'FAILED', '2025-08-05 10:01:00', '+46123456789',
+('recipient105', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'FAILED', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 16', '12345', 'Testsvall'),
-('recipient106', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient106', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 17', '12345', 'Testsvall'),
-('recipient107', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient107', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 18', '12345', 'Testsvall'),
 ('recipient108', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', null, 'Testgatan 121',
  '12345', 'Testsvall'),
-('recipient109', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient109', 'John', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 19', '12345', 'Testsvall'),
-('recipient110', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient110', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 122', '12345', 'Testsvall'),
-('recipient111', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient111', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 123', '12345', 'Testsvall'),
-('recipient112', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient112', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 124', '12345', 'Testsvall'),
 ('recipient113', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', null, 'Testgatan 12',
  '12345', 'Testsvall'),
-('recipient114', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient114', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 125', '12345', 'Testsvall'),
-('recipient115', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient115', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 126', '12345', 'Testsvall'),
-('recipient116', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient116', 'Alex', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 127', '12345', 'Testsvall'),
-('recipient117', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient117', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 128', '12345', 'Testsvall'),
 ('recipient118', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', null, 'Testgatan 129',
  '12345', 'Testsvall'),
-('recipient119', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient119', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 120', '12345', 'Testsvall'),
-('recipient120', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient120', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 112', '12345', 'Testsvall'),
-('recipient121', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient121', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 1122', '12345', 'Testsvall'),
-('recipient122', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient122', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 122', '12345', 'Testsvall'),
-('recipient123', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient123', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 132', '12345', 'Testsvall'),
-('recipient124', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46123456789',
+('recipient124', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', '+46701740605',
  'Testgatan 131', '12345', 'Testsvall'),
 ('recipient125', 'Jane', 'Doe', 'message101', 'SNAIL_MAIL', 'SENT', '2025-08-05 10:01:00', null, 'Testgatan 182',
  '12345', 'Testsvall'),
@@ -141,12 +141,12 @@ VALUES
 ('recipient130', 'John', 'Wick', 'message101', 'DIGITAL_MAIL', 'SENT', '2025-08-05 10:02:00', null, null, null, null),
 
 -- 5 sms
-('recipient131', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46123456789', null, null, null),
-('recipient132', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46123456789', null, null, null),
-('recipient133', 'John', 'Wick', 'message101', 'SMS', 'FAILED', '2025-08-05 10:03:00', '+46123456789', null, null,
+('recipient131', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46701740605', null, null, null),
+('recipient132', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46701740605', null, null, null),
+('recipient133', 'John', 'Wick', 'message101', 'SMS', 'FAILED', '2025-08-05 10:03:00', '+46701740605', null, null,
  null),
-('recipient134', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46123456789', null, null, null),
-('recipient135', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46123456789', null, null, null);
+('recipient134', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46701740605', null, null, null),
+('recipient135', 'John', 'Wick', 'message101', 'SMS', 'SENT', '2025-08-05 10:03:00', '+46701740605', null, null, null);
 
 
 
@@ -191,8 +191,8 @@ VALUES
 ('recipient230', 'message102', 'DIGITAL_REGISTERED_LETTER', 'SENT', '2025-08-06 12:02:00', null),
 
 -- 5 sms
-('recipient231', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46123456789'),
-('recipient232', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46123456789'),
-('recipient233', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46123456789'),
-('recipient234', 'message102', 'SMS', 'FAILED', '2025-08-06 12:03:00', '+46123456789'),
-('recipient235', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46123456789');
+('recipient231', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46701740605'),
+('recipient232', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46701740605'),
+('recipient233', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46701740605'),
+('recipient234', 'message102', 'SMS', 'FAILED', '2025-08-06 12:03:00', '+46701740605'),
+('recipient235', 'message102', 'SMS', 'SENT', '2025-08-06 12:03:00', '+46701740605');

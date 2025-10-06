@@ -19,6 +19,7 @@ public final class TestDataFactory {
 
 	public static final String MUNICIPALITY_ID = "2281";
 	public static final String INVALID_MUNICIPALITY_ID = "NOT_A_VALID_MUNICIPALITY_ID";
+	public static final String MOBILE_NUMBER = "+46701740605";
 
 	private TestDataFactory() {}
 
@@ -43,7 +44,7 @@ public final class TestDataFactory {
 
 	public static SmsRecipient createValidSmsRecipient() {
 		return SmsRecipient.create()
-			.withPhoneNumber("+46123456789")
+			.withPhoneNumber(MOBILE_NUMBER)
 			.withPartyId("6d0773d6-3e7f-4552-81bc-f0007af95adf");
 	}
 

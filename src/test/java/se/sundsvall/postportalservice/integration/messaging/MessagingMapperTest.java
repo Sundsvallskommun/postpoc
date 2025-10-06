@@ -2,6 +2,7 @@ package se.sundsvall.postportalservice.integration.messaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static se.sundsvall.postportalservice.TestDataFactory.MOBILE_NUMBER;
 
 import generated.se.sundsvall.messaging.DigitalMailAttachment;
 import generated.se.sundsvall.messaging.DigitalMailRequest;
@@ -32,7 +33,7 @@ class MessagingMapperTest {
 			.withBody("Text")
 			.withDepartment(departmentEntity);
 		var recipientEntity = RecipientEntity.create()
-			.withPhoneNumber("123456789")
+			.withPhoneNumber(MOBILE_NUMBER)
 			.withPartyId("PartyId");
 
 		var result = MessagingMapper.toSmsRequest(messageEntity, recipientEntity);
@@ -56,7 +57,7 @@ class MessagingMapperTest {
 			.withSupportText("supportText")
 			.withContactInformationEmail("contactEmail")
 			.withContactInformationUrl("contactUrl")
-			.withContactInformationPhoneNumber("contactPhoneNumber");
+			.withContactInformationPhoneNumber(MOBILE_NUMBER);
 
 		var attachmentEntity = AttachmentEntity.create()
 			.withContent(blob)
@@ -80,7 +81,7 @@ class MessagingMapperTest {
 		assertThat(result.getSender().getSupportInfo()).satisfies(supportInfo -> {
 			assertThat(supportInfo.getText()).isEqualTo("supportText");
 			assertThat(supportInfo.getEmailAddress()).isEqualTo("contactEmail");
-			assertThat(supportInfo.getPhoneNumber()).isEqualTo("contactPhoneNumber");
+			assertThat(supportInfo.getPhoneNumber()).isEqualTo(MOBILE_NUMBER);
 			assertThat(supportInfo.getUrl()).isEqualTo("contactUrl");
 		});
 		assertThat(result.getAttachments()).isNotNull();

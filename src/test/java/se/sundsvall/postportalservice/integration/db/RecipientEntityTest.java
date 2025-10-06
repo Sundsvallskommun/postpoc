@@ -23,7 +23,7 @@ class RecipientEntityTest {
 	private static final String EXTERNAL_ID = "externalId";
 	private static final String PARTY_ID = "partyId";
 	private static final String EMAIL = "email";
-	private static final String PHONE_NUMBER = "phoneNumber";
+	private static final String PHONE_NUMBER = "+46701740605";
 	private static final String FIRST_NAME = "firstName";
 	private static final String LAST_NAME = "lastName";
 	private static final String STREET_ADDRESS = "streetAddress";
