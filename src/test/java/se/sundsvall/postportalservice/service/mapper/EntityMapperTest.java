@@ -2,6 +2,7 @@ package se.sundsvall.postportalservice.service.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static se.sundsvall.postportalservice.Constants.PENDING;
+import static se.sundsvall.postportalservice.TestDataFactory.MOBILE_NUMBER;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,7 @@ class EntityMapperTest {
 	void toRecipientEntity_smsRecipient() {
 		var smsRecipient = new SmsRecipient()
 			.withPartyId("00000000-0000-0000-0000-000000000001")
-			.withPhoneNumber("+46123456789");
+			.withPhoneNumber(MOBILE_NUMBER);
 
 		var result = entityMapper.toRecipientEntity(smsRecipient);
 

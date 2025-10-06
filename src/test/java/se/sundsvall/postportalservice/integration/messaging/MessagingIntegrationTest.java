@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static se.sundsvall.postportalservice.Constants.ORIGIN;
+import static se.sundsvall.postportalservice.TestDataFactory.MOBILE_NUMBER;
 import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
 
 import generated.se.sundsvall.messaging.DeliveryResult;
@@ -108,7 +109,7 @@ class MessagingIntegrationTest {
 	@Test
 	void sendSms() {
 		var recipientEntity = RecipientEntity.create()
-			.withPhoneNumber("123456789");
+			.withPhoneNumber(MOBILE_NUMBER);
 		var messageEntity = MessageEntity.create()
 			.withMunicipalityId(MUNICIPALITY_ID)
 			.withDepartment(DepartmentEntity.create().withName("Jönssonligan").withOrganizationId("123"))
@@ -143,7 +144,7 @@ class MessagingIntegrationTest {
 	@Test
 	void sendSnailMail() {
 		var recipientEntity = RecipientEntity.create()
-			.withPhoneNumber("123456789");
+			.withPhoneNumber(MOBILE_NUMBER);
 		var batchId = "00000000-0000-0000-0000-000000000001";
 		var messageEntity = MessageEntity.create()
 			.withId(batchId)

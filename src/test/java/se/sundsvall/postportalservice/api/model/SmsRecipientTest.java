@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class SmsRecipientTest {
 
 	private final String partyId = "6d0773d6-3e7f-4552-81bc-f0007af95adf";
-	private final String phoneNumber = "+46701234567";
+	private final String phoneNumber = "+4612345678910";
 
 	private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 

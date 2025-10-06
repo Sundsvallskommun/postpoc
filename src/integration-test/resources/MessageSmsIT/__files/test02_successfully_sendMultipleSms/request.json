@@ -3,15 +3,15 @@
 	"recipients": [
 		{
 			"partyId": "6d0773d6-3e7f-4552-81bc-f0007af95adf",
-			"phoneNumber": "+46701234561"
+			"phoneNumber": "+46701740605"
 		},
 		{
 			"partyId": "6d0773d6-3e7f-4552-81bc-f0007af95adf",
-			"phoneNumber": "+46701234562"
+			"phoneNumber": "+46701740606"
 		},
 		{
 			"partyId": "6d0773d6-3e7f-4552-81bc-f0007af95adf",
-			"phoneNumber": "+46701234563"
+			"phoneNumber": "+46701740607"
 		}
 	]
 }
