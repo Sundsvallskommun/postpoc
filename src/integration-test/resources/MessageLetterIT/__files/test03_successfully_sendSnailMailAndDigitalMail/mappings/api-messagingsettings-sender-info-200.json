@@ -1,6 +1,6 @@
 {
 	"request": {
-		"url": "/api-messagingsettings/2281/28/sender-info",
+		"url": "/api-messagingsettings/2281/sender-info?departmentId=28",
 		"method": "GET",
 		"headers": {
 			"Authorization": {
