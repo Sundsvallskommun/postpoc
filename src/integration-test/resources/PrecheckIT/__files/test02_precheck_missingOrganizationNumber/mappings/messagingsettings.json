@@ -1,7 +1,7 @@
 {
 	"request": {
 		"method": "GET",
-		"url": "/api-messagingsettings/2281/dept44/sender-info"
+		"url": "/api-messagingsettings/2281/sender-info?departmentId=dept44"
 	},
 	"response": {
 		"status": 200,

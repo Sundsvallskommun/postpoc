@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import se.sundsvall.postportalservice.integration.messagingsettings.configuration.MessagingSettingsConfiguration;
 
 @CircuitBreaker(name = CLIENT_ID)
@@ -19,8 +20,8 @@ import se.sundsvall.postportalservice.integration.messagingsettings.configuratio
 	dismiss404 = true)
 public interface MessagingSettingsClient {
 
-	@GetMapping(path = "/{municipalityId}/{departmentId}/sender-info", produces = APPLICATION_JSON_VALUE)
+	@GetMapping(path = "/{municipalityId}/sender-info", produces = APPLICATION_JSON_VALUE)
 	Optional<SenderInfoResponse> getSenderInfo(
 		@PathVariable("municipalityId") String municipalityId,
-		@PathVariable("departmentId") String departmentId);
+		@RequestParam("departmentId") String departmentId);
 }
