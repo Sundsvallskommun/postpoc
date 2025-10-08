@@ -21,6 +21,7 @@ class DepartmentEntityTest {
 	private static final String CONTACT_INFORMATION_URL = "contactInformationUrl";
 	private static final String CONTACT_INFORMATION_EMAIL = "contactInformationEmail";
 	private static final String CONTACT_INFORMATION_PHONE_NUMBER = "contactInformationPhoneNumber";
+	private static final String FOLDER_NAME = "folderName";
 
 	@Test
 	void testBean() {
@@ -42,7 +43,8 @@ class DepartmentEntityTest {
 			.withSupportText(SUPPORT_TEXT)
 			.withContactInformationUrl(CONTACT_INFORMATION_URL)
 			.withContactInformationEmail(CONTACT_INFORMATION_EMAIL)
-			.withContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER);
+			.withContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER)
+			.withFolderName(FOLDER_NAME);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
@@ -52,6 +54,7 @@ class DepartmentEntityTest {
 		assertThat(departmentEntity.getContactInformationUrl()).isEqualTo(CONTACT_INFORMATION_URL);
 		assertThat(departmentEntity.getContactInformationEmail()).isEqualTo(CONTACT_INFORMATION_EMAIL);
 		assertThat(departmentEntity.getContactInformationPhoneNumber()).isEqualTo(CONTACT_INFORMATION_PHONE_NUMBER);
+		assertThat(departmentEntity.getFolderName()).isEqualTo(FOLDER_NAME);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 
@@ -66,6 +69,7 @@ class DepartmentEntityTest {
 		departmentEntity.setContactInformationUrl(CONTACT_INFORMATION_URL);
 		departmentEntity.setContactInformationEmail(CONTACT_INFORMATION_EMAIL);
 		departmentEntity.setContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER);
+		departmentEntity.setFolderName(FOLDER_NAME);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
@@ -75,6 +79,7 @@ class DepartmentEntityTest {
 		assertThat(departmentEntity.getContactInformationUrl()).isEqualTo(CONTACT_INFORMATION_URL);
 		assertThat(departmentEntity.getContactInformationEmail()).isEqualTo(CONTACT_INFORMATION_EMAIL);
 		assertThat(departmentEntity.getContactInformationPhoneNumber()).isEqualTo(CONTACT_INFORMATION_PHONE_NUMBER);
+		assertThat(departmentEntity.getFolderName()).isEqualTo(FOLDER_NAME);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 

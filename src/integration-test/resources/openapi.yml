@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:57399
+  - url: http://localhost:50381
     description: Generated server url
 paths:
   /{municipalityId}/{departmentId}/precheck:
@@ -495,12 +495,6 @@ components:
     Problem:
       type: object
       properties:
-        status:
-          $ref: "#/components/schemas/StatusType"
-        title:
-          type: string
-        detail:
-          type: string
         instance:
           type: string
           format: uri
@@ -511,6 +505,12 @@ components:
           type: object
           additionalProperties:
             type: object
+        status:
+          $ref: "#/components/schemas/StatusType"
+        detail:
+          type: string
+        title:
+          type: string
     StatusType:
       type: object
       properties:
@@ -930,7 +930,7 @@ components:
           example: 23
       description: PagingMetaData model
       readOnly: true
-    Attachment:
+    AttachmentDetails:
       type: object
       properties:
         attachmentId:
@@ -948,7 +948,7 @@ components:
           description: MIME type of the attachment
           readOnly: true
           example: application/pdf
-      description: List of attachments
+      description: List of attachment details
       readOnly: true
     MessageDetails:
       type: object
@@ -967,11 +967,57 @@ components:
           type: array
           readOnly: true
           items:
-            $ref: "#/components/schemas/Attachment"
+            $ref: "#/components/schemas/AttachmentDetails"
         recipients:
           type: array
           readOnly: true
           items:
-            $ref: "#/components/schemas/Recipient"
+            $ref: "#/components/schemas/RecipientDetails"
       description: Message details model
+    RecipientDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the recipient
+          readOnly: true
+          example: John Doe
+        partyId:
+          type: string
+          description: The recipients party ID
+          readOnly: true
+          example: "1234567890"
+        mobileNumber:
+          type: string
+          description: Mobile number
+          readOnly: true
+          example: "+46701234567"
+        streetAddress:
+          type: string
+          description: Street address
+          readOnly: true
+          example: Main Street 5
+        zipCode:
+          type: string
+          description: Zip code
+          readOnly: true
+          example: "85751"
+        city:
+          type: string
+          description: City
+          readOnly: true
+          example: Sundsvall
+        messageType:
+          type: string
+          description: Message type
+          readOnly: true
+          example: SNAIL_MAIL|DIGITAL_MAIL|SMS
+        status:
+          type: string
+          description: Status of the message to this recipient
+          readOnly: true
+          example: SENT|NOT_SENT|FAILED
+      description: List of recipient details
+      readOnly: true
   securitySchemes: { }
+

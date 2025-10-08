@@ -41,30 +41,30 @@ public class HistoryMapper {
 			.orElse(null);
 	}
 
-	public List<MessageDetails.Attachment> toAttachmentList(final List<AttachmentEntity> attachments) {
+	public List<MessageDetails.AttachmentDetails> toAttachmentList(final List<AttachmentEntity> attachments) {
 		return Optional.ofNullable(attachments).orElse(emptyList()).stream()
 			.map(this::toAttachment)
 			.filter(Objects::nonNull)
 			.toList();
 	}
 
-	public MessageDetails.Attachment toAttachment(final AttachmentEntity attachmentEntity) {
-		return Optional.ofNullable(attachmentEntity).map(present -> MessageDetails.Attachment.create()
+	public MessageDetails.AttachmentDetails toAttachment(final AttachmentEntity attachmentEntity) {
+		return Optional.ofNullable(attachmentEntity).map(present -> MessageDetails.AttachmentDetails.create()
 			.withFileName(attachmentEntity.getFileName())
 			.withContentType(attachmentEntity.getContentType())
 			.withAttachmentId(attachmentEntity.getId()))
 			.orElse(null);
 	}
 
-	public List<MessageDetails.Recipient> toRecipientList(final List<RecipientEntity> recipientEntities) {
+	public List<MessageDetails.RecipientDetails> toRecipientList(final List<RecipientEntity> recipientEntities) {
 		return Optional.ofNullable(recipientEntities).orElse(emptyList()).stream()
 			.map(this::toRecipient)
 			.filter(Objects::nonNull)
 			.toList();
 	}
 
-	public MessageDetails.Recipient toRecipient(final RecipientEntity recipientEntity) {
-		return Optional.ofNullable(recipientEntity).map(present -> MessageDetails.Recipient.create()
+	public MessageDetails.RecipientDetails toRecipient(final RecipientEntity recipientEntity) {
+		return Optional.ofNullable(recipientEntity).map(present -> MessageDetails.RecipientDetails.create()
 			.withPartyId(recipientEntity.getPartyId())
 			.withCity(recipientEntity.getCity())
 			.withStreetAddress(recipientEntity.getStreetAddress())

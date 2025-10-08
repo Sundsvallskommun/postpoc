@@ -10,14 +10,10 @@
     ) engine=InnoDB;
 
     create table department (
-        contact_information_email VARCHAR(100),
-        contact_information_phone_number VARCHAR(30),
-        contact_information_url VARCHAR(255),
         id VARCHAR(36) not null,
         name VARCHAR(100),
         organization_id VARCHAR(12),
         organization_number VARCHAR(12),
-        support_text VARCHAR(255),
         primary key (id)
     ) engine=InnoDB;
 
