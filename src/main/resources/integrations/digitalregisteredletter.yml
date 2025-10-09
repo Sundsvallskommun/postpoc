@@ -5,9 +5,9 @@ info:
   license:
     name: MIT License
     url: https://opensource.org/licenses/MIT
-  version: "2.1"
+  version: "2.3"
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:62090
     description: Generated server url
 tags:
   - name: Scheduler Resource
@@ -21,9 +21,9 @@ paths:
     post:
       tags:
         - Scheduler Resource
-      summary: Trigger update letter statuses task
-      description: Triggers the task that updates letter statuses
-      operationId: updateLetterStatuses
+      summary: Trigger update letter information task
+      description: Triggers the task that updates letter information
+      operationId: updateLetterInformation
       parameters:
         - name: municipalityId
           in: path
@@ -83,8 +83,8 @@ paths:
           example: joe01doe
         - name: createdEarliest
           in: query
-          description: Optional filter with format YYYY-MM-DD for matching earliest date
-            when letter was sent
+          description: Optional filter with format YYYY-MM-DD for matching earliest
+            date when letter was sent
           required: false
           schema:
             type: string
@@ -99,8 +99,8 @@ paths:
           required: false
           schema:
             type: string
-            description: Optional filter with format YYYY-MM-DD for matching latest date
-              when letter was sent
+            description: Optional filter with format YYYY-MM-DD for matching latest
+              date when letter was sent
             format: date-time
           example: 2025-09-18
         - name: page
@@ -185,6 +185,54 @@ paths:
               style: simple
               schema:
                 type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Letter"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/eligibility/kivra:
+    post:
+      tags:
+        - Eligibility Resource
+      summary: Check if the given partyIds are eligible for receiving digital registered
+        letters with Kivra
+      description: Returns a list of party IDs that are eligible for Kivra based on
+        the provided municipality ID and party IDs
+      operationId: checkKivraEligibility
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EligibilityRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
         "400":
           description: Bad request
           content:
@@ -244,35 +292,89 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-  /{municipalityId}/eligibility/kivra:
+  /{municipalityId}/letters/{letterId}/signinginfo:
     get:
       tags:
-        - Eligibility Resource
-      summary: Check if the given partyIds are eligible for receiving digital registered
-        letters with Kivra
-      description: Returns a list of party IDs that are eligible for Kivra based on
-        the provided municipality ID and party IDs
-      operationId: checkKivraEligibility
+        - Letter Resource
+      summary: Get signing information
+      description: Retrieves signing information connected to letter matching provided
+        id
+      operationId: getSigningInformation
       parameters:
         - name: municipalityId
           in: path
           required: true
           schema:
             type: string
-        - name: request
-          in: query
+        - name: letterId
+          in: path
           required: true
           schema:
-            $ref: "#/components/schemas/EligibilityRequest"
+            type: string
       responses:
         "200":
-          description: Successful operation
+          description: Successful Operation - OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigningInfo"
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/letters/{letterId}/attachments/{attachmentId}:
+    get:
+      tags:
+        - Letter Resource
+      summary: Downloads letter attachment content
+      description: Retrieves attachment content by id
+      operationId: downloadLetterAttachment
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: letterId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful Operation - OK
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  type: string
+                type: string
+                format: binary
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
         "400":
           description: Bad request
           content:
@@ -327,11 +429,11 @@ components:
     StatusType:
       type: object
       properties:
-        reasonPhrase:
-          type: string
         statusCode:
           type: integer
           format: int32
+        reasonPhrase:
+          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -574,6 +676,7 @@ components:
         contactInformationEmail:
           type: string
           description: Email address for contact
+          format: email
           example: support@email.com
       description: Support information for the letter
     Attachment:
@@ -593,13 +696,6 @@ components:
           description: Content type of the attachment
           example: application/pdf
       description: List of attachments for the letter
-    Direction:
-      type: string
-      description: The sort order direction
-      example: ASC
-      enum:
-        - ASC
-        - DESC
     Letter:
       type: object
       properties:
@@ -639,6 +735,21 @@ components:
             $ref: "#/components/schemas/Attachment"
       description: Digital registered letter response
       readOnly: true
+    EligibilityRequest:
+      type: object
+      properties:
+        partyIds:
+          type: array
+          items:
+            type: string
+      description: Eligibility request model
+    Direction:
+      type: string
+      description: The sort order direction
+      example: ASC
+      enum:
+        - ASC
+        - DESC
     Letters:
       type: object
       properties:
@@ -695,11 +806,78 @@ components:
           $ref: "#/components/schemas/Direction"
       description: PagingAndSortingMetaData model
       readOnly: true
-    EligibilityRequest:
+    Device:
       type: object
       properties:
-        partyIds:
-          type: array
-          items:
-            type: string
+        ipAddress:
+          type: string
+          description: Ip address used when the letter was signed
+          readOnly: true
+      description: Information regarding the device used for the signing order
+      readOnly: true
+    SigningInfo:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the signing order
+          readOnly: true
+        signed:
+          type: string
+          description: Timestamp when the letter was signed by receiving party
+          format: date-time
+          readOnly: true
+        contentKey:
+          type: string
+          description: The unique Kivra id for the signing order
+          readOnly: true
+        orderRef:
+          type: string
+          description: Order reference in Kivra for the signing order
+          readOnly: true
+        signature:
+          type: string
+          description: The signature made by the receiving party
+          readOnly: true
+        ocspResponse:
+          type: string
+          description: Online certificate status protocol for the signing order
+          readOnly: true
+        user:
+          $ref: "#/components/schemas/User"
+        device:
+          $ref: "#/components/schemas/Device"
+        stepUp:
+          $ref: "#/components/schemas/StepUp"
+    StepUp:
+      type: object
+      properties:
+        mrtd:
+          type: boolean
+          description: Whether an MRTD check was performed before the order was completed
+          readOnly: true
+      description: Information about possible additional verifications that were part
+        of the signing order
+      readOnly: true
+    User:
+      type: object
+      properties:
+        personalIdentityNumber:
+          type: string
+          description: Personal identity number for the signing party
+          readOnly: true
+        name:
+          type: string
+          description: Full name of the signing party
+          readOnly: true
+        givenName:
+          type: string
+          description: First name of the signing party
+          readOnly: true
+        surname:
+          type: string
+          description: Last name of the signing party
+          readOnly: true
+      description: Information regarding the signing party
+      readOnly: true
   securitySchemes: { }

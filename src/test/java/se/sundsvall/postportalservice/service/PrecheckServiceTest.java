@@ -12,6 +12,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.zalando.problem.Status.BAD_GATEWAY;
+import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
 import static se.sundsvall.postportalservice.service.PrecheckService.FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD;
 import static se.sundsvall.postportalservice.service.PrecheckService.FAILURE_REASON_UNKNOWN_ERROR;
 
@@ -31,6 +33,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zalando.problem.Problem;
+import se.sundsvall.dept44.support.Identifier;
+import se.sundsvall.postportalservice.api.model.PrecheckRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.PrecheckRecipient;
 import se.sundsvall.postportalservice.integration.citizen.CitizenIntegration;
@@ -47,6 +51,9 @@ class PrecheckServiceTest {
 
 	@Mock
 	private CitizenIntegration citizenIntegrationMock;
+
+	@Mock
+	private EmployeeService employeeService;
 
 	@Mock
 	private MessagingSettingsIntegration messagingSettingsIntegrationMock;
@@ -66,8 +73,35 @@ class PrecheckServiceTest {
 	}
 
 	@Test
+	void precheck_employeeNotFound() {
+		var username = "username";
+		var identifier = Identifier.create()
+			.withType(Identifier.Type.AD_ACCOUNT)
+			.withValue(username)
+			.withTypeString("AD_ACCOUNT");
+		Identifier.set(identifier);
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve employee data for user [%s]".formatted(username)));
+
+		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, any()))
+			.isInstanceOf(Problem.class)
+			.hasMessageContaining("Bad Gateway: Failed to retrieve employee data for user [username]");
+	}
+
+	@Test
+	void precheck_invalidOrgTree() {
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to parse organization from employee data"));
+
+		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, any()))
+			.isInstanceOf(Problem.class)
+			.hasMessageContaining("Internal Server Error: Failed to parse organization from employee data");
+	}
+
+	@Test
 	void precheck_withNoEntries() {
-		final var result = precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, emptyList());
+		final var request = new PrecheckRequest(List.of());
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
+
+		final var result = precheckService.precheck(MUNICIPALITY_ID, request);
 
 		assertThat(result.precheckRecipients()).isEmpty();
 	}
@@ -77,6 +111,7 @@ class PrecheckServiceTest {
 		final var personId1 = "191111111111";
 		final var personId2 = "192222222222";
 		final var personIds = List.of(personId1, personId2);
+		final var request = new PrecheckRequest(personIds);
 
 		final var batches = okBatches(personId1, personId2);
 		final var partyIds = batches.stream()
@@ -85,6 +120,7 @@ class PrecheckServiceTest {
 
 		final var isReachable = true;
 
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
 		when(precheckMapper.toFailureByPersonId(anyList())).thenReturn(Map.of());
 		when(precheckMapper.mapPersonIdToPartyId(anyList())).thenReturn(Map.of(
 			personId1, partyIds.get(0),
@@ -97,7 +133,7 @@ class PrecheckServiceTest {
 			createMailbox(partyIds.get(1), isReachable)));
 		when(citizenIntegrationMock.getCitizens(eq(MUNICIPALITY_ID), anyList())).thenReturn(emptyList());
 
-		final var result = precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, personIds);
+		final var result = precheckService.precheck(MUNICIPALITY_ID, request);
 
 		assertThat(result.precheckRecipients()).hasSize(2);
 		assertThat(result.precheckRecipients().get(0))
@@ -133,10 +169,12 @@ class PrecheckServiceTest {
 		final var personIdOk = "191111111111";
 		final var personIdFail = "193333333333";
 		final var personIds = List.of(personIdOk, personIdFail);
+		final var request = new PrecheckRequest(personIds);
 
 		final var ok = createPersonGuidBatch(personIdOk, true, FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD);
 		final var fail = createPersonGuidBatch(personIdFail, false, "Some random error");
 
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
 		when(precheckMapper.toFailureByPersonId(anyList()))
 			.thenReturn(Map.of(personIdFail, "Some random error"));
 
@@ -160,7 +198,7 @@ class PrecheckServiceTest {
 			.thenReturn(List.of(createMailbox(okPartyId, false)));
 		when(citizenIntegrationMock.getCitizens(eq(MUNICIPALITY_ID), anyList())).thenReturn(emptyList());
 
-		final var result = precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, personIds);
+		final var result = precheckService.precheck(MUNICIPALITY_ID, request);
 
 		assertThat(result.precheckRecipients()).extracting(
 			PrecheckRecipient::personalIdentityNumber,
@@ -182,10 +220,12 @@ class PrecheckServiceTest {
 		final var personIdOk = "191111111111";
 		final var personIdFail = "193333333333";
 		final var personIds = List.of(personIdOk, personIdFail);
+		final var request = new PrecheckRequest(personIds);
 
 		final var ok = createPersonGuidBatch(personIdOk, true, null);
 		final var fail = createPersonGuidBatch(personIdFail, false, null);
 
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
 		when(precheckMapper.toFailureByPersonId(anyList()))
 			.thenReturn(Map.of(personIdFail, FAILURE_REASON_UNKNOWN_ERROR));
 
@@ -207,7 +247,7 @@ class PrecheckServiceTest {
 			.thenReturn(List.of(createMailbox(okPartyId, false)));
 		when(citizenIntegrationMock.getCitizens(eq(MUNICIPALITY_ID), anyList())).thenReturn(emptyList());
 
-		final var result = precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, personIds);
+		final var result = precheckService.precheck(MUNICIPALITY_ID, request);
 
 		assertThat(result.precheckRecipients()).extracting(
 			PrecheckRecipient::personalIdentityNumber,
@@ -232,9 +272,11 @@ class PrecheckServiceTest {
 	}
 
 	@Test
-	void precheck_throwsWenNoOrganizationNumber() {
+	void precheck_throwsWhenNoOrganizationNumber() {
 		final var personId = "191111111111";
+		final var request = new PrecheckRequest(List.of(personId));
 
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
 		when(precheckMapper.toFailureByPersonId(anyList())).thenReturn(Map.of());
 		when(precheckMapper.mapPersonIdToPartyId(anyList())).thenReturn(Map.of());
 		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, List.of(personId))).thenReturn(okBatches(personId));
@@ -243,7 +285,7 @@ class PrecheckServiceTest {
 			.thenReturn(Map.of(
 				personId, UUID.randomUUID().toString()));
 
-		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, List.of(personId)))
+		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, request))
 			.isInstanceOf(Problem.class)
 			.hasMessageContaining("Organization number not found");
 
@@ -256,10 +298,12 @@ class PrecheckServiceTest {
 		final var personId1 = "191111111111";
 		final var personId2 = "192222222222";
 		final var personIds = List.of(personId1, personId2);
+		final var request = new PrecheckRequest(personIds);
 		final var failures = Map.of(
 			personId1, "not found",
 			personId2, "timeout");
 
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
 		when(precheckMapper.toFailureByPersonId(anyList())).thenReturn(failures);
 		when(precheckMapper.toRecipientsWithoutPartyIds(personIds, failures)).thenReturn(List.of(
 			new PrecheckRecipient(personId1, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, "not found"),
@@ -268,7 +312,7 @@ class PrecheckServiceTest {
 			createPersonGuidBatch(personId1, false, "not found"),
 			createPersonGuidBatch(personId2, false, "timeout")));
 
-		final var result = precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, personIds);
+		final var result = precheckService.precheck(MUNICIPALITY_ID, request);
 
 		assertThat(result.precheckRecipients()).extracting(
 			PrecheckRecipient::personalIdentityNumber,

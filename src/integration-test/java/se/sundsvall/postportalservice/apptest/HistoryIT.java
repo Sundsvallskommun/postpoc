@@ -37,4 +37,14 @@ class HistoryIT extends AbstractAppTest {
 			.withExpectedResponse(RESPONSE_FILE)
 			.sendRequestAndVerifyResponse();
 	}
+
+	@Test
+	void test03_getSigningInformation() {
+		setupCall()
+			.withServicePath("/2281/history/messages/message3/signinginfo") // message3 is a DIGITAL_REGISTERED_LETTER in the test data
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
 }

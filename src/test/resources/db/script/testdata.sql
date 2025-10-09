@@ -32,13 +32,13 @@ VALUES ('recipient4', 'message2', 'DIGITAL_MAIL', 'SENT', '2025-09-06 11:01:00')
        ('recipient5', 'message2', 'DIGITAL_MAIL', 'SENT', '2025-09-06 11:01:00'),
        ('recipient6', 'message2', 'SMS', 'SENT', '2025-09-06 11:02:00');
 
--- 2 DIGITAL_REGISTERED_LETTER
+-- 1 DIGITAL_REGISTERED_LETTER
 INSERT INTO message (id, subject, municipality_id, department_id, user_id, message_type, created)
-VALUES ('message3', 'This is the subject', '2281', 'department3', 'user2', 'LETTER', '2025-09-07 12:00:00');
+VALUES ('message3', 'This is the subject', '2281', 'department3', 'user2', 'DIGITAL_REGISTERED_LETTER',
+        '2025-09-07 12:00:00');
 
-INSERT INTO recipient (id, message_id, type, status, created)
-VALUES ('recipient7', 'message3', 'DIGITAL_REGISTERED_LETTER', 'SENT', '2025-09-07 12:01:00'),
-       ('recipient8', 'message3', 'DIGITAL_REGISTERED_LETTER', 'FAILED', '2025-09-07 12:01:00');
+INSERT INTO recipient (id, message_id, type, status, created, external_id)
+VALUES ('recipient7', 'message3', 'DIGITAL_REGISTERED_LETTER', 'SENT', '2025-09-07 12:01:00', 'externalId1');
 
 -- 3 SMS
 INSERT INTO message (id, subject, municipality_id, department_id, user_id, message_type, created)

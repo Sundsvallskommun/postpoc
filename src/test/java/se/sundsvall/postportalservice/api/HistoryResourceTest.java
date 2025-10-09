@@ -1,11 +1,16 @@
 package se.sundsvall.postportalservice.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.zalando.problem.Status.NOT_FOUND;
 import static se.sundsvall.postportalservice.TestDataFactory.INVALID_MUNICIPALITY_ID;
 import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
 
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +24,7 @@ import org.zalando.problem.Problem;
 import se.sundsvall.postportalservice.Application;
 import se.sundsvall.postportalservice.api.model.MessageDetails;
 import se.sundsvall.postportalservice.api.model.Messages;
+import se.sundsvall.postportalservice.api.model.SigningInformation;
 import se.sundsvall.postportalservice.service.HistoryService;
 
 @SpringBootTest(classes = Application.class, webEnvironment = RANDOM_PORT)
@@ -100,6 +106,56 @@ class HistoryResourceTest {
 				.build(INVALID_MUNICIPALITY_ID, userId, pageableMock))
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	void getSigningInformation() {
+		final var messageId = "messageId";
+
+		final var status = "status";
+		final var contentKey = "contentKey";
+		final var orderReference = "orderReference";
+		final var signature = "signature";
+		final var oscpResponse = "ocspResponse";
+		final var signedAt = OffsetDateTime.now();
+		final var result = SigningInformation.create()
+			.withStatus(status)
+			.withContentKey(contentKey)
+			.withOrderReference(orderReference)
+			.withSignature(signature)
+			.withOcspResponse(oscpResponse)
+			.withSignedAt(signedAt);
+
+		when(historyService.getSigningInformation(MUNICIPALITY_ID, messageId)).thenReturn(result);
+
+		var response = webTestClient.get()
+			.uri("/{municipalityId}/history/messages/{messageId}/signinginfo", MUNICIPALITY_ID, messageId)
+			.exchange()
+			.expectBody(SigningInformation.class)
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull().satisfies(signingInformation -> {
+			assertThat(signingInformation.getStatus()).isEqualTo(status);
+			assertThat(signingInformation.getContentKey()).isEqualTo(contentKey);
+			assertThat(signingInformation.getOrderReference()).isEqualTo(orderReference);
+			assertThat(signingInformation.getSignature()).isEqualTo(signature);
+			assertThat(signingInformation.getOcspResponse()).isEqualTo(oscpResponse);
+			assertThat(signingInformation.getSignedAt()).isEqualTo(signedAt);
+		});
+
+		verify(historyService).getSigningInformation(MUNICIPALITY_ID, messageId);
+		verifyNoMoreInteractions(historyService);
+	}
+
+	@Test
+	void getSigningInformation_badRequest() {
+		webTestClient.get()
+			.uri("/{municipalityId}/history/messages/{messageId}/signinginfo", INVALID_MUNICIPALITY_ID, "messageId")
+			.exchange()
+			.expectStatus().isBadRequest();
+
+		verifyNoInteractions(historyService);
 	}
 
 }

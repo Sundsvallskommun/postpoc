@@ -1,0 +1,20 @@
+{
+	"status": "SIGNED",
+	"signedAt": "2025-10-09T14:35:00Z",
+	"contentKey": "abc123xyz",
+	"orderReference": "ORD-987654321",
+	"signature": "MIICXQIBAAKBgQC7yZz8Xl...",
+	"ocspResponse": "MIIEowIBAzCCA+...",
+	"user": {
+		"personalIdentityNumber": "19850615-1234",
+		"name": "John doe",
+		"givenName": "John",
+		"surname": "Doe"
+	},
+	"device": {
+		"ipAddress": "192.168.1.42"
+	},
+	"stepUp": {
+		"mrtd": true
+	}
+}

@@ -7,10 +7,10 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:50381
+  - url: http://localhost:60973
     description: Generated server url
 paths:
-  /{municipalityId}/{departmentId}/precheck:
+  /{municipalityId}/precheck:
     post:
       tags:
         - Precheck Resources
@@ -18,6 +18,11 @@ paths:
         \ letter"
       operationId: precheckRecipients
       parameters:
+        - name: X-Sent-By
+          in: header
+          required: true
+          schema:
+            type: string
         - name: municipalityId
           in: path
           description: Municipality ID
@@ -25,13 +30,6 @@ paths:
           schema:
             type: string
           example: 2281
-        - name: departmentId
-          in: path
-          description: Department ID
-          required: true
-          schema:
-            type: string
-          example: SKM
       requestBody:
         content:
           application/json:
@@ -45,6 +43,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PrecheckResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "502":
+          description: Bad Gateway
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/precheck/kivra:
+    post:
+      tags:
+        - Precheck Resources
+      summary: Check if the given partyIds are eligible for receiving digital registered
+        letters with Kivra
+      operationId: checkKivraEligibility
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KivraEligibilityRequest"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
         "400":
           description: Bad Request
           content:
@@ -405,6 +451,58 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+  /{municipalityId}/history/messages/{messageId}/signinginfo:
+    get:
+      tags:
+        - History Resources
+      summary: Get signing information
+      description: Retrieves signing information connected to letter matching provided
+        id
+      operationId: getSigningInformation
+      parameters:
+        - name: municipalityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful Operation - OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigningInformation"
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "502":
+          description: Bad Gateway
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
   /{municipalityId}/attachments/{attachmentId}:
     get:
       tags:
@@ -514,11 +612,11 @@ components:
     StatusType:
       type: object
       properties:
-        reasonPhrase:
-          type: string
         statusCode:
           type: integer
           format: int32
+        reasonPhrase:
+          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -662,6 +760,24 @@ components:
           items:
             $ref: "#/components/schemas/PrecheckRecipient"
       description: Result of precheck for given recipients
+    KivraEligibilityRequest:
+      required:
+        - partyIds
+      type: object
+      properties:
+        partyIds:
+          minItems: 1
+          type: array
+          description: List of party IDs to check for Kivra eligibility
+          example:
+            - da03b33e-9de2-45ac-8291-31a88de59410
+            - eb13b33e-9de2-45ac-8291-31a88de59411
+          items:
+            type: string
+            description: List of party IDs to check for Kivra eligibility
+            example: "[\"da03b33e-9de2-45ac-8291-31a88de59410\",\"eb13b33e-9de2-45ac-8291-31a88de59411\"\
+              ]"
+      description: Kivra eligibility request model
     SmsRecipient:
       type: object
       properties:

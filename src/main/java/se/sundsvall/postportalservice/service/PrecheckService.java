@@ -6,10 +6,13 @@ import static org.zalando.problem.Status.NOT_FOUND;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.zalando.problem.Problem;
+import se.sundsvall.postportalservice.api.model.KivraEligibilityRequest;
+import se.sundsvall.postportalservice.api.model.PrecheckRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.PrecheckRecipient;
 import se.sundsvall.postportalservice.integration.citizen.CitizenIntegration;
+import se.sundsvall.postportalservice.integration.digitalregisteredletter.DigitalRegisteredLetterIntegration;
 import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration;
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
 import se.sundsvall.postportalservice.service.mapper.PrecheckMapper;
@@ -22,19 +25,32 @@ public class PrecheckService {
 	public static final String FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD = "No eligible delivery method.";
 	public static final String FAILURE_REASON_UNKNOWN_ERROR = "Unknown error.";
 
+	private final DigitalRegisteredLetterIntegration digitalRegisteredLetterIntegration;
 	private final CitizenIntegration citizenIntegration;
 	private final MessagingSettingsIntegration messagingSettingsIntegration;
 	private final MessagingIntegration messagingIntegration;
 	private final PrecheckMapper precheckMapper;
+	private final EmployeeService employeeService;
 
-	public PrecheckService(final CitizenIntegration citizenIntegration, final MessagingSettingsIntegration messagingSettingsIntegration, final MessagingIntegration messagingIntegration, final PrecheckMapper precheckMapper) {
+	public PrecheckService(
+		final DigitalRegisteredLetterIntegration digitalRegisteredLetterIntegration,
+		final CitizenIntegration citizenIntegration,
+		final MessagingSettingsIntegration messagingSettingsIntegration,
+		final MessagingIntegration messagingIntegration,
+		final PrecheckMapper precheckMapper,
+		final EmployeeService employeeService) {
+		this.digitalRegisteredLetterIntegration = digitalRegisteredLetterIntegration;
 		this.citizenIntegration = citizenIntegration;
 		this.messagingSettingsIntegration = messagingSettingsIntegration;
 		this.messagingIntegration = messagingIntegration;
 		this.precheckMapper = precheckMapper;
+		this.employeeService = employeeService;
 	}
 
-	public PrecheckResponse precheck(String municipalityId, String departmentId, List<String> personIds) {
+	public PrecheckResponse precheck(final String municipalityId, final PrecheckRequest request) {
+		var sentBy = employeeService.getSentBy(municipalityId);
+
+		var personIds = request.personIds();
 		if (personIds == null || personIds.isEmpty()) {
 			return PrecheckResponse.of(emptyList());
 		}
@@ -51,7 +67,7 @@ public class PrecheckService {
 			return PrecheckResponse.of(recipients);
 		}
 
-		final var orgNumber = messagingSettingsIntegration.getOrganizationNumber(municipalityId, departmentId)
+		final var orgNumber = messagingSettingsIntegration.getOrganizationNumber(municipalityId, sentBy.organizationId())
 			.orElseThrow(() -> Problem.valueOf(NOT_FOUND, "Organization number not found."));
 
 		final var mailboxes = messagingIntegration.precheckMailboxes(municipalityId, orgNumber, partyIds);
@@ -84,5 +100,9 @@ public class PrecheckService {
 			.toList();
 
 		return PrecheckResponse.of(recipients);
+	}
+
+	public List<String> precheckKivra(final String municipalityId, final KivraEligibilityRequest request) {
+		return digitalRegisteredLetterIntegration.checkKivraEligibility(municipalityId, request.getPartyIds());
 	}
 }

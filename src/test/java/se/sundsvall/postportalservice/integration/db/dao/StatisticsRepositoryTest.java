@@ -52,7 +52,7 @@ class StatisticsRepositoryTest {
 			.containsExactlyInAnyOrder(
 				tuple("department1", "Miljöförvaltningen", 3L, 0L, 0L, 0L),
 				tuple("department2", "Socialförvaltningen", 0L, 2L, 0L, 1L),
-				tuple("department3", "IT-avdelningen", 0L, 0L, 2L, 0L),
+				tuple("department3", "IT-avdelningen", 0L, 0L, 1L, 0L),
 				tuple("department4", "HR-avdelningen", 0L, 0L, 0L, 3L),
 				tuple("department5", "Kulturförvaltningen", 1L, 1L, 0L, 1L));
 	}

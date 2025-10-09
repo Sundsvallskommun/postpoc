@@ -1,7 +1,7 @@
 package se.sundsvall.postportalservice.api;
 
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -16,10 +16,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.Application;
+import se.sundsvall.postportalservice.api.model.KivraEligibilityRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod;
@@ -29,8 +32,6 @@ import se.sundsvall.postportalservice.service.PrecheckService;
 @SpringBootTest(classes = Application.class, webEnvironment = RANDOM_PORT)
 @ActiveProfiles("junit")
 class PrecheckResourceTest {
-
-	private static final String DEPARTMENT_ID = "dept44";
 
 	@MockitoBean
 	private PrecheckService precheckService;
@@ -47,22 +48,30 @@ class PrecheckResourceTest {
 	void precheck() {
 		final var request = new PrecheckRequest(List.of("191111111111", "192222222222"));
 
-		final var response = PrecheckResponse.of(List.of(
+		final var precheckResponse = PrecheckResponse.of(List.of(
 			new PrecheckRecipient("191111111111", "partyId-1", DeliveryMethod.DIGITAL_MAIL, null),
 			new PrecheckRecipient("192222222222", "partyId-2", DeliveryMethod.DIGITAL_MAIL, null)));
 
-		when(precheckService.precheck(MUNICIPALITY_ID, DEPARTMENT_ID, request.personIds())).thenReturn(response);
+		when(precheckService.precheck(MUNICIPALITY_ID, request)).thenReturn(precheckResponse);
 
-		webTestClient.post()
-			.uri("/{municipalityId}/{departmentId}/precheck", MUNICIPALITY_ID, DEPARTMENT_ID)
+		var response = webTestClient.post()
+			.uri("/{municipalityId}/precheck", MUNICIPALITY_ID)
+			.header(Identifier.HEADER_NAME, "type=adAccount; joe01doe")
 			.contentType(APPLICATION_JSON)
 			.accept(APPLICATION_JSON)
 			.bodyValue(request)
 			.exchange()
 			.expectStatus().isOk()
-			.expectBody().jsonPath("$.recipients.length()").isEqualTo(2);
+			.expectBody(PrecheckResponse.class)
+			.returnResult()
+			.getResponseBody();
 
-		verify(precheckService).precheck(eq(MUNICIPALITY_ID), eq(DEPARTMENT_ID), anyList());
+		assertThat(response).isNotNull();
+		assertThat(response.precheckRecipients()).extracting("personalIdentityNumber", "partyId", "deliveryMethod").containsExactlyInAnyOrder(
+			tuple("191111111111", "partyId-1", DeliveryMethod.DIGITAL_MAIL),
+			tuple("192222222222", "partyId-2", DeliveryMethod.DIGITAL_MAIL));
+
+		verify(precheckService).precheck(MUNICIPALITY_ID, request);
 	}
 
 	@Test
@@ -70,7 +79,8 @@ class PrecheckResourceTest {
 		final var request = new PrecheckRequest(List.of("191111111111", "192222222222"));
 
 		webTestClient.post()
-			.uri("/{municipalityId}/{departmentId}/precheck", INVALID_MUNICIPALITY_ID, DEPARTMENT_ID)
+			.uri("/{municipalityId}/precheck", INVALID_MUNICIPALITY_ID)
+			.header(Identifier.HEADER_NAME, "type=adAccount; joe01doe")
 			.contentType(APPLICATION_JSON)
 			.accept(APPLICATION_JSON)
 			.bodyValue(request)
@@ -79,4 +89,46 @@ class PrecheckResourceTest {
 
 		verifyNoInteractions(precheckService);
 	}
+
+	@Test
+	void checkKivraEligibility() {
+		final var partyId1 = "56652549-4f96-4a8f-94f1-07d581ebbb36";
+		final var partyId2 = "da03b33e-9de2-45ac-8291-31a88de59410";
+		final var request = new KivraEligibilityRequest().withPartyIds(List.of(partyId1, partyId2));
+
+		when(precheckService.precheckKivra(MUNICIPALITY_ID, request)).thenReturn(List.of(partyId1, partyId2));
+
+		final var response = webTestClient.post()
+			.uri("/{municipalityId}/precheck/kivra", MUNICIPALITY_ID)
+			.header(Identifier.HEADER_NAME, "type=adAccount; joe01doe")
+			.contentType(APPLICATION_JSON)
+			.accept(APPLICATION_JSON)
+			.bodyValue(request)
+			.exchange()
+			.expectStatus().isOk()
+			.expectBody(new ParameterizedTypeReference<List<String>>() {
+			})
+			.returnResult()
+			.getResponseBody();
+
+		assertThat(response).isNotNull().containsExactlyInAnyOrder(partyId1, partyId2);
+		verify(precheckService).precheckKivra(MUNICIPALITY_ID, request);
+	}
+
+	@Test
+	void checkKivraEligibility_BadRequest() {
+		final var request = new PrecheckRequest(List.of("191111111111", "192222222222"));
+
+		webTestClient.post()
+			.uri("/{municipalityId}/precheck/kivra", INVALID_MUNICIPALITY_ID)
+			.header(Identifier.HEADER_NAME, "type=adAccount; joe01doe")
+			.contentType(APPLICATION_JSON)
+			.accept(APPLICATION_JSON)
+			.bodyValue(request)
+			.exchange()
+			.expectStatus().isBadRequest();
+
+		verifyNoInteractions(precheckService);
+	}
+
 }

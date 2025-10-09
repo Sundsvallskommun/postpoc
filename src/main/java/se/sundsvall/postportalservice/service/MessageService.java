@@ -2,8 +2,6 @@ package se.sundsvall.postportalservice.service;
 
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static org.zalando.problem.Status.BAD_GATEWAY;
-import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
 import static se.sundsvall.postportalservice.Constants.FAILED;
 import static se.sundsvall.postportalservice.Constants.PENDING;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.DIGITAL_REGISTERED_LETTER;
@@ -26,8 +24,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.zalando.problem.Problem;
-import se.sundsvall.dept44.support.Identifier;
 import se.sundsvall.postportalservice.api.model.Attachments;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
@@ -40,8 +36,6 @@ import se.sundsvall.postportalservice.integration.db.dao.DepartmentRepository;
 import se.sundsvall.postportalservice.integration.db.dao.MessageRepository;
 import se.sundsvall.postportalservice.integration.db.dao.UserRepository;
 import se.sundsvall.postportalservice.integration.digitalregisteredletter.DigitalRegisteredLetterIntegration;
-import se.sundsvall.postportalservice.integration.employee.EmployeeIntegration;
-import se.sundsvall.postportalservice.integration.employee.EmployeeUtil;
 import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration;
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
 import se.sundsvall.postportalservice.service.mapper.AttachmentMapper;
@@ -58,7 +52,7 @@ public class MessageService {
 	private final DigitalRegisteredLetterIntegration digitalRegisteredLetterIntegration;
 	private final MessagingIntegration messagingIntegration;
 	private final MessagingSettingsIntegration messagingSettingsIntegration;
-	private final EmployeeIntegration employeeIntegration;
+	private final EmployeeService employeeService;
 
 	private final AttachmentMapper attachmentMapper;
 	private final EntityMapper entityMapper;
@@ -71,7 +65,7 @@ public class MessageService {
 		final DigitalRegisteredLetterIntegration digitalRegisteredLetterIntegration,
 		final MessagingIntegration messagingIntegration,
 		final MessagingSettingsIntegration messagingSettingsIntegration,
-		final EmployeeIntegration employeeIntegration,
+		final EmployeeService employeeService,
 		final AttachmentMapper attachmentMapper,
 		final EntityMapper entityMapper,
 		final DepartmentRepository departmentRepository,
@@ -80,7 +74,7 @@ public class MessageService {
 		this.digitalRegisteredLetterIntegration = digitalRegisteredLetterIntegration;
 		this.messagingIntegration = messagingIntegration;
 		this.messagingSettingsIntegration = messagingSettingsIntegration;
-		this.employeeIntegration = employeeIntegration;
+		this.employeeService = employeeService;
 		this.attachmentMapper = attachmentMapper;
 		this.entityMapper = entityMapper;
 		this.departmentRepository = departmentRepository;
@@ -89,56 +83,33 @@ public class MessageService {
 	}
 
 	public String processDigitalRegisteredLetterRequest(final String municipalityId, final DigitalRegisteredLetterRequest request, final Attachments attachments) {
-		var sentBy = getSentBy(municipalityId);
-
-		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId);
-
-		var user = getOrCreateUser(sentBy.userName);
-		var department = getOrCreateDepartment(sentBy)
-			.withOrganizationNumber(senderInfo.getOrganizationNumber())
-			.withSupportText(senderInfo.getSupportText())
-			.withContactInformationUrl(senderInfo.getContactInformationUrl())
-			.withContactInformationEmail(senderInfo.getContactInformationEmail())
-			.withContactInformationPhoneNumber(senderInfo.getContactInformationPhoneNumber());
+		var message = createMessageEntity(municipalityId);
+		message.setBody(request.getBody());
+		message.setContentType(request.getContentType());
+		message.setSubject(request.getSubject());
+		message.setMessageType(DIGITAL_REGISTERED_LETTER);
 
 		var recipient = new RecipientEntity()
 			.withPartyId(request.getPartyId())
 			.withStatus(PENDING)
 			.withMessageType(DIGITAL_REGISTERED_LETTER);
+		message.setRecipients(List.of(recipient));
 
 		var attachmentEntities = attachmentMapper.toAttachmentEntities(attachments);
-
-		var message = MessageEntity.create()
-			.withMunicipalityId(municipalityId)
-			.withUser(user)
-			.withDepartment(department)
-			.withRecipients(List.of(recipient))
-			.withAttachments(attachmentEntities)
-			.withBody(request.getBody())
-			.withContentType(request.getContentType())
-			.withSubject(request.getSubject())
-			.withMessageType(DIGITAL_REGISTERED_LETTER);
+		message.setAttachments(attachmentEntities);
 
 		digitalRegisteredLetterIntegration.sendLetter(message, recipient);
 
 		messageRepository.save(message);
-
 		return message.getId();
 	}
 
 	public String processLetterRequest(final String municipalityId, final LetterRequest letterRequest, final Attachments attachments) {
-		var sentBy = getSentBy(municipalityId);
-
-		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId);
-
-		var user = getOrCreateUser(sentBy.userName);
-		var department = getOrCreateDepartment(sentBy)
-			.withFolderName(senderInfo.getFolderName())
-			.withOrganizationNumber(senderInfo.getOrganizationNumber())
-			.withSupportText(senderInfo.getSupportText())
-			.withContactInformationUrl(senderInfo.getContactInformationUrl())
-			.withContactInformationEmail(senderInfo.getContactInformationEmail())
-			.withContactInformationPhoneNumber(senderInfo.getContactInformationPhoneNumber());
+		var message = createMessageEntity(municipalityId);
+		message.setBody(letterRequest.getBody());
+		message.setContentType(letterRequest.getContentType());
+		message.setSubject(letterRequest.getSubject());
+		message.setMessageType(LETTER);
 
 		var recipientEntities = Optional.ofNullable(letterRequest.getRecipients()).orElse(emptyList()).stream()
 			.map(entityMapper::toRecipientEntity)
@@ -149,19 +120,10 @@ public class MessageService {
 			.filter(Objects::nonNull);
 
 		var recipients = Stream.concat(recipientEntities, addressRecipients).toList();
+		message.setRecipients(recipients);
 
 		var attachmentEntities = attachmentMapper.toAttachmentEntities(attachments);
-
-		var message = MessageEntity.create()
-			.withMunicipalityId(municipalityId)
-			.withUser(user)
-			.withDepartment(department)
-			.withRecipients(recipients)
-			.withAttachments(attachmentEntities)
-			.withBody(letterRequest.getBody())
-			.withContentType(letterRequest.getContentType())
-			.withSubject(letterRequest.getSubject())
-			.withMessageType(LETTER);
+		message.setAttachments(attachmentEntities);
 
 		messageRepository.save(message);
 
@@ -170,37 +132,18 @@ public class MessageService {
 	}
 
 	/**
-	 * Maps an incoming SmsRequest to a MessageEntity. Persists the MessageEntity and its associated entities to the
-	 * database. Sends a message to each recipient asynchronously. Returns the MessageEntity ID that can be used to read the
-	 * message.
+	 * Maps an incoming SmsRequest to a MessageEntity. Persists the MessageEntity and its associated entities to the database. Sends a message to each recipient asynchronously. Returns the MessageEntity ID that can be used to read the message.
 	 */
 	public String processSmsRequest(final String municipalityId, final SmsRequest smsRequest) {
-		var sentBy = getSentBy(municipalityId);
-
-		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId());
-
-		var user = getOrCreateUser(sentBy.userName);
-		var department = getOrCreateDepartment(sentBy)
-			.withOrganizationNumber(senderInfo.getOrganizationNumber())
-			.withFolderName(senderInfo.getFolderName())
-			.withSupportText(senderInfo.getSupportText())
-			.withContactInformationUrl(senderInfo.getContactInformationUrl())
-			.withContactInformationEmail(senderInfo.getContactInformationEmail())
-			.withContactInformationPhoneNumber(senderInfo.getContactInformationPhoneNumber());
+		var message = createMessageEntity(municipalityId);
+		message.setBody(smsRequest.getMessage());
+		message.setMessageType(SMS);
 
 		var recipients = smsRequest.getRecipients().stream()
 			.map(entityMapper::toRecipientEntity)
 			.filter(Objects::nonNull)
 			.toList();
-
-		var message = MessageEntity.create()
-			.withDisplayName(senderInfo.getSmsSender())
-			.withMunicipalityId(municipalityId)
-			.withUser(user)
-			.withDepartment(department)
-			.withRecipients(recipients)
-			.withBody(smsRequest.getMessage())
-			.withMessageType(SMS);
+		message.setRecipients(recipients);
 
 		messageRepository.save(message);
 
@@ -297,24 +240,30 @@ public class MessageService {
 				.withName(userName));
 	}
 
-	DepartmentEntity getOrCreateDepartment(final SentBy sentBy) {
-		return departmentRepository.findByOrganizationId(sentBy.organizationId)
+	DepartmentEntity getOrCreateDepartment(final EmployeeService.SentBy sentBy) {
+		return departmentRepository.findByOrganizationId(sentBy.organizationId())
 			.orElseGet(() -> DepartmentEntity.create()
-				.withOrganizationId(sentBy.organizationId)
-				.withName(sentBy.departmentName));
+				.withOrganizationId(sentBy.organizationId())
+				.withName(sentBy.departmentName()));
 	}
 
-	SentBy getSentBy(final String municipalityId) {
-		var username = Identifier.get().getValue();
-		var personData = employeeIntegration.getPortalPersonData(municipalityId, username)
-			.orElseThrow(() -> Problem.valueOf(BAD_GATEWAY, "Failed to retrieve employee data for user [%s]".formatted(username)));
-		var department = EmployeeUtil.parseOrganizationString(personData.getOrgTree())
-			.orElseThrow(() -> Problem.valueOf(INTERNAL_SERVER_ERROR, "Failed to parse organization from employee data"));
+	private MessageEntity createMessageEntity(final String municipalityId) {
+		var sentBy = employeeService.getSentBy(municipalityId);
 
-		return new SentBy(username, department.identifier(), department.name());
+		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId());
+		var user = getOrCreateUser(sentBy.userName());
+		var department = getOrCreateDepartment(sentBy)
+			.withFolderName(senderInfo.getFolderName())
+			.withOrganizationNumber(senderInfo.getOrganizationNumber())
+			.withSupportText(senderInfo.getSupportText())
+			.withContactInformationUrl(senderInfo.getContactInformationUrl())
+			.withContactInformationEmail(senderInfo.getContactInformationEmail())
+			.withContactInformationPhoneNumber(senderInfo.getContactInformationPhoneNumber());
+
+		return MessageEntity.create()
+			.withMunicipalityId(municipalityId)
+			.withDisplayName(senderInfo.getSmsSender())
+			.withUser(user)
+			.withDepartment(department);
 	}
-
-	record SentBy(String userName, String organizationId, String departmentName) {
-	}
-
 }
