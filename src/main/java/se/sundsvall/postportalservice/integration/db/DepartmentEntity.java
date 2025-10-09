@@ -185,13 +185,11 @@ public class DepartmentEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		DepartmentEntity that = (DepartmentEntity) o;
-		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationNumber, that.organizationNumber) && Objects.equals(organizationId, that.organizationId)
-			&& Objects.equals(supportText, that.supportText) && Objects.equals(contactInformationUrl, that.contactInformationUrl) && Objects.equals(contactInformationPhoneNumber, that.contactInformationPhoneNumber)
-			&& Objects.equals(contactInformationEmail, that.contactInformationEmail) && Objects.equals(folderName, that.folderName);
+		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationNumber, that.organizationNumber) && Objects.equals(organizationId, that.organizationId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, name, organizationNumber, organizationId, supportText, contactInformationUrl, contactInformationPhoneNumber, contactInformationEmail, folderName);
+		return Objects.hash(id, name, organizationNumber, organizationId);
 	}
 }
