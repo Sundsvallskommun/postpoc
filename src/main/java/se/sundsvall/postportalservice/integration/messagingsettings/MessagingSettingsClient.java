@@ -5,7 +5,7 @@ import static se.sundsvall.postportalservice.integration.messagingsettings.confi
 
 import generated.se.sundsvall.messagingsettings.SenderInfoResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import java.util.Optional;
+import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +21,7 @@ import se.sundsvall.postportalservice.integration.messagingsettings.configuratio
 public interface MessagingSettingsClient {
 
 	@GetMapping(path = "/{municipalityId}/sender-info", produces = APPLICATION_JSON_VALUE)
-	Optional<SenderInfoResponse> getSenderInfo(
+	List<SenderInfoResponse> getSenderInfo(
 		@PathVariable("municipalityId") String municipalityId,
 		@RequestParam("departmentId") String departmentId);
 }

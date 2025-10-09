@@ -18,16 +18,22 @@ public class MessagingSettingsIntegration {
 
 	public Optional<String> getSupportText(final String municipalityId, final String departmentId) {
 		return messagingSettingsClient.getSenderInfo(municipalityId, departmentId)
+			.stream()
+			.findFirst()
 			.map(SenderInfoResponse::getSupportText);
 	}
 
 	public SenderInfoResponse getSenderInfo(final String municipalityId, final String departmentId) {
 		return messagingSettingsClient.getSenderInfo(municipalityId, departmentId)
+			.stream()
+			.findFirst()
 			.orElseThrow(() -> Problem.valueOf(BAD_GATEWAY, "Found no sender info for departmentId " + departmentId));
 	}
 
 	public Optional<String> getOrganizationNumber(final String municipalityId, final String departmentId) {
 		return messagingSettingsClient.getSenderInfo(municipalityId, departmentId)
+			.stream()
+			.findFirst()
 			.map(SenderInfoResponse::getOrganizationNumber);
 	}
 }
