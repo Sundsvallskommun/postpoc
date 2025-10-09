@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:60973
+  - url: http://localhost:60271
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -605,9 +605,9 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
     StatusType:
       type: object
@@ -1135,5 +1135,63 @@ components:
           example: SENT|NOT_SENT|FAILED
       description: List of recipient details
       readOnly: true
+    Device:
+      type: object
+      properties:
+        ipAddress:
+          type: string
+          description: Ip address used when the letter was signed
+      description: Information about the device used when signing the letter
+    SigningInformation:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the signing order
+        signedAt:
+          type: string
+          description: Timestamp when the letter was signed by receiving party
+          format: date-time
+        contentKey:
+          type: string
+          description: The unique Kivra id for the signing order
+        orderReference:
+          type: string
+          description: Order reference in Kivra for the signing order
+        signature:
+          type: string
+          description: The signature made by the receiving party
+        ocspResponse:
+          type: string
+          description: Online certificate status protocol for the signing order
+        user:
+          $ref: "#/components/schemas/User"
+        device:
+          $ref: "#/components/schemas/Device"
+        stepUp:
+          $ref: "#/components/schemas/StepUp"
+      description: SigningInformation model
+    StepUp:
+      type: object
+      properties:
+        mrtd:
+          type: boolean
+          description: Whether an MRTD check was performed before the order was completed
+      description: Step-up information for the signing order
+    User:
+      type: object
+      properties:
+        personalIdentityNumber:
+          type: string
+          description: Personal identity number for the signing party
+        name:
+          type: string
+          description: Full name of the signing party
+        givenName:
+          type: string
+          description: First name of the signing party
+        surname:
+          type: string
+          description: Last name of the signing party
+      description: Information about the user that signed the letter
   securitySchemes: { }
-
