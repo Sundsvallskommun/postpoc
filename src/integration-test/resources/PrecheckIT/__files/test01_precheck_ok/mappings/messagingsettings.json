@@ -8,8 +8,10 @@
 		"headers": {
 			"Content-Type": "application/json"
 		},
-		"jsonBody": {
-			"organizationNumber": "5555555555"
-		}
+		"jsonBody": [
+			{
+				"organizationNumber": "5555555555"
+			}
+		]
 	}
 }

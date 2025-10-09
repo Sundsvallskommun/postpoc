@@ -1,5 +1,6 @@
 package se.sundsvall.postportalservice.integration.messagingsettings;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
@@ -7,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import generated.se.sundsvall.messagingsettings.SenderInfoResponse;
-import java.util.Optional;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +41,7 @@ class MessagingSettingsIntegrationTest {
 
 		senderInfo.setSupportText(supportText);
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.of(senderInfo));
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
 		final var result = integration.getSupportText(MUNICIPALITY_ID, DEPARTMENT_ID);
 
@@ -51,7 +52,7 @@ class MessagingSettingsIntegrationTest {
 
 	@Test
 	void getSupportText_withNoMatch() {
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.empty());
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
 
 		final var result = integration.getSupportText(MUNICIPALITY_ID, DEPARTMENT_ID);
 
@@ -63,7 +64,7 @@ class MessagingSettingsIntegrationTest {
 	void getSupportText_withNullSupportText() {
 		final var senderInfo = new SenderInfoResponse();
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.of(senderInfo));
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
 		final var result = integration.getSupportText(MUNICIPALITY_ID, DEPARTMENT_ID);
 
@@ -75,7 +76,7 @@ class MessagingSettingsIntegrationTest {
 	void getSenderInfo() {
 		final var senderInfo = new SenderInfoResponse();
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.of(senderInfo));
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
 		var result = integration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 
@@ -86,7 +87,7 @@ class MessagingSettingsIntegrationTest {
 
 	@Test
 	void getSenderInfo_withNoMatch() {
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.empty());
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
 
 		assertThatThrownBy(() -> integration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID))
 			.isInstanceOf(Problem.class)
@@ -102,7 +103,7 @@ class MessagingSettingsIntegrationTest {
 
 		senderInfo.setOrganizationNumber(organizationNumber);
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.of(senderInfo));
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
 		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
 
@@ -112,7 +113,7 @@ class MessagingSettingsIntegrationTest {
 
 	@Test
 	void getOrganizationNumber_withNoMatch() {
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.empty());
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
 
 		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
 
@@ -124,11 +125,31 @@ class MessagingSettingsIntegrationTest {
 	void getOrganizationNumber_withNullValue() {
 		final var senderInfo = new SenderInfoResponse();
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.of(senderInfo));
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
 		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
 
 		assertThat(result).isEmpty();
+		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+	}
+
+	@Test
+	void getSenderInfo_picksFirstWhenMultiple() {
+		final var first = new SenderInfoResponse();
+		first.setSupportText("first");
+		first.setOrganizationNumber("1111111111");
+
+		final var second = new SenderInfoResponse();
+		second.setSupportText("second");
+		second.setOrganizationNumber("2222222222");
+
+		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID))
+			.thenReturn(List.of(first, second));
+
+		final var result = integration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+
+		assertThat(result.getSupportText()).isEqualTo("first");
+		assertThat(result.getOrganizationNumber()).isEqualTo("1111111111");
 		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 }
