@@ -133,6 +133,7 @@ public class MessageService {
 
 		var user = getOrCreateUser(sentBy.userName);
 		var department = getOrCreateDepartment(sentBy)
+			.withFolderName(senderInfo.getFolderName())
 			.withOrganizationNumber(senderInfo.getOrganizationNumber())
 			.withSupportText(senderInfo.getSupportText())
 			.withContactInformationUrl(senderInfo.getContactInformationUrl())
@@ -181,6 +182,7 @@ public class MessageService {
 		var user = getOrCreateUser(sentBy.userName);
 		var department = getOrCreateDepartment(sentBy)
 			.withOrganizationNumber(senderInfo.getOrganizationNumber())
+			.withFolderName(senderInfo.getFolderName())
 			.withSupportText(senderInfo.getSupportText())
 			.withContactInformationUrl(senderInfo.getContactInformationUrl())
 			.withContactInformationEmail(senderInfo.getContactInformationEmail())

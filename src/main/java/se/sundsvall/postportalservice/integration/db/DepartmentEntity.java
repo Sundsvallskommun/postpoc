@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.util.Objects;
 
 @Entity
@@ -28,20 +29,36 @@ public class DepartmentEntity {
 	@Column(name = "organization_id", columnDefinition = "VARCHAR(12)")
 	private String organizationId;
 
-	@Column(name = "support_text", columnDefinition = "VARCHAR(255)")
+	@Transient
 	private String supportText;
 
-	@Column(name = "contact_information_url", columnDefinition = "VARCHAR(255)")
+	@Transient
 	private String contactInformationUrl;
 
-	@Column(name = "contact_information_phone_number", columnDefinition = "VARCHAR(30)")
+	@Transient
 	private String contactInformationPhoneNumber;
 
-	@Column(name = "contact_information_email", columnDefinition = "VARCHAR(100)")
+	@Transient
 	private String contactInformationEmail;
+
+	@Transient
+	private String folderName;
 
 	public static DepartmentEntity create() {
 		return new DepartmentEntity();
+	}
+
+	public String getFolderName() {
+		return folderName;
+	}
+
+	public DepartmentEntity withFolderName(String folderName) {
+		this.folderName = folderName;
+		return this;
+	}
+
+	public void setFolderName(String folderName) {
+		this.folderName = folderName;
 	}
 
 	public String getOrganizationNumber() {
@@ -159,6 +176,7 @@ public class DepartmentEntity {
 			", contactInformationUrl='" + contactInformationUrl + '\'' +
 			", contactInformationPhoneNumber='" + contactInformationPhoneNumber + '\'' +
 			", contactInformationEmail='" + contactInformationEmail + '\'' +
+			", folderName='" + folderName + '\'' +
 			'}';
 	}
 
@@ -167,13 +185,11 @@ public class DepartmentEntity {
 		if (o == null || getClass() != o.getClass())
 			return false;
 		DepartmentEntity that = (DepartmentEntity) o;
-		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationNumber, that.organizationNumber) && Objects.equals(organizationId, that.organizationId)
-			&& Objects.equals(supportText, that.supportText) && Objects.equals(contactInformationUrl, that.contactInformationUrl) && Objects.equals(contactInformationPhoneNumber, that.contactInformationPhoneNumber)
-			&& Objects.equals(contactInformationEmail, that.contactInformationEmail);
+		return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(organizationNumber, that.organizationNumber) && Objects.equals(organizationId, that.organizationId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, name, organizationNumber, organizationId, supportText, contactInformationUrl, contactInformationPhoneNumber, contactInformationEmail);
+		return Objects.hash(id, name, organizationNumber, organizationId);
 	}
 }

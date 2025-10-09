@@ -1,8 +1,8 @@
 package se.sundsvall.postportalservice.integration.db;
 
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanConstructor;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEquals;
-import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCode;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanEqualsExcluding;
+import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanHashCodeExcluding;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidBeanToString;
 import static com.google.code.beanmatchers.BeanMatchers.hasValidGettersAndSetters;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,14 +21,15 @@ class DepartmentEntityTest {
 	private static final String CONTACT_INFORMATION_URL = "contactInformationUrl";
 	private static final String CONTACT_INFORMATION_EMAIL = "contactInformationEmail";
 	private static final String CONTACT_INFORMATION_PHONE_NUMBER = "contactInformationPhoneNumber";
+	private static final String FOLDER_NAME = "folderName";
 
 	@Test
 	void testBean() {
 		assertThat(DepartmentEntity.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
-			hasValidBeanHashCode(),
-			hasValidBeanEquals(),
+			hasValidBeanHashCodeExcluding("supportText", "contactInformationUrl", "contactInformationPhoneNumber", "contactInformationEmail", "folderName"),
+			hasValidBeanEqualsExcluding("supportText", "contactInformationUrl", "contactInformationPhoneNumber", "contactInformationEmail", "folderName"),
 			hasValidBeanToString()));
 	}
 
@@ -42,7 +43,8 @@ class DepartmentEntityTest {
 			.withSupportText(SUPPORT_TEXT)
 			.withContactInformationUrl(CONTACT_INFORMATION_URL)
 			.withContactInformationEmail(CONTACT_INFORMATION_EMAIL)
-			.withContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER);
+			.withContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER)
+			.withFolderName(FOLDER_NAME);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
@@ -52,6 +54,7 @@ class DepartmentEntityTest {
 		assertThat(departmentEntity.getContactInformationUrl()).isEqualTo(CONTACT_INFORMATION_URL);
 		assertThat(departmentEntity.getContactInformationEmail()).isEqualTo(CONTACT_INFORMATION_EMAIL);
 		assertThat(departmentEntity.getContactInformationPhoneNumber()).isEqualTo(CONTACT_INFORMATION_PHONE_NUMBER);
+		assertThat(departmentEntity.getFolderName()).isEqualTo(FOLDER_NAME);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 
@@ -66,6 +69,7 @@ class DepartmentEntityTest {
 		departmentEntity.setContactInformationUrl(CONTACT_INFORMATION_URL);
 		departmentEntity.setContactInformationEmail(CONTACT_INFORMATION_EMAIL);
 		departmentEntity.setContactInformationPhoneNumber(CONTACT_INFORMATION_PHONE_NUMBER);
+		departmentEntity.setFolderName(FOLDER_NAME);
 
 		assertThat(departmentEntity.getId()).isEqualTo(ID);
 		assertThat(departmentEntity.getName()).isEqualTo(NAME);
@@ -75,6 +79,7 @@ class DepartmentEntityTest {
 		assertThat(departmentEntity.getContactInformationUrl()).isEqualTo(CONTACT_INFORMATION_URL);
 		assertThat(departmentEntity.getContactInformationEmail()).isEqualTo(CONTACT_INFORMATION_EMAIL);
 		assertThat(departmentEntity.getContactInformationPhoneNumber()).isEqualTo(CONTACT_INFORMATION_PHONE_NUMBER);
+		assertThat(departmentEntity.getFolderName()).isEqualTo(FOLDER_NAME);
 		assertThat(departmentEntity).hasNoNullFieldsOrProperties();
 	}
 

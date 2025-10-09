@@ -7,6 +7,36 @@
 				"matches": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
 			}
 		},
+		"bodyPatterns": [
+			{
+				"equalToJson": {
+					"party": {
+						"partyId": "7a1234bc-56de-7890-1234-56789abcdef0",
+						"externalReferences": []
+					},
+					"address": {
+						"firstName": "John",
+						"lastName": "Doe",
+						"address": "Main Street 1",
+						"apartmentNumber": "1101",
+						"careOf": "c/o Jane Doe",
+						"zipCode": "12345",
+						"city": "Sundsvall",
+						"country": "Sweden"
+					},
+					"department": "Testkontoret",
+					"attachments": [
+						{
+							"filename": "test.pdf",
+							"contentType": "application/pdf",
+							"content": "VGVzdGluZyEgOik="
+						}
+					],
+					"folderName": "Sundsvall"
+				},
+				"ignoreExtraElements": true
+			}
+		],
 		"headers": {
 			"Authorization": {
 				"equalTo": "Bearer MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"

@@ -15,11 +15,11 @@ public class MessageDetails {
 	@Schema(description = "When the message was sent", accessMode = Schema.AccessMode.READ_ONLY, example = "2021-01-01T12:00:00")
 	private LocalDateTime sentAt;
 
-	@ArraySchema(schema = @Schema(description = "List of attachments", implementation = Attachment.class, accessMode = Schema.AccessMode.READ_ONLY))
-	private List<Attachment> attachments;
+	@ArraySchema(schema = @Schema(description = "List of attachment details", implementation = AttachmentDetails.class, accessMode = Schema.AccessMode.READ_ONLY))
+	private List<AttachmentDetails> attachments;
 
-	@ArraySchema(schema = @Schema(description = "List of recipients", implementation = Recipient.class, accessMode = Schema.AccessMode.READ_ONLY))
-	private List<Recipient> recipients;
+	@ArraySchema(schema = @Schema(description = "List of recipient details", implementation = RecipientDetails.class, accessMode = Schema.AccessMode.READ_ONLY))
+	private List<RecipientDetails> recipients;
 
 	public static MessageDetails create() {
 		return new MessageDetails();
@@ -51,29 +51,29 @@ public class MessageDetails {
 		this.sentAt = sentAt;
 	}
 
-	public List<Attachment> getAttachments() {
+	public List<AttachmentDetails> getAttachments() {
 		return attachments;
 	}
 
-	public MessageDetails withAttachments(List<Attachment> attachments) {
+	public MessageDetails withAttachments(List<AttachmentDetails> attachments) {
 		this.attachments = attachments;
 		return this;
 	}
 
-	public void setAttachments(List<Attachment> attachments) {
+	public void setAttachments(List<AttachmentDetails> attachments) {
 		this.attachments = attachments;
 	}
 
-	public List<Recipient> getRecipients() {
+	public List<RecipientDetails> getRecipients() {
 		return recipients;
 	}
 
-	public MessageDetails withRecipients(List<Recipient> recipients) {
+	public MessageDetails withRecipients(List<RecipientDetails> recipients) {
 		this.recipients = recipients;
 		return this;
 	}
 
-	public void setRecipients(List<Recipient> recipients) {
+	public void setRecipients(List<RecipientDetails> recipients) {
 		this.recipients = recipients;
 	}
 
@@ -100,7 +100,7 @@ public class MessageDetails {
 		return Objects.hash(subject, sentAt, attachments, recipients);
 	}
 
-	public static class Attachment {
+	public static class AttachmentDetails {
 
 		@Schema(description = "Attachment ID", accessMode = Schema.AccessMode.READ_ONLY, example = "123e4567-e89b-12d3-a456-426614174000")
 		private String attachmentId;
@@ -111,15 +111,15 @@ public class MessageDetails {
 		@Schema(description = "MIME type of the attachment", accessMode = Schema.AccessMode.READ_ONLY, example = "application/pdf")
 		private String contentType;
 
-		public static Attachment create() {
-			return new Attachment();
+		public static AttachmentDetails create() {
+			return new AttachmentDetails();
 		}
 
 		public String getAttachmentId() {
 			return attachmentId;
 		}
 
-		public Attachment withAttachmentId(String attachmentId) {
+		public AttachmentDetails withAttachmentId(String attachmentId) {
 			this.attachmentId = attachmentId;
 			return this;
 		}
@@ -132,7 +132,7 @@ public class MessageDetails {
 			return fileName;
 		}
 
-		public Attachment withFileName(String fileName) {
+		public AttachmentDetails withFileName(String fileName) {
 			this.fileName = fileName;
 			return this;
 		}
@@ -145,7 +145,7 @@ public class MessageDetails {
 			return contentType;
 		}
 
-		public Attachment withContentType(String mimeType) {
+		public AttachmentDetails withContentType(String mimeType) {
 			this.contentType = mimeType;
 			return this;
 		}
@@ -156,7 +156,7 @@ public class MessageDetails {
 
 		@Override
 		public String toString() {
-			return "Attachment{" +
+			return "AttachmentDetails{" +
 				"attachmentId='" + attachmentId + '\'' +
 				", fileName='" + fileName + '\'' +
 				", contentType='" + contentType + '\'' +
@@ -167,7 +167,7 @@ public class MessageDetails {
 		public boolean equals(Object o) {
 			if (o == null || getClass() != o.getClass())
 				return false;
-			Attachment that = (Attachment) o;
+			AttachmentDetails that = (AttachmentDetails) o;
 			return Objects.equals(attachmentId, that.attachmentId) && Objects.equals(fileName, that.fileName) && Objects.equals(contentType, that.contentType);
 		}
 
@@ -177,7 +177,7 @@ public class MessageDetails {
 		}
 	}
 
-	public static class Recipient {
+	public static class RecipientDetails {
 
 		@Schema(description = "Name of the recipient", accessMode = Schema.AccessMode.READ_ONLY, example = "John Doe")
 		private String name;
@@ -200,15 +200,31 @@ public class MessageDetails {
 		@Schema(description = "Message type", accessMode = Schema.AccessMode.READ_ONLY, example = "SNAIL_MAIL|DIGITAL_MAIL|SMS")
 		private String messageType;
 
-		public static Recipient create() {
-			return new Recipient();
+		@Schema(description = "Status of the message to this recipient", accessMode = Schema.AccessMode.READ_ONLY, example = "SENT|NOT_SENT|FAILED")
+		private String status;
+
+		public static RecipientDetails create() {
+			return new RecipientDetails();
+		}
+
+		public String getStatus() {
+			return status;
+		}
+
+		public RecipientDetails withStatus(String status) {
+			this.status = status;
+			return this;
+		}
+
+		public void setStatus(String status) {
+			this.status = status;
 		}
 
 		public String getMobileNumber() {
 			return mobileNumber;
 		}
 
-		public Recipient withMobileNumber(String mobileNumber) {
+		public RecipientDetails withMobileNumber(String mobileNumber) {
 			this.mobileNumber = mobileNumber;
 			return this;
 		}
@@ -221,7 +237,7 @@ public class MessageDetails {
 			return name;
 		}
 
-		public Recipient withName(String name) {
+		public RecipientDetails withName(String name) {
 			this.name = name;
 			return this;
 		}
@@ -234,7 +250,7 @@ public class MessageDetails {
 			return partyId;
 		}
 
-		public Recipient withPartyId(String partyId) {
+		public RecipientDetails withPartyId(String partyId) {
 			this.partyId = partyId;
 			return this;
 		}
@@ -247,7 +263,7 @@ public class MessageDetails {
 			return streetAddress;
 		}
 
-		public Recipient withStreetAddress(String streetAddress) {
+		public RecipientDetails withStreetAddress(String streetAddress) {
 			this.streetAddress = streetAddress;
 			return this;
 		}
@@ -260,7 +276,7 @@ public class MessageDetails {
 			return zipCode;
 		}
 
-		public Recipient withZipCode(String zipCode) {
+		public RecipientDetails withZipCode(String zipCode) {
 			this.zipCode = zipCode;
 			return this;
 		}
@@ -273,7 +289,7 @@ public class MessageDetails {
 			return city;
 		}
 
-		public Recipient withCity(String city) {
+		public RecipientDetails withCity(String city) {
 			this.city = city;
 			return this;
 		}
@@ -286,7 +302,7 @@ public class MessageDetails {
 			return messageType;
 		}
 
-		public Recipient withMessageType(String messageType) {
+		public RecipientDetails withMessageType(String messageType) {
 			this.messageType = messageType;
 			return this;
 		}
@@ -297,7 +313,7 @@ public class MessageDetails {
 
 		@Override
 		public String toString() {
-			return "Recipient{" +
+			return "RecipientDetails{" +
 				"name='" + name + '\'' +
 				", partyId='" + partyId + '\'' +
 				", mobileNumber='" + mobileNumber + '\'' +
@@ -305,6 +321,7 @@ public class MessageDetails {
 				", zipCode='" + zipCode + '\'' +
 				", city='" + city + '\'' +
 				", messageType='" + messageType + '\'' +
+				", status='" + status + '\'' +
 				'}';
 		}
 
@@ -312,14 +329,14 @@ public class MessageDetails {
 		public boolean equals(Object o) {
 			if (o == null || getClass() != o.getClass())
 				return false;
-			Recipient recipient = (Recipient) o;
-			return Objects.equals(name, recipient.name) && Objects.equals(partyId, recipient.partyId) && Objects.equals(mobileNumber, recipient.mobileNumber) && Objects.equals(streetAddress, recipient.streetAddress)
-				&& Objects.equals(zipCode, recipient.zipCode) && Objects.equals(city, recipient.city) && Objects.equals(messageType, recipient.messageType);
+			RecipientDetails that = (RecipientDetails) o;
+			return Objects.equals(name, that.name) && Objects.equals(partyId, that.partyId) && Objects.equals(mobileNumber, that.mobileNumber) && Objects.equals(streetAddress, that.streetAddress) && Objects.equals(
+				zipCode, that.zipCode) && Objects.equals(city, that.city) && Objects.equals(messageType, that.messageType) && Objects.equals(status, that.status);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(name, partyId, mobileNumber, streetAddress, zipCode, city, messageType);
+			return Objects.hash(name, partyId, mobileNumber, streetAddress, zipCode, city, messageType, status);
 		}
 	}
 

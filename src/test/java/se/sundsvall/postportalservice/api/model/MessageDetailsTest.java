@@ -21,8 +21,8 @@ class MessageDetailsTest {
 	// MessageDetails attributes
 	private static final String SUBJECT = "subject";
 	private static final LocalDateTime SENT_AT = now();
-	private static final List<MessageDetails.Attachment> ATTACHMENTS = List.of(new MessageDetails.Attachment());
-	private static final List<MessageDetails.Recipient> RECIPIENTS = List.of(new MessageDetails.Recipient());
+	private static final List<MessageDetails.AttachmentDetails> ATTACHMENTS = List.of(new MessageDetails.AttachmentDetails());
+	private static final List<MessageDetails.RecipientDetails> RECIPIENTS = List.of(new MessageDetails.RecipientDetails());
 
 	// MessageDetails.Attachment attributes
 	private static final String ATTACHMENT_ID = "attachmentId";
@@ -37,6 +37,7 @@ class MessageDetailsTest {
 	private static final String ZIP_CODE = "zipCode";
 	private static final String CITY = "city";
 	private static final String MESSAGE_TYPE = "messageType";
+	private static final String STATUS = "status";
 
 	@BeforeAll
 	static void setup() {
@@ -55,7 +56,7 @@ class MessageDetailsTest {
 
 	@Test
 	void testMessageDetailsAttachment() {
-		org.hamcrest.MatcherAssert.assertThat(MessageDetails.Attachment.class, allOf(
+		org.hamcrest.MatcherAssert.assertThat(MessageDetails.AttachmentDetails.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -65,7 +66,7 @@ class MessageDetailsTest {
 
 	@Test
 	void testMessageDetailsRecipient() {
-		org.hamcrest.MatcherAssert.assertThat(MessageDetails.Recipient.class, allOf(
+		org.hamcrest.MatcherAssert.assertThat(MessageDetails.RecipientDetails.class, allOf(
 			hasValidBeanConstructor(),
 			hasValidGettersAndSetters(),
 			hasValidBeanHashCode(),
@@ -88,8 +89,8 @@ class MessageDetailsTest {
 	}
 
 	@Test
-	void MessageDetails_Attachment_getterAndSetterTest() {
-		final var bean = new MessageDetails.Attachment();
+	void MessageDetails_AttachmentDetails_getterAndSetterTest() {
+		final var bean = new MessageDetails.AttachmentDetails();
 		bean.setAttachmentId(ATTACHMENT_ID);
 		bean.setFileName(FILE_NAME);
 		bean.setContentType(CONTENT_TYPE);
@@ -100,8 +101,8 @@ class MessageDetailsTest {
 	}
 
 	@Test
-	void MessageDetails_Recipient_getterAndSetterTest() {
-		final var bean = new MessageDetails.Recipient();
+	void MessageDetails_RecipientDetails_getterAndSetterTest() {
+		final var bean = new MessageDetails.RecipientDetails();
 		bean.setName(NAME);
 		bean.setPartyId(PARTY_ID);
 		bean.setMobileNumber(MOBILE_NUMBER);
@@ -109,6 +110,7 @@ class MessageDetailsTest {
 		bean.setZipCode(ZIP_CODE);
 		bean.setCity(CITY);
 		bean.setMessageType(MESSAGE_TYPE);
+		bean.setStatus(STATUS);
 
 		assertThat(bean.getName()).isEqualTo(NAME);
 		assertThat(bean.getPartyId()).isEqualTo(PARTY_ID);
@@ -117,6 +119,7 @@ class MessageDetailsTest {
 		assertThat(bean.getZipCode()).isEqualTo(ZIP_CODE);
 		assertThat(bean.getCity()).isEqualTo(CITY);
 		assertThat(bean.getMessageType()).isEqualTo(MESSAGE_TYPE);
+		assertThat(bean.getStatus()).isEqualTo(STATUS);
 	}
 
 	@Test
@@ -134,8 +137,8 @@ class MessageDetailsTest {
 	}
 
 	@Test
-	void MessageDetails_Attachment_builderPatternTest() {
-		final var bean = MessageDetails.Attachment.create()
+	void MessageDetails_AttachmentDetails_builderPatternTest() {
+		final var bean = MessageDetails.AttachmentDetails.create()
 			.withAttachmentId(ATTACHMENT_ID)
 			.withFileName(FILE_NAME)
 			.withContentType(CONTENT_TYPE);
@@ -146,15 +149,16 @@ class MessageDetailsTest {
 	}
 
 	@Test
-	void MessageDetails_Recipient_builderPatternTest() {
-		final var bean = MessageDetails.Recipient.create()
+	void MessageDetails_RecipientDetails_builderPatternTest() {
+		final var bean = MessageDetails.RecipientDetails.create()
 			.withName(NAME)
 			.withPartyId(PARTY_ID)
 			.withMobileNumber(MOBILE_NUMBER)
 			.withStreetAddress(STREET_ADDRESS)
 			.withZipCode(ZIP_CODE)
 			.withCity(CITY)
-			.withMessageType(MESSAGE_TYPE);
+			.withMessageType(MESSAGE_TYPE)
+			.withStatus(STATUS);
 
 		assertThat(bean.getName()).isEqualTo(NAME);
 		assertThat(bean.getPartyId()).isEqualTo(PARTY_ID);
@@ -163,6 +167,7 @@ class MessageDetailsTest {
 		assertThat(bean.getZipCode()).isEqualTo(ZIP_CODE);
 		assertThat(bean.getCity()).isEqualTo(CITY);
 		assertThat(bean.getMessageType()).isEqualTo(MESSAGE_TYPE);
+		assertThat(bean.getStatus()).isEqualTo(STATUS);
 	}
 
 	@Test
@@ -172,15 +177,15 @@ class MessageDetailsTest {
 	}
 
 	@Test
-	void MessageDetails_Attachment_constructorTest() {
-		assertThat(new MessageDetails.Attachment()).hasAllNullFieldsOrProperties();
-		assertThat(new MessageDetails.Attachment()).hasOnlyFields("attachmentId", "fileName", "contentType");
+	void MessageDetails_AttachmentDetails_constructorTest() {
+		assertThat(new MessageDetails.AttachmentDetails()).hasAllNullFieldsOrProperties();
+		assertThat(new MessageDetails.AttachmentDetails()).hasOnlyFields("attachmentId", "fileName", "contentType");
 	}
 
 	@Test
-	void MessageDetails_Recipient_constructorTest() {
-		assertThat(new MessageDetails.Recipient()).hasAllNullFieldsOrProperties();
-		assertThat(new MessageDetails.Recipient()).hasOnlyFields("name", "partyId", "mobileNumber", "streetAddress", "zipCode", "city", "messageType");
+	void MessageDetails_RecipientDetails_constructorTest() {
+		assertThat(new MessageDetails.RecipientDetails()).hasAllNullFieldsOrProperties();
+		assertThat(new MessageDetails.RecipientDetails()).hasOnlyFields("name", "partyId", "mobileNumber", "streetAddress", "zipCode", "city", "messageType", "status");
 	}
 
 }

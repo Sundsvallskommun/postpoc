@@ -13,6 +13,7 @@ import generated.se.sundsvall.messaging.SmsBatchRequest;
 import generated.se.sundsvall.messaging.SmsRequest;
 import generated.se.sundsvall.messaging.SmsRequestParty;
 import generated.se.sundsvall.messaging.SnailmailAttachment;
+import generated.se.sundsvall.messaging.SnailmailParty;
 import generated.se.sundsvall.messaging.SnailmailRequest;
 import java.util.List;
 import java.util.Objects;
@@ -80,9 +81,11 @@ public final class MessagingMapper {
 			return null;
 		}
 		return new SnailmailRequest()
+			.party(new SnailmailParty().partyId(recipientEntity.getPartyId()))
 			.address(toAddress(recipientEntity))
 			.attachments(toSnailmailAttachments(messageEntity.getAttachments()))
-			.department(messageEntity.getDepartment().getName());
+			.department(messageEntity.getDepartment().getName())
+			.folderName(messageEntity.getDepartment().getFolderName());
 	}
 
 	public static List<SnailmailAttachment> toSnailmailAttachments(final List<AttachmentEntity> attachmentEntities) {
