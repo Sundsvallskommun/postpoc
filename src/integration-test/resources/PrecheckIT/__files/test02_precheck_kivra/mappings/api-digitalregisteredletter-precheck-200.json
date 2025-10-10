@@ -1,7 +1,7 @@
 {
 	"request": {
-		"url": "/api-employee/2281/portalpersondata/personal/joe01doe",
-		"method": "GET",
+		"url": "/api-digitalregisteredletter/2281/eligibility/kivra",
+		"method": "POST",
 		"headers": {
 			"Authorization": {
 				"equalTo": "Bearer 0000000000000000AAAAAAAAAAAAAAAA"
@@ -13,6 +13,6 @@
 		"headers": {
 			"Content-Type": "application/json"
 		},
-		"bodyFileName": "test02_precheck_missingOrganizationNumber/responses/employee-getportalpersondata.json"
+		"bodyFileName": "test02_precheck_kivra/responses/api-digitalregisteredletter-precheck.json"
 	}
 }

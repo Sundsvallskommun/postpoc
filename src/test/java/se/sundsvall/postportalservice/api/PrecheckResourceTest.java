@@ -45,16 +45,16 @@ class PrecheckResourceTest {
 	}
 
 	@Test
-	void precheck() {
-		final var request = new PrecheckRequest(List.of("191111111111", "192222222222"));
+	void precheckPartyIds() {
+		final var request = new PrecheckRequest(List.of("b46f0ca2-d2ad-43e8-8d50-3aeb949e3604", "fd99a03c-790c-4b87-bc4b-f4f73e4a2df4"));
 
 		final var precheckResponse = PrecheckResponse.of(List.of(
-			new PrecheckRecipient("191111111111", "partyId-1", DeliveryMethod.DIGITAL_MAIL, null),
-			new PrecheckRecipient("192222222222", "partyId-2", DeliveryMethod.DIGITAL_MAIL, null)));
+			new PrecheckRecipient("b46f0ca2-d2ad-43e8-8d50-3aeb949e3604", "partyId-1", DeliveryMethod.DIGITAL_MAIL, null),
+			new PrecheckRecipient("fd99a03c-790c-4b87-bc4b-f4f73e4a2df4", "partyId-2", DeliveryMethod.DIGITAL_MAIL, null)));
 
-		when(precheckService.precheck(MUNICIPALITY_ID, request)).thenReturn(precheckResponse);
+		when(precheckService.precheckPartyIds(MUNICIPALITY_ID, request.partyIds())).thenReturn(precheckResponse);
 
-		var response = webTestClient.post()
+		final var response = webTestClient.post()
 			.uri("/{municipalityId}/precheck", MUNICIPALITY_ID)
 			.header(Identifier.HEADER_NAME, "type=adAccount; joe01doe")
 			.contentType(APPLICATION_JSON)
@@ -68,10 +68,10 @@ class PrecheckResourceTest {
 
 		assertThat(response).isNotNull();
 		assertThat(response.precheckRecipients()).extracting("personalIdentityNumber", "partyId", "deliveryMethod").containsExactlyInAnyOrder(
-			tuple("191111111111", "partyId-1", DeliveryMethod.DIGITAL_MAIL),
-			tuple("192222222222", "partyId-2", DeliveryMethod.DIGITAL_MAIL));
+			tuple("b46f0ca2-d2ad-43e8-8d50-3aeb949e3604", "partyId-1", DeliveryMethod.DIGITAL_MAIL),
+			tuple("fd99a03c-790c-4b87-bc4b-f4f73e4a2df4", "partyId-2", DeliveryMethod.DIGITAL_MAIL));
 
-		verify(precheckService).precheck(MUNICIPALITY_ID, request);
+		verify(precheckService).precheckPartyIds(MUNICIPALITY_ID, request.partyIds());
 	}
 
 	@Test

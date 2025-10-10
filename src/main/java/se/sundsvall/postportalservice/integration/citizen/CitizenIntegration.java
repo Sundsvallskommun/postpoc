@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CitizenIntegration {
 
-	static final String POPULATION_REGISTRATION_ADDRESS = "POPULATION_REGISTRATION_ADDRESS";
+	public static final String POPULATION_REGISTRATION_ADDRESS = "POPULATION_REGISTRATION_ADDRESS";
 
 	private final CitizenClient client;
 

@@ -66,6 +66,6 @@ public interface MessagingClient {
 	List<Mailbox> precheckMailboxes(
 		@PathVariable final String municipalityId,
 		@PathVariable final String organizationNumber,
-		@RequestBody List<String> partyIds);
+		@RequestBody final List<String> partyIds);
 
 }

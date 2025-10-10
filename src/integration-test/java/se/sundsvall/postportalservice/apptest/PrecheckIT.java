@@ -1,7 +1,6 @@
 package se.sundsvall.postportalservice.apptest;
 
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -31,20 +30,7 @@ class PrecheckIT extends AbstractAppTest {
 	}
 
 	@Test
-	void test02_precheck_missingOrganizationNumber() {
-		setupCall()
-			.withHttpMethod(POST)
-			.withServicePath("/2281/precheck")
-			.withHeader(Identifier.HEADER_NAME, "type=adAccount; joe01doe")
-			.withContentType(APPLICATION_JSON)
-			.withRequest(REQUEST_FILE)
-			.withExpectedResponseStatus(NOT_FOUND)
-			.withExpectedResponse(RESPONSE_FILE)
-			.sendRequestAndVerifyResponse();
-	}
-
-	@Test
-	void test03_precheck_kivra() {
+	void test02_precheck_kivra() {
 		setupCall()
 			.withHttpMethod(POST)
 			.withServicePath("/2281/precheck/kivra")
