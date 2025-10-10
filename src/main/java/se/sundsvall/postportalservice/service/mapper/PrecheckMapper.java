@@ -21,7 +21,7 @@ import se.sundsvall.postportalservice.api.model.PrecheckResponse.PrecheckRecipie
 @Component
 public final class PrecheckMapper {
 
-	public Map<String, String> toFailureByPersonId(List<PersonGuidBatch> batches) {
+	public Map<String, String> toFailureByPersonId(final List<PersonGuidBatch> batches) {
 		return ofNullable(batches)
 			.orElse(emptyList())
 			.stream()
@@ -36,7 +36,7 @@ public final class PrecheckMapper {
 				Map::putAll);
 	}
 
-	public List<PrecheckRecipient> toRecipientsWithoutPartyIds(List<String> personIds, Map<String, String> failureByPersonId) {
+	public List<PrecheckRecipient> toRecipientsWithoutPartyIds(final List<String> personIds, final Map<String, String> failureByPersonId) {
 		return ofNullable(personIds)
 			.orElse(emptyList())
 			.stream()
@@ -50,7 +50,7 @@ public final class PrecheckMapper {
 			}).toList();
 	}
 
-	public List<String> toSnailMailEligiblePartyIds(List<CitizenExtended> citizens, Predicate<CitizenExtended> isEligible) {
+	public List<String> toSnailMailEligiblePartyIds(final List<CitizenExtended> citizens, final Predicate<CitizenExtended> isEligible) {
 		return ofNullable(citizens).orElse(emptyList())
 			.stream()
 			.filter(isEligible)
@@ -60,7 +60,17 @@ public final class PrecheckMapper {
 			.toList();
 	}
 
-	public Map<String, String> mapPersonIdToPartyId(List<PersonGuidBatch> personGuidBatches) {
+	public List<String> toSnailMailIneligiblePartyIds(final List<CitizenExtended> citizens, final Predicate<CitizenExtended> isEligible) {
+		return ofNullable(citizens).orElse(emptyList())
+			.stream()
+			.filter(isEligible.negate())
+			.map(CitizenExtended::getPersonId)
+			.filter(Objects::nonNull)
+			.map(UUID::toString)
+			.toList();
+	}
+
+	public Map<String, String> mapPersonIdToPartyId(final List<PersonGuidBatch> personGuidBatches) {
 		return ofNullable(personGuidBatches).orElse(emptyList())
 			.stream()
 			.collect(LinkedHashMap::new,
@@ -69,4 +79,5 @@ public final class PrecheckMapper {
 					: personGuidBatch.getPersonId().toString()),
 				Map::putAll);
 	}
+
 }

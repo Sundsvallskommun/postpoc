@@ -4,10 +4,11 @@ import static java.util.Collections.emptyList;
 import static org.zalando.problem.Status.NOT_FOUND;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.zalando.problem.Problem;
 import se.sundsvall.postportalservice.api.model.KivraEligibilityRequest;
-import se.sundsvall.postportalservice.api.model.PrecheckRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.PrecheckRecipient;
@@ -47,22 +48,54 @@ public class PrecheckService {
 		this.employeeService = employeeService;
 	}
 
-	public PrecheckResponse precheck(final String municipalityId, final PrecheckRequest request) {
+	public PrecheckResponse precheckPartyIds(final String municipalityId, final List<String> partyIds) {
+		final var sentBy = employeeService.getSentBy(municipalityId);
+
+		// Checks digital mailbox eligibility for all provided partyIds
+		final var mailboxes = messagingIntegration.precheckMailboxes(municipalityId, sentBy.organizationId(), partyIds);
+
+		// Find those that can be reached by digital mail
+		final var reachableByDigitalMail = PrecheckUtil.filterReachableMailboxes(mailboxes);
+		// Create recipients for those that can be reached by digital mail
+		final var digitalMailRecipients = reachableByDigitalMail.stream()
+			.map(partyId -> new PrecheckRecipient(null, partyId, DeliveryMethod.DIGITAL_MAIL, null));
+
+		// Find those that cannot be reached by digital mail
+		final var unreachableByDigitalMail = PrecheckUtil.filterUnreachableMailboxes(mailboxes);
+		// Retrieve citizen data for those that cannot be reached by digital mail
+		final var citizens = citizenIntegration.getCitizens(municipalityId, unreachableByDigitalMail);
+		// Find those that are eligible for snail mail and create recipients for them
+		final var snailMailRecipients = precheckMapper.toSnailMailEligiblePartyIds(citizens, citizenIntegration::isRegisteredInSweden).stream()
+			.map(partyId -> new PrecheckRecipient(null, partyId, DeliveryMethod.SNAIL_MAIL, null));
+
+		// Find those citizens that are ineligible for both digital and snail mail and create recipients for them
+		final var ineligibleForBoth = precheckMapper.toSnailMailIneligiblePartyIds(citizens, citizenIntegration::isRegisteredInSweden).stream()
+			.map(partyId -> new PrecheckRecipient(null, partyId, DeliveryMethod.DELIVERY_NOT_POSSIBLE, null));
+
+		// Combine all recipient streams into a single list
+		var recipients = Stream.of(digitalMailRecipients, snailMailRecipients, ineligibleForBoth)
+			.flatMap(Function.identity())
+			.toList();
+
+		return PrecheckResponse.of(recipients);
+	}
+
+	// TODO: Will be used for sending letters by CSV
+	public PrecheckResponse precheck(final String municipalityId, final List<String> legalIds) {
 		var sentBy = employeeService.getSentBy(municipalityId);
 
-		var personIds = request.personIds();
-		if (personIds == null || personIds.isEmpty()) {
+		if (legalIds == null || legalIds.isEmpty()) {
 			return PrecheckResponse.of(emptyList());
 		}
 
-		final var batches = citizenIntegration.getPartyIds(municipalityId, personIds);
+		final var batches = citizenIntegration.getPartyIds(municipalityId, legalIds);
 		final var failureByPersonId = precheckMapper.toFailureByPersonId(batches);
 		final var okRows = PrecheckUtil.filterSuccessfulPersonGuidBatches(batches);
 		final var personIdToPartyId = precheckMapper.mapPersonIdToPartyId(okRows);
 		final var partyIds = PrecheckUtil.filterNonNull(personIdToPartyId);
 
 		if (partyIds.isEmpty()) {
-			final var recipients = precheckMapper.toRecipientsWithoutPartyIds(personIds, failureByPersonId);
+			final var recipients = precheckMapper.toRecipientsWithoutPartyIds(legalIds, failureByPersonId);
 
 			return PrecheckResponse.of(recipients);
 		}
@@ -76,15 +109,15 @@ public class PrecheckService {
 		final var citizens = citizenIntegration.getCitizens(municipalityId, unreachable);
 		final var snailMail = precheckMapper.toSnailMailEligiblePartyIds(citizens, citizenIntegration::isRegisteredInSweden);
 
-		final var recipients = personIds.stream()
-			.map(personId -> {
-				final var failure = failureByPersonId.get(personId);
+		final var recipients = legalIds.stream()
+			.map(legalId -> {
+				final var failure = failureByPersonId.get(legalId);
 
 				if (failure != null) {
-					return new PrecheckRecipient(personId, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, failure);
+					return new PrecheckRecipient(legalId, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, failure);
 				}
 
-				final var partyId = personIdToPartyId.get(personId);
+				final var partyId = personIdToPartyId.get(legalId);
 				final var method = PrecheckUtil.getDeliveryMethod(partyId, reachable, snailMail);
 
 				String reason = null;
@@ -95,7 +128,7 @@ public class PrecheckService {
 					reason = FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD;
 				}
 
-				return new PrecheckRecipient(personId, partyId, method, reason);
+				return new PrecheckRecipient(legalId, partyId, method, reason);
 			})
 			.toList();
 

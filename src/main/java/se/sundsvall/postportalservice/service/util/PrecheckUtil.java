@@ -19,14 +19,14 @@ public final class PrecheckUtil {
 
 	private PrecheckUtil() {}
 
-	public static List<PersonGuidBatch> filterSuccessfulPersonGuidBatches(List<PersonGuidBatch> batches) {
+	public static List<PersonGuidBatch> filterSuccessfulPersonGuidBatches(final List<PersonGuidBatch> batches) {
 		return ofNullable(batches).orElse(emptyList())
 			.stream()
 			.filter(batch -> TRUE.equals(batch.getSuccess()))
 			.toList();
 	}
 
-	public static List<String> filterNonNull(Map<String, String> pinToParty) {
+	public static List<String> filterNonNull(final Map<String, String> pinToParty) {
 		return ofNullable(pinToParty).orElse(Map.of())
 			.values()
 			.stream()
@@ -34,7 +34,7 @@ public final class PrecheckUtil {
 			.toList();
 	}
 
-	public static List<String> filterReachableMailboxes(List<Mailbox> mailboxes) {
+	public static List<String> filterReachableMailboxes(final List<Mailbox> mailboxes) {
 		return ofNullable(mailboxes).orElse(emptyList())
 			.stream()
 			.filter(mailbox -> TRUE.equals(mailbox.getReachable()))
@@ -43,7 +43,7 @@ public final class PrecheckUtil {
 			.toList();
 	}
 
-	public static List<String> filterUnreachableMailboxes(List<Mailbox> mailboxes) {
+	public static List<String> filterUnreachableMailboxes(final List<Mailbox> mailboxes) {
 		return ofNullable(mailboxes).orElse(emptyList())
 			.stream()
 			.filter(mailbox -> FALSE.equals(mailbox.getReachable()))
@@ -52,7 +52,7 @@ public final class PrecheckUtil {
 			.toList();
 	}
 
-	public static DeliveryMethod getDeliveryMethod(String partyId, List<String> hasDigitalMailbox, List<String> canReceiveSnailMail) {
+	public static DeliveryMethod getDeliveryMethod(final String partyId, final List<String> hasDigitalMailbox, final List<String> canReceiveSnailMail) {
 		if (partyId == null) {
 			return DELIVERY_NOT_POSSIBLE;
 		}

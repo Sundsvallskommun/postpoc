@@ -56,7 +56,7 @@ class PrecheckResource {
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
 		@RequestBody @Valid final PrecheckRequest request) {
 		Identifier.set(Identifier.parse(xSentBy));
-		final var result = precheckService.precheck(municipalityId, request);
+		final var result = precheckService.precheckPartyIds(municipalityId, request.partyIds());
 		return ok(result);
 	}
 

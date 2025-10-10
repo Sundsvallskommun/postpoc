@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:60271
+  - url: http://localhost:52304
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -575,20 +575,21 @@ components:
   schemas:
     PrecheckRequest:
       required:
-        - personIds
+        - partyIds
       type: object
       properties:
-        personIds:
+        partyIds:
           minItems: 1
           type: array
-          description: List of personal identity numbers to precheck
+          description: List of party ids to precheck
           example:
-            - "191111111111"
-            - "192222222222"
+            - b46f0ca2-d2ad-43e8-8d50-3aeb949e3604
+            - fd99a03c-790c-4b87-bc4b-f4f73e4a2df4
           items:
             type: string
-            description: List of personal identity numbers to precheck
-            example: "[\"191111111111\",\"192222222222\"]"
+            description: List of party ids to precheck
+            example: "[\"b46f0ca2-d2ad-43e8-8d50-3aeb949e3604\",\"fd99a03c-790c-4b87-bc4b-f4f73e4a2df4\"\
+              ]"
       description: Precheck request model
     Problem:
       type: object
@@ -605,18 +606,18 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
-        title:
-          type: string
         detail:
+          type: string
+        title:
           type: string
     StatusType:
       type: object
       properties:
+        reasonPhrase:
+          type: string
         statusCode:
           type: integer
           format: int32
-        reasonPhrase:
-          type: string
     ConstraintViolationProblem:
       type: object
       properties:
