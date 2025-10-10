@@ -1,42 +1,42 @@
 [
 	{
+		"digitalMail": 0,
+		"digitalRegisteredLetter": 0,
 		"id": "department1",
 		"name": "Miljöförvaltningen",
-		"snailMail": 3,
-		"digitalMail": 0,
 		"sms": 0,
-		"digitalRegisteredLetter": 0
+		"snailMail": 3
 	},
 	{
+		"digitalMail": 2,
+		"digitalRegisteredLetter": 0,
 		"id": "department2",
 		"name": "Socialförvaltningen",
-		"snailMail": 0,
-		"digitalMail": 2,
 		"sms": 1,
-		"digitalRegisteredLetter": 0
+		"snailMail": 0
 	},
 	{
+		"digitalMail": 0,
+		"digitalRegisteredLetter": 1,
 		"id": "department3",
 		"name": "IT-avdelningen",
-		"snailMail": 0,
-		"digitalMail": 0,
 		"sms": 0,
-		"digitalRegisteredLetter": 2
+		"snailMail": 0
 	},
 	{
+		"digitalMail": 0,
+		"digitalRegisteredLetter": 0,
 		"id": "department4",
 		"name": "HR-avdelningen",
-		"snailMail": 0,
-		"digitalMail": 0,
 		"sms": 3,
-		"digitalRegisteredLetter": 0
+		"snailMail": 0
 	},
 	{
+		"digitalMail": 1,
+		"digitalRegisteredLetter": 0,
 		"id": "department5",
 		"name": "Kulturförvaltningen",
-		"snailMail": 1,
-		"digitalMail": 1,
 		"sms": 1,
-		"digitalRegisteredLetter": 0
+		"snailMail": 1
 	}
 ]

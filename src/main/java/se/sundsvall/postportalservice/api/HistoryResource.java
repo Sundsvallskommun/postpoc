@@ -22,6 +22,7 @@ import org.zalando.problem.Problem;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.postportalservice.api.model.MessageDetails;
 import se.sundsvall.postportalservice.api.model.Messages;
+import se.sundsvall.postportalservice.api.model.SigningInformation;
 import se.sundsvall.postportalservice.service.HistoryService;
 
 @Validated
@@ -64,6 +65,17 @@ class HistoryResource {
 		@Parameter(name = "messageId", description = "Message ID", example = "123456") @PathVariable final String messageId) {
 
 		return ok(historyService.getMessageDetails(municipalityId, userId, messageId));
+	}
+
+	@GetMapping(value = "/messages/{messageId}/signinginfo", produces = APPLICATION_JSON_VALUE)
+	@Operation(summary = "Get signing information", description = "Retrieves signing information connected to letter matching provided id", responses = {
+		@ApiResponse(responseCode = "200", description = "Successful Operation - OK", useReturnTypeSchema = true),
+		@ApiResponse(responseCode = "404", description = "Not Found", content = @Content(mediaType = APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(implementation = Problem.class)))
+	})
+	ResponseEntity<SigningInformation> getSigningInformation(
+		@PathVariable @ValidMunicipalityId final String municipalityId,
+		@PathVariable final String messageId) {
+		return ok(historyService.getSigningInformation(municipalityId, messageId));
 	}
 
 }

@@ -5,6 +5,7 @@ import static se.sundsvall.postportalservice.service.util.IdentifierUtil.getIden
 
 import java.util.List;
 import org.springframework.stereotype.Component;
+import se.sundsvall.postportalservice.api.model.SigningInformation;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 
@@ -29,6 +30,11 @@ public class DigitalRegisteredLetterIntegration {
 	public List<String> checkKivraEligibility(final String municipalityId, final List<String> partyIds) {
 		final var request = mapper.toEligibilityRequest(partyIds);
 		return client.checkKivraEligibility(municipalityId, request);
+	}
+
+	public SigningInformation getSigningInformation(final String municipalityId, final String letterId) {
+		var info = client.getSigningInfo(municipalityId, letterId);
+		return mapper.toSigningInformation(info);
 	}
 
 	public boolean getAllLetters(final String municipalityId) {

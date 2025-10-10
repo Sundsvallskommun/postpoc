@@ -7,14 +7,15 @@ import generated.se.sundsvall.digitalregisteredletter.EligibilityRequest;
 import generated.se.sundsvall.digitalregisteredletter.Letter;
 import generated.se.sundsvall.digitalregisteredletter.LetterRequest;
 import generated.se.sundsvall.digitalregisteredletter.Letters;
+import generated.se.sundsvall.digitalregisteredletter.SigningInfo;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import se.sundsvall.dept44.support.Identifier;
@@ -27,17 +28,17 @@ import se.sundsvall.postportalservice.integration.digitalregisteredletter.config
 @CircuitBreaker(name = CLIENT_ID)
 public interface DigitalRegisteredLetterClient {
 
-	@GetMapping(path = "/{municipalityId}/eligibility/kivra")
+	@PostMapping(path = "/{municipalityId}/eligibility/kivra")
 	List<String> checkKivraEligibility(
 		@PathVariable final String municipalityId,
-		@RequestParam final EligibilityRequest request);
+		@RequestBody final EligibilityRequest request);
 
 	@GetMapping(path = "/{municipalityId}/letters")
 	List<Letters> getAllLetters(@PathVariable final String municipalityId);
 
 	@GetMapping(path = "/{municipalityId}/letters/{letterId}")
 	Letter getLetterById(@PathVariable final String municipalityId,
-		@PathVariable("letterId") final String letterId);
+		@PathVariable final String letterId);
 
 	@PostMapping(value = "/{municipalityId}/letters", consumes = MULTIPART_FORM_DATA)
 	Letter sendLetter(
@@ -45,5 +46,10 @@ public interface DigitalRegisteredLetterClient {
 		@PathVariable final String municipalityId,
 		@RequestPart(name = "letter") final LetterRequest letterRequest,
 		@RequestPart(name = "letterAttachments") final List<MultipartFile> files);
+
+	@GetMapping(value = "/{municipalityId}/letters/{letterId}/signinginfo")
+	SigningInfo getSigningInfo(
+		@PathVariable final String municipalityId,
+		@PathVariable final String letterId);
 
 }

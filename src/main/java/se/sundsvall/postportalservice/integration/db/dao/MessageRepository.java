@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
+import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 
 @Repository
 public interface MessageRepository extends JpaRepository<MessageEntity, String> {
@@ -13,5 +14,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, String> 
 	Page<MessageEntity> findAllByMunicipalityIdAndUser_Id(final String municipalityId, final String userId, final Pageable pageable);
 
 	Optional<MessageEntity> findByMunicipalityIdAndIdAndUser_Id(final String municipalityId, final String messageId, final String userId);
+
+	Optional<MessageEntity> findByIdAndMessageType(final String messageId, final MessageType messageType);
 
 }

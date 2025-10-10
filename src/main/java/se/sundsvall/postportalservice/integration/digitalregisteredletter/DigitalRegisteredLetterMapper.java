@@ -4,15 +4,20 @@ import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.ObjectUtils.anyNull;
 import static org.zalando.fauxpas.FauxPas.throwingFunction;
 
+import generated.se.sundsvall.digitalregisteredletter.Device;
 import generated.se.sundsvall.digitalregisteredletter.EligibilityRequest;
 import generated.se.sundsvall.digitalregisteredletter.LetterRequest;
 import generated.se.sundsvall.digitalregisteredletter.Organization;
+import generated.se.sundsvall.digitalregisteredletter.SigningInfo;
+import generated.se.sundsvall.digitalregisteredletter.StepUp;
 import generated.se.sundsvall.digitalregisteredletter.SupportInfo;
+import generated.se.sundsvall.digitalregisteredletter.User;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import se.sundsvall.postportalservice.api.model.SigningInformation;
 import se.sundsvall.postportalservice.integration.db.AttachmentEntity;
 import se.sundsvall.postportalservice.integration.db.DepartmentEntity;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
@@ -69,6 +74,40 @@ public class DigitalRegisteredLetterMapper {
 
 	public MultipartFile createMultipartFile(final AttachmentEntity attachmentEntity) throws SQLException {
 		return new AttachmentMultipartFile(attachmentEntity.getFileName(), attachmentEntity.getContentType(), attachmentEntity.getContent());
+	}
+
+	public SigningInformation toSigningInformation(final SigningInfo signingInfo) {
+		return Optional.ofNullable(signingInfo).map(info -> new SigningInformation()
+			.withStatus(signingInfo.getStatus())
+			.withSignedAt(signingInfo.getSigned())
+			.withContentKey(signingInfo.getContentKey())
+			.withOrderReference(signingInfo.getOrderRef())
+			.withSignature(signingInfo.getSignature())
+			.withOcspResponse(signingInfo.getOcspResponse())
+			.withUser(toUser(signingInfo.getUser()))
+			.withDevice(toDevice(signingInfo.getDevice()))
+			.withStepUp(toStepUp(signingInfo.getStepUp())))
+			.orElse(null);
+	}
+
+	public SigningInformation.User toUser(final User user) {
+		return Optional.ofNullable(user).map(present -> new SigningInformation.User()
+			.withPersonalIdentityNumber(user.getPersonalIdentityNumber())
+			.withName(user.getName())
+			.withGivenName(user.getGivenName())
+			.withSurname(user.getSurname())).orElse(null);
+	}
+
+	public SigningInformation.Device toDevice(final Device device) {
+		return Optional.ofNullable(device).map(present -> new SigningInformation.Device()
+			.withIpAddress(device.getIpAddress()))
+			.orElse(null);
+	}
+
+	public SigningInformation.StepUp toStepUp(final StepUp stepUp) {
+		return Optional.ofNullable(stepUp).map(present -> new SigningInformation.StepUp()
+			.withMrtd(stepUp.getMrtd()))
+			.orElse(null);
 	}
 
 }

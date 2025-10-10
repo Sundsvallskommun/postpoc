@@ -13,11 +13,11 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.zalando.problem.Status.BAD_GATEWAY;
+import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
 import static se.sundsvall.postportalservice.Constants.FAILED;
 import static se.sundsvall.postportalservice.Constants.SENT;
 import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
 
-import generated.se.sundsvall.employee.PortalPersonData;
 import generated.se.sundsvall.messaging.DeliveryResult;
 import generated.se.sundsvall.messaging.MessageResult;
 import generated.se.sundsvall.messagingsettings.SenderInfoResponse;
@@ -55,7 +55,6 @@ import se.sundsvall.postportalservice.integration.db.dao.DepartmentRepository;
 import se.sundsvall.postportalservice.integration.db.dao.MessageRepository;
 import se.sundsvall.postportalservice.integration.db.dao.UserRepository;
 import se.sundsvall.postportalservice.integration.digitalregisteredletter.DigitalRegisteredLetterIntegration;
-import se.sundsvall.postportalservice.integration.employee.EmployeeIntegration;
 import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration;
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
 import se.sundsvall.postportalservice.service.mapper.AttachmentMapper;
@@ -70,7 +69,7 @@ class MessageServiceTest {
 	private MessagingIntegration messagingIntegrationMock;
 
 	@Mock
-	private EmployeeIntegration employeeIntegrationMock;
+	private EmployeeService employeeService;
 
 	@Mock
 	private DepartmentRepository departmentRepositoryMock;
@@ -112,50 +111,46 @@ class MessageServiceTest {
 	void tearDown() {
 		Identifier.remove();
 		verifyNoMoreInteractions(attachmentMapperMock, entityMapperMock,
-			messagingIntegrationMock, employeeIntegrationMock,
+			messagingIntegrationMock, employeeService,
 			departmentRepositoryMock, userRepositoryMock,
 			messageRepositoryMock, digitalRegisteredLetterIntegrationMock);
 	}
 
 	/**
-	 * Employee integration returns empty optional, we expect a Problem (502 Bad Gateway) to be thrown and the process to
-	 * stop.
+	 * Employee service throws an 502 Problem, we expect the exception to be thrown and the process to stop.
 	 */
 	@Test
 	void processDigitalRegisteredLetterRequest_employeeNotFound() throws Exception {
 		var request = TestDataFactory.createValidDigitalRegisteredLetterRequest();
 		var attachments = TestDataFactory.createValidAttachments(2);
 
-		when(employeeIntegrationMock.getPortalPersonData(MUNICIPALITY_ID, USERNAME)).thenReturn(Optional.empty());
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve employee data for user [%s]".formatted(USERNAME)));
 
 		assertThatThrownBy(() -> messageService.processDigitalRegisteredLetterRequest(MUNICIPALITY_ID, request, attachments))
 			.isInstanceOf(Problem.class)
 			.hasMessage("Bad Gateway: Failed to retrieve employee data for user [%s]".formatted(USERNAME));
 
-		verify(employeeIntegrationMock).getPortalPersonData(MUNICIPALITY_ID, USERNAME);
-		verifyNoMoreInteractions(employeeIntegrationMock);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
+		verifyNoMoreInteractions(employeeService);
 		verifyNoInteractions(messagingIntegrationMock, departmentRepositoryMock, userRepositoryMock, messageRepositoryMock);
 	}
 
 	/**
-	 * Employee integration returns invalid orgTree. We expect the EmployeeUtil to return an empty optional, which results
-	 * in a Problem (500 Internal Server Error) to be thrown and we expect the process to stop.
+	 * Employee service throws an 500 Problem, we expect the exception to be thrown and the process to stop.
 	 */
 	@Test
 	void processDigitalRegisteredLetterRequest_invalidOrgTree() throws Exception {
 		var request = TestDataFactory.createValidDigitalRegisteredLetterRequest();
 		var attachments = TestDataFactory.createValidAttachments(2);
-		var personData = new PortalPersonData()
-			.orgTree("invalid-org-tree-format");
 
-		when(employeeIntegrationMock.getPortalPersonData(MUNICIPALITY_ID, USERNAME)).thenReturn(Optional.of(personData));
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(INTERNAL_SERVER_ERROR, "Failed to parse organization from employee data"));
 
 		assertThatThrownBy(() -> messageService.processDigitalRegisteredLetterRequest(MUNICIPALITY_ID, request, attachments))
 			.isInstanceOf(Problem.class)
 			.hasMessage("Internal Server Error: Failed to parse organization from employee data");
 
-		verify(employeeIntegrationMock).getPortalPersonData(MUNICIPALITY_ID, USERNAME);
-		verifyNoMoreInteractions(employeeIntegrationMock);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
+		verifyNoMoreInteractions(employeeService);
 		verifyNoInteractions(messagingIntegrationMock, departmentRepositoryMock, userRepositoryMock, messageRepositoryMock);
 	}
 
@@ -176,7 +171,7 @@ class MessageServiceTest {
 			.isInstanceOf(Problem.class)
 			.hasMessage("Bad Gateway: Found no sender info for departmentId");
 
-		verify(employeeIntegrationMock).getPortalPersonData(MUNICIPALITY_ID, USERNAME);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
 		verify(messagingSettingsIntegrationMock).getSenderInfo(eq(MUNICIPALITY_ID), any());
 		verifyNoInteractions(messagingIntegrationMock, departmentRepositoryMock, userRepositoryMock, messageRepositoryMock);
 	}
@@ -210,7 +205,7 @@ class MessageServiceTest {
 
 		assertThat(result).isNotNull().isEqualTo("messageId");
 
-		verify(employeeIntegrationMock).getPortalPersonData(MUNICIPALITY_ID, USERNAME);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
 		verify(messagingSettingsIntegrationMock).getSenderInfo(eq(MUNICIPALITY_ID), any());
 		verify(userRepositoryMock).findByName(USERNAME);
 		verify(departmentRepositoryMock).findByOrganizationId("organizationId");
@@ -270,7 +265,7 @@ class MessageServiceTest {
 
 		assertThat(result).isNotNull().isEqualTo("messageId");
 
-		verify(employeeIntegrationMock).getPortalPersonData(MUNICIPALITY_ID, USERNAME);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
 		verify(messagingSettingsIntegrationMock).getSenderInfo(eq(MUNICIPALITY_ID), any());
 		verify(userRepositoryMock).findByName(USERNAME);
 		verify(departmentRepositoryMock).findByOrganizationId("organizationId");
@@ -313,10 +308,9 @@ class MessageServiceTest {
 	}
 
 	private void happyCaseStubEmployee() {
-		var personData = new PortalPersonData()
-			.orgTree("2|organizationId|departmentName¤3|1234|Test Avdelningar¤4|12345|Test Avdelningar Digital¤5|123456|Test Avdelningar Digitalisering¤6|1234567|Test Avdelning Digitalisering");
-		when(employeeIntegrationMock.getPortalPersonData(any(), any()))
-			.thenReturn(Optional.of(personData));
+		var sentBy = new EmployeeService.SentBy("username", "organizationId", "departmentName");
+
+		when(employeeService.getSentBy(any())).thenReturn(sentBy);
 	}
 
 	@Test
@@ -325,7 +319,7 @@ class MessageServiceTest {
 		var multipartFile = Mockito.mock(MultipartFile.class);
 		var attachments = new Attachments().withFiles(List.of(multipartFile));
 		var letterRequest = TestDataFactory.createValidLetterRequest();
-		var sentBy = new MessageService.SentBy("username", "organizationId", "departmentName");
+		var sentBy = new EmployeeService.SentBy("username", "organizationId", "departmentName");
 		var userEntity = new UserEntity().withName("username");
 		var departmentEntity = new DepartmentEntity().withName("departmentName").withOrganizationId("organizationId");
 		var attachmentEntity = new AttachmentEntity().withFileName("filename").withContentType("contentType").withContent(null);
@@ -339,7 +333,7 @@ class MessageServiceTest {
 				.contactInformationEmail("contactInformationEmail")
 				.contactInformationPhoneNumber("contactInformationPhoneNumber"));
 
-		doReturn(sentBy).when(spy).getSentBy(MUNICIPALITY_ID);
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(sentBy);
 		doReturn(userEntity).when(spy).getOrCreateUser(sentBy.userName());
 		doReturn(departmentEntity).when(spy).getOrCreateDepartment(sentBy);
 		doReturn(new CompletableFuture<>()).when(spy).processRecipients(any());
@@ -351,7 +345,7 @@ class MessageServiceTest {
 		verify(attachmentMapperMock).toAttachmentEntities(attachments);
 		verify(entityMapperMock).toRecipientEntity(any(Address.class));
 		verify(entityMapperMock).toRecipientEntity(any(Recipient.class));
-		verify(spy).getSentBy(MUNICIPALITY_ID);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
 		verify(spy).getOrCreateUser(sentBy.userName());
 		verify(spy).getOrCreateDepartment(sentBy);
 		verify(spy).processRecipients(any());
@@ -362,14 +356,14 @@ class MessageServiceTest {
 	void processSmsRequest() {
 		var spy = Mockito.spy(messageService);
 		var smsRequest = TestDataFactory.createValidSmsRequest();
-		var sentBy = new MessageService.SentBy("username", "organizationId", "departmentName");
+		var sentBy = new EmployeeService.SentBy("username", "organizationId", "departmentName");
 		var userEntity = new UserEntity().withName("username");
 		var departmentEntity = new DepartmentEntity().withName("departmentName").withOrganizationId("organizationId");
 		var messageId = "adc63e5c-b92f-4c75-b14f-819473cef5b6";
 
 		when(messagingSettingsIntegrationMock.getSenderInfo(MUNICIPALITY_ID, departmentEntity.getOrganizationId()))
 			.thenReturn(new SenderInfoResponse().smsSender("Avsändare"));
-		doReturn(sentBy).when(spy).getSentBy(MUNICIPALITY_ID);
+		when(employeeService.getSentBy(MUNICIPALITY_ID)).thenReturn(sentBy);
 		doReturn(userEntity).when(spy).getOrCreateUser(sentBy.userName());
 		doReturn(departmentEntity).when(spy).getOrCreateDepartment(sentBy);
 		doReturn(new CompletableFuture<>()).when(spy).processRecipients(any());
@@ -379,7 +373,7 @@ class MessageServiceTest {
 
 		assertThat(result).isEqualTo(messageId);
 		verify(entityMapperMock).toRecipientEntity(any(SmsRecipient.class));
-		verify(spy).getSentBy(MUNICIPALITY_ID);
+		verify(employeeService).getSentBy(MUNICIPALITY_ID);
 		verify(spy).getOrCreateUser(sentBy.userName());
 		verify(spy).getOrCreateDepartment(sentBy);
 		verify(spy).processRecipients(any());
@@ -578,7 +572,7 @@ class MessageServiceTest {
 		var departmentEntity = new DepartmentEntity().withName("IT").withOrganizationId("orgId");
 		when(departmentRepositoryMock.findByOrganizationId("orgId")).thenReturn(Optional.of(departmentEntity));
 
-		var sentBy = new MessageService.SentBy("username", "orgId", "IT");
+		var sentBy = new EmployeeService.SentBy("username", "orgId", "IT");
 		var result = messageService.getOrCreateDepartment(sentBy);
 
 		assertThat(result).isEqualTo(departmentEntity);
@@ -589,7 +583,7 @@ class MessageServiceTest {
 	void getOrCreateDepartment_departmentDoesNotExist() {
 		when(departmentRepositoryMock.findByOrganizationId("orgId")).thenReturn(Optional.empty());
 
-		var sentBy = new MessageService.SentBy("username", "orgId", "IT");
+		var sentBy = new EmployeeService.SentBy("username", "orgId", "IT");
 		var result = messageService.getOrCreateDepartment(sentBy);
 
 		assertThat(result).isNotNull().isInstanceOf(DepartmentEntity.class);
@@ -597,37 +591,6 @@ class MessageServiceTest {
 		assertThat(result.getName()).isEqualTo("IT");
 
 		verify(departmentRepositoryMock).findByOrganizationId("orgId");
-	}
-
-	@Test
-	void getSentBy() {
-		var username = Identifier.get().getValue();
-
-		var personData = new PortalPersonData()
-			.orgTree("2|42|En man som heter Ove¤3|880|Sunes sommar¤4|1234|Solsidan¤5|8456|Sällskapsresan¤6|7894|Tomten är far till alla barnen");
-		when(employeeIntegrationMock.getPortalPersonData(MUNICIPALITY_ID, username)).thenReturn(Optional.of(personData));
-
-		var result = messageService.getSentBy(MUNICIPALITY_ID);
-
-		assertThat(result).isNotNull().isInstanceOf(MessageService.SentBy.class);
-		assertThat(result.userName()).isEqualTo(username);
-		assertThat(result.organizationId()).isEqualTo("42");
-		assertThat(result.departmentName()).isEqualTo("En man som heter Ove");
-	}
-
-	@Test
-	void getSentBy_invalidOrgTree() {
-		var username = Identifier.get().getValue();
-
-		var personData = new PortalPersonData()
-			.orgTree("invalid-org-tree-format");
-		when(employeeIntegrationMock.getPortalPersonData(MUNICIPALITY_ID, username)).thenReturn(Optional.of(personData));
-
-		assertThatThrownBy(() -> messageService.getSentBy(MUNICIPALITY_ID))
-			.isInstanceOf(Problem.class)
-			.hasMessage("Internal Server Error: Failed to parse organization from employee data");
-
-		verify(employeeIntegrationMock).getPortalPersonData(MUNICIPALITY_ID, username);
 	}
 
 }
