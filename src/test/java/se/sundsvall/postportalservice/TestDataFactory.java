@@ -2,18 +2,15 @@ package se.sundsvall.postportalservice;
 
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
-import java.util.ArrayList;
+import generated.se.sundsvall.messaging.Mailbox;
 import java.util.List;
-import org.mariadb.jdbc.MariaDbBlob;
-import org.springframework.web.multipart.MultipartFile;
 import se.sundsvall.postportalservice.api.model.Address;
-import se.sundsvall.postportalservice.api.model.Attachments;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
+import se.sundsvall.postportalservice.api.model.LetterCsvRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.api.model.Recipient;
 import se.sundsvall.postportalservice.api.model.SmsRecipient;
 import se.sundsvall.postportalservice.api.model.SmsRequest;
-import se.sundsvall.postportalservice.integration.digitalregisteredletter.AttachmentMultipartFile;
 
 public final class TestDataFactory {
 
@@ -71,19 +68,19 @@ public final class TestDataFactory {
 			.withAddresses(List.of(createValidAddress()));
 	}
 
-	public static Attachments createValidAttachments(int numberOfAttachments) throws Exception {
-		var fileName = "test%s.pdf";
-		var contentType = "application/pdf";
-		var content = "Dummy PDF content".getBytes();
-		var blob = new MariaDbBlob(content);
+	public static LetterCsvRequest createValidLetterCsvRequest() {
+		return LetterCsvRequest.create()
+			.withBody("body")
+			.withSubject("Test Subject")
+			.withContentType("text/plain");
+	}
 
-		List<MultipartFile> files = new ArrayList<>();
-		for (int i = 1; i <= numberOfAttachments; i++) {
-			final var attachment = new AttachmentMultipartFile(fileName.formatted(i), contentType, blob);
-			files.add(attachment);
-		}
+	public static Mailbox createMailbox(String partyId, Boolean isReachable) {
+		final var mailbox = new Mailbox();
 
-		return Attachments.create()
-			.withFiles(files);
+		mailbox.setPartyId(partyId);
+		mailbox.setReachable(isReachable);
+
+		return mailbox;
 	}
 }

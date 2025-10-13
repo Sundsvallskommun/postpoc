@@ -8,6 +8,7 @@ import static se.sundsvall.postportalservice.integration.db.converter.MessageTyp
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.LETTER;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.SMS;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.SNAIL_MAIL;
+import static se.sundsvall.postportalservice.service.util.CsvUtil.parseCsvToLegalIds;
 import static se.sundsvall.postportalservice.service.util.SemaphoreUtil.withPermit;
 
 import generated.se.sundsvall.messaging.DeliveryResult;
@@ -24,8 +25,9 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import se.sundsvall.postportalservice.api.model.Attachments;
+import org.springframework.web.multipart.MultipartFile;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
+import se.sundsvall.postportalservice.api.model.LetterCsvRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.api.model.SmsRequest;
 import se.sundsvall.postportalservice.integration.db.DepartmentEntity;
@@ -53,6 +55,7 @@ public class MessageService {
 	private final MessagingIntegration messagingIntegration;
 	private final MessagingSettingsIntegration messagingSettingsIntegration;
 	private final EmployeeService employeeService;
+	private final PrecheckService precheckService;
 
 	private final AttachmentMapper attachmentMapper;
 	private final EntityMapper entityMapper;
@@ -66,6 +69,7 @@ public class MessageService {
 		final MessagingIntegration messagingIntegration,
 		final MessagingSettingsIntegration messagingSettingsIntegration,
 		final EmployeeService employeeService,
+		final PrecheckService precheckService,
 		final AttachmentMapper attachmentMapper,
 		final EntityMapper entityMapper,
 		final DepartmentRepository departmentRepository,
@@ -75,6 +79,7 @@ public class MessageService {
 		this.messagingIntegration = messagingIntegration;
 		this.messagingSettingsIntegration = messagingSettingsIntegration;
 		this.employeeService = employeeService;
+		this.precheckService = precheckService;
 		this.attachmentMapper = attachmentMapper;
 		this.entityMapper = entityMapper;
 		this.departmentRepository = departmentRepository;
@@ -82,7 +87,7 @@ public class MessageService {
 		this.messageRepository = messageRepository;
 	}
 
-	public String processDigitalRegisteredLetterRequest(final String municipalityId, final DigitalRegisteredLetterRequest request, final Attachments attachments) {
+	public String processDigitalRegisteredLetterRequest(final String municipalityId, final DigitalRegisteredLetterRequest request, final List<MultipartFile> attachments) {
 		var message = createMessageEntity(municipalityId);
 		message.setBody(request.getBody());
 		message.setContentType(request.getContentType());
@@ -104,7 +109,26 @@ public class MessageService {
 		return message.getId();
 	}
 
-	public String processLetterRequest(final String municipalityId, final LetterRequest letterRequest, final Attachments attachments) {
+	public String processCsvLetterRequest(final String municipalityId, final LetterCsvRequest request, final MultipartFile csvFile, final List<MultipartFile> attachments) {
+		var legalIds = parseCsvToLegalIds(csvFile);
+		var message = createMessageEntity(municipalityId);
+		message.setSubject(request.getSubject());
+		message.setContentType(request.getContentType());
+		message.setBody(request.getBody());
+		message.setMessageType(LETTER);
+
+		var recipientEntities = precheckService.precheckLegalIds(municipalityId, legalIds);
+		message.setRecipients(recipientEntities);
+		var attachmentEntities = attachmentMapper.toAttachmentEntities(attachments);
+		message.setAttachments(attachmentEntities);
+
+		messageRepository.save(message);
+
+		processRecipients(message);
+		return message.getId();
+	}
+
+	public String processLetterRequest(final String municipalityId, final LetterRequest letterRequest, final List<MultipartFile> attachments) {
 		var message = createMessageEntity(municipalityId);
 		message.setBody(letterRequest.getBody());
 		message.setContentType(letterRequest.getContentType());
@@ -155,6 +179,7 @@ public class MessageService {
 
 	CompletableFuture<Void> processRecipients(final MessageEntity messageEntity) {
 		var futures = Optional.ofNullable(messageEntity.getRecipients()).orElse(emptyList()).stream()
+			.filter(recipientEntity -> !"UNDELIVERABLE".equalsIgnoreCase(recipientEntity.getStatus()))
 			.map(recipientEntity -> withPermit(() -> sendMessageToRecipient(messageEntity, recipientEntity), permits, executor))
 			.toArray(CompletableFuture[]::new);
 
@@ -243,16 +268,16 @@ public class MessageService {
 	}
 
 	DepartmentEntity getOrCreateDepartment(final EmployeeService.SentBy sentBy) {
-		return departmentRepository.findByOrganizationId(sentBy.organizationId())
+		return departmentRepository.findByOrganizationId(sentBy.departmentId())
 			.orElseGet(() -> DepartmentEntity.create()
-				.withOrganizationId(sentBy.organizationId())
+				.withOrganizationId(sentBy.departmentId())
 				.withName(sentBy.departmentName()));
 	}
 
 	private MessageEntity createMessageEntity(final String municipalityId) {
 		var sentBy = employeeService.getSentBy(municipalityId);
 
-		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.organizationId());
+		var senderInfo = messagingSettingsIntegration.getSenderInfo(municipalityId, sentBy.departmentId());
 		var user = getOrCreateUser(sentBy.userName());
 		var department = getOrCreateDepartment(sentBy)
 			.withFolderName(senderInfo.getFolderName())

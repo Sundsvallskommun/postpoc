@@ -1,11 +1,12 @@
 package se.sundsvall.postportalservice.service.mapper;
 
+import static java.util.Collections.emptyList;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import se.sundsvall.postportalservice.api.model.Attachments;
 import se.sundsvall.postportalservice.integration.db.AttachmentEntity;
 import se.sundsvall.postportalservice.service.util.BlobUtil;
 
@@ -18,12 +19,10 @@ public final class AttachmentMapper {
 		this.blobUtil = blobUtil;
 	}
 
-	public List<AttachmentEntity> toAttachmentEntities(final Attachments attachments) {
-		return Optional.ofNullable(attachments).map(Attachments::getFiles)
-			.map(files -> files.stream()
-				.map(this::toAttachmentEntity)
-				.collect(Collectors.toList())) // Mutable list
-			.orElse(null);
+	public List<AttachmentEntity> toAttachmentEntities(final List<MultipartFile> attachments) {
+		return Optional.ofNullable(attachments).orElse(emptyList()).stream()
+			.map(this::toAttachmentEntity)
+			.collect(Collectors.toList());// Mutable list
 	}
 
 	public AttachmentEntity toAttachmentEntity(final MultipartFile multipartFile) {

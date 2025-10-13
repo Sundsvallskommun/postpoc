@@ -1,6 +1,7 @@
 package se.sundsvall.postportalservice.apptest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.HttpMethod.POST;
@@ -8,6 +9,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
 import static se.sundsvall.postportalservice.Constants.SENT;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.DIGITAL_MAIL;
+import static se.sundsvall.postportalservice.integration.db.converter.MessageType.LETTER;
 import static se.sundsvall.postportalservice.integration.db.converter.MessageType.SNAIL_MAIL;
 
 import java.io.FileNotFoundException;
@@ -156,6 +158,39 @@ class MessageLetterIT extends AbstractAppTest {
 				assertThat(message.getRecipients()).hasSize(1);
 				assertThat(message.getRecipients())
 					.allSatisfy(recipientEntity -> assertThat(recipientEntity.getStatus()).isEqualTo(SENT));
+			});
+	}
+
+	@Test
+	void test05_successfully_sendMessageWithCSV() throws FileNotFoundException {
+		var location = setupCall()
+			.withServicePath("/%s/messages/letter/csv".formatted(MUNICIPALITY_ID))
+			.withHttpMethod(POST)
+			.withHeader(Identifier.HEADER_NAME, IDENTIFIER)
+			.withContentType(MULTIPART_FORM_DATA)
+			.withRequestFile("request", REQUEST_FILE)
+			.withRequestFile("csv-file", "legalIds.csv")
+			.withRequestFile("attachments", "test.pdf")
+			.withExpectedResponseStatus(CREATED)
+			.withExpectedResponseHeader(LOCATION, List.of("/%s/history/messages/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}".formatted(MUNICIPALITY_ID)))
+			.withExpectedResponseBodyIsNull()
+			.sendRequest()
+			.getResponseHeaders()
+			.getFirst(LOCATION);
+
+		final var messageId = location.substring(location.lastIndexOf("/") + 1);
+
+		// There are asynchronous processes involved in updating the recipient status, hence we need to wait until the expected state is reached
+		await().atMost(Duration.ofSeconds(3))
+			.pollInterval(Duration.ofMillis(100))
+			.untilAsserted(() -> {
+				var message = messageRepository.findById(messageId).orElseThrow();
+				assertThat(message.getRecipients()).hasSize(3);
+				assertThat(message.getRecipients()).extracting(RecipientEntity::getPartyId, RecipientEntity::getMessageType, RecipientEntity::getStatus)
+					.containsExactlyInAnyOrder(
+						tuple("11111111-1111-1111-1111-111111111111", DIGITAL_MAIL, "SENT"),
+						tuple("22222222-2222-2222-2222-222222222222", SNAIL_MAIL, "SENT"),
+						tuple("33333333-3333-3333-3333-333333333333", LETTER, "UNDELIVERABLE"));
 			});
 	}
 

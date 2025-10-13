@@ -6,7 +6,6 @@ import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static org.springframework.http.ResponseEntity.created;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
-import static se.sundsvall.postportalservice.service.util.ValidationUtil.validate;
 
 import generated.se.sundsvall.messaging.ConstraintViolationProblem;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,10 +30,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.zalando.problem.Problem;
 import se.sundsvall.dept44.common.validators.annotation.ValidMunicipalityId;
 import se.sundsvall.dept44.support.Identifier;
-import se.sundsvall.postportalservice.api.model.Attachments;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
+import se.sundsvall.postportalservice.api.model.LetterCsvRequest;
 import se.sundsvall.postportalservice.api.model.LetterRequest;
 import se.sundsvall.postportalservice.api.model.SmsRequest;
+import se.sundsvall.postportalservice.api.validation.NoDuplicateFileNames;
+import se.sundsvall.postportalservice.api.validation.ValidCsv;
 import se.sundsvall.postportalservice.api.validation.ValidIdentifier;
 import se.sundsvall.postportalservice.api.validation.ValidPdf;
 import se.sundsvall.postportalservice.service.MessageService;
@@ -63,14 +65,30 @@ class MessageResource {
 		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
 		@RequestPart(name = "request") @Valid final LetterRequest request,
-		@RequestPart(name = "attachments") final List<MultipartFile> files) {
+		@RequestPart(name = "attachments") @NotEmpty @NoDuplicateFileNames final List<MultipartFile> attachments) {
 		Identifier.set(Identifier.parse(xSentBy));
 
-		var attachments = Attachments.create()
-			.withFiles(files);
-		validate(attachments);
-
 		final var messageId = messageService.processLetterRequest(municipalityId, request, attachments);
+
+		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
+			.buildAndExpand(municipalityId, messageId).toUri())
+			.header(CONTENT_TYPE, ALL_VALUE)
+			.build();
+	}
+
+	@Operation(summary = "Send a message by either digital mail or as a physical letter. Digital mail is always preferred if possible.", responses = {
+		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true)
+	})
+	@PostMapping("/letter/csv")
+	ResponseEntity<Void> sendLetterCSV(
+		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
+		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
+		@RequestPart(name = "request") @Valid final LetterCsvRequest request,
+		@RequestPart(name = "csv-file") @ValidCsv final MultipartFile csvFile,
+		@RequestPart(name = "attachments", required = false) @NotEmpty @NoDuplicateFileNames final List<MultipartFile> attachments) {
+		Identifier.set(Identifier.parse(xSentBy));
+
+		final var messageId = messageService.processCsvLetterRequest(municipalityId, request, csvFile, attachments);
 
 		return created(fromPath("/{municipalityId}/history/messages/{messageId}")
 			.buildAndExpand(municipalityId, messageId).toUri())
@@ -86,12 +104,8 @@ class MessageResource {
 		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
 		@RequestPart(name = "request") @Valid final DigitalRegisteredLetterRequest request,
-		@RequestPart(name = "attachments") @ValidPdf final List<MultipartFile> files) {
+		@RequestPart(name = "attachments") @ValidPdf @NotEmpty @NoDuplicateFileNames final List<MultipartFile> attachments) {
 		Identifier.set(Identifier.parse(xSentBy));
-
-		var attachments = Attachments.create()
-			.withFiles(files);
-		validate(attachments);
 
 		final var messageId = messageService.processDigitalRegisteredLetterRequest(municipalityId, request, attachments);
 
