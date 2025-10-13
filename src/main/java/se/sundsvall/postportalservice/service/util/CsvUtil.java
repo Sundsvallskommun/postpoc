@@ -19,13 +19,10 @@ public final class CsvUtil {
 		List<String> legalIds = new ArrayList<>();
 
 		try (var reader = new BufferedReader(new InputStreamReader(csvFile.getInputStream(), StandardCharsets.UTF_8))) {
-
-			// Skipping header line
-			var line = reader.readLine();
-
+			String line;
 			while ((line = reader.readLine()) != null) {
 
-				if (line.trim().isEmpty()) {
+				if (line.trim().isEmpty() || line.trim().startsWith("Personnummer")) {
 					continue;
 				}
 
