@@ -24,76 +24,38 @@ class MessagingSettingsIntegrationTest {
 	private static final String DEPARTMENT_ID = "dept44";
 
 	@Mock
-	private MessagingSettingsClient clientMock;
+	private MessagingSettingsClient messagingSettingsClient;
 
 	@InjectMocks
-	private MessagingSettingsIntegration integration;
+	private MessagingSettingsIntegration messagingSettingsIntegration;
 
 	@AfterEach
 	void noMoreInteractions() {
-		verifyNoMoreInteractions(clientMock);
-	}
-
-	@Test
-	void getSupportText() {
-		final var supportText = "foo bar baz";
-		final var senderInfo = new SenderInfoResponse();
-
-		senderInfo.setSupportText(supportText);
-
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
-
-		final var result = integration.getSupportText(MUNICIPALITY_ID, DEPARTMENT_ID);
-
-		assertThat(result).isNotEmpty();
-		assertThat(result.get()).isEqualTo(supportText);
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
-	}
-
-	@Test
-	void getSupportText_withNoMatch() {
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
-
-		final var result = integration.getSupportText(MUNICIPALITY_ID, DEPARTMENT_ID);
-
-		assertThat(result).isEmpty();
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
-	}
-
-	@Test
-	void getSupportText_withNullSupportText() {
-		final var senderInfo = new SenderInfoResponse();
-
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
-
-		final var result = integration.getSupportText(MUNICIPALITY_ID, DEPARTMENT_ID);
-
-		assertThat(result).isEmpty();
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verifyNoMoreInteractions(messagingSettingsClient);
 	}
 
 	@Test
 	void getSenderInfo() {
 		final var senderInfo = new SenderInfoResponse();
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
+		when(messagingSettingsClient.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
-		var result = integration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		var result = messagingSettingsIntegration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 
 		assertThat(result).isNotNull();
 		assertThat(result).isEqualTo(senderInfo);
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingSettingsClient).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 
 	@Test
 	void getSenderInfo_withNoMatch() {
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
+		when(messagingSettingsClient.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
 
-		assertThatThrownBy(() -> integration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID))
+		assertThatThrownBy(() -> messagingSettingsIntegration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID))
 			.isInstanceOf(Problem.class)
 			.hasMessage("Bad Gateway: Found no sender info for departmentId " + DEPARTMENT_ID);
 
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingSettingsClient).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 
 	@Test
@@ -103,34 +65,36 @@ class MessagingSettingsIntegrationTest {
 
 		senderInfo.setOrganizationNumber(organizationNumber);
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
+		when(messagingSettingsClient.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
-		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
+		final var result = messagingSettingsIntegration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
 
 		assertThat(result).contains(organizationNumber);
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingSettingsClient).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 
 	@Test
 	void getOrganizationNumber_withNoMatch() {
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
+		when(messagingSettingsClient.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(emptyList());
 
-		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
+		assertThatThrownBy(() -> messagingSettingsIntegration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID))
+			.isInstanceOf(Problem.class)
+			.hasMessage("Not Found: Organization number not found for municipalityId '%s' and departmentId '%s'".formatted(MUNICIPALITY_ID, DEPARTMENT_ID));
 
-		assertThat(result).isEmpty();
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingSettingsClient).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 
 	@Test
 	void getOrganizationNumber_withNullValue() {
 		final var senderInfo = new SenderInfoResponse();
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
+		when(messagingSettingsClient.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(List.of(senderInfo));
 
-		final var result = integration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
+		assertThatThrownBy(() -> messagingSettingsIntegration.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID))
+			.isInstanceOf(Problem.class)
+			.hasMessage("Not Found: Organization number not found for municipalityId '%s' and departmentId '%s'".formatted(MUNICIPALITY_ID, DEPARTMENT_ID));
 
-		assertThat(result).isEmpty();
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingSettingsClient).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 
 	@Test
@@ -143,13 +107,13 @@ class MessagingSettingsIntegrationTest {
 		second.setSupportText("second");
 		second.setOrganizationNumber("2222222222");
 
-		when(clientMock.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID))
+		when(messagingSettingsClient.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID))
 			.thenReturn(List.of(first, second));
 
-		final var result = integration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		final var result = messagingSettingsIntegration.getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 
 		assertThat(result.getSupportText()).isEqualTo("first");
 		assertThat(result.getOrganizationNumber()).isEqualTo("1111111111");
-		verify(clientMock).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingSettingsClient).getSenderInfo(MUNICIPALITY_ID, DEPARTMENT_ID);
 	}
 }

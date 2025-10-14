@@ -1,7 +1,12 @@
 {
 	"request": {
 		"method": "POST",
-		"url": "/api-messaging/2281/28/mailboxes",
+		"url": "/api-messaging/2281/123456-7890/mailboxes",
+		"headers": {
+			"Authorization": {
+				"equalTo": "Bearer 0000000000000000AAAAAAAAAAAAAAAA"
+			}
+		},
 		"bodyPatterns": [
 			{
 				"contains": "11111111-1111-1111-1111-111111111111"

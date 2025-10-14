@@ -28,7 +28,7 @@ public class EmployeeService {
 		return new SentBy(username, department.identifier(), department.name());
 	}
 
-	public record SentBy(String userName, String organizationId, String departmentName) {
+	public record SentBy(String userName, String departmentId, String departmentName) {
 	}
 
 }

@@ -35,6 +35,7 @@ public final class MessagingMapper {
 			return null;
 		}
 		return new SmsRequest()
+			.sender(messageEntity.getDisplayName())
 			.message(messageEntity.getBody())
 			.department(messageEntity.getDepartment().getName())
 			.mobileNumber(recipientEntity.getPhoneNumber())

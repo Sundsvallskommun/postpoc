@@ -1,0 +1,28 @@
+{
+	"request": {
+		"method": "POST",
+		"url": "/api-citizen/2281/guid/batch",
+		"headers": {
+			"Authorization": {
+				"equalTo": "Bearer MTQ0NjJkZmQ5OTM2NDE1ZTZjNGZmZjI3"
+			}
+		},
+		"bodyPatterns": [
+			{
+				"equalToJson": [
+					"201901012391",
+					"201901022382",
+					"201901032399"
+				],
+				"ignoreExtraElements": true
+			}
+		]
+	},
+	"response": {
+		"status": 200,
+		"headers": {
+			"Content-Type": "application/json"
+		},
+		"bodyFileName": "test05_successfully_sendMessageWithCSV/responses/api-citizen-getpartyids.json"
+	}
+}

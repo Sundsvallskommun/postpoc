@@ -57,7 +57,7 @@ class EmployeeServiceTest {
 
 		assertThat(result).isNotNull().isInstanceOf(EmployeeService.SentBy.class);
 		assertThat(result.userName()).isEqualTo(username);
-		assertThat(result.organizationId()).isEqualTo("42");
+		assertThat(result.departmentId()).isEqualTo("42");
 		assertThat(result.departmentName()).isEqualTo("En man som heter Ove");
 	}
 
