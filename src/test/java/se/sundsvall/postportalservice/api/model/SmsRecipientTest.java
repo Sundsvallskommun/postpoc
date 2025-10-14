@@ -62,7 +62,7 @@ class SmsRecipientTest {
 			.extracting(violation -> violation.getPropertyPath().toString(), ConstraintViolation::getMessage)
 			.containsExactlyInAnyOrder(
 				tuple("partyId", "not a valid UUID"),
-				tuple("phoneNumber", "must be a valid MSISDN (example: +46701234567). Regular expression: ^\\+[1-9][\\d]{3,14}$"));
+				tuple("phoneNumber", "must be a valid MSISDN (example: +46701740605). Regular expression: ^\\+[1-9][\\d]{3,14}$"));
 		assertThat(smsRecipient).hasAllNullFieldsOrProperties();
 	}
 
