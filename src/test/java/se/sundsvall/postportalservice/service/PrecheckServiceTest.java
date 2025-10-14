@@ -1,58 +1,48 @@
 package se.sundsvall.postportalservice.service;
 
-import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.zalando.problem.Status.BAD_GATEWAY;
-import static org.zalando.problem.Status.INTERNAL_SERVER_ERROR;
-import static se.sundsvall.postportalservice.service.PrecheckService.FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD;
-import static se.sundsvall.postportalservice.service.PrecheckService.FAILURE_REASON_UNKNOWN_ERROR;
+import static se.sundsvall.postportalservice.TestDataFactory.createMailbox;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import generated.se.sundsvall.citizen.CitizenAddress;
 import generated.se.sundsvall.citizen.CitizenExtended;
 import generated.se.sundsvall.citizen.PersonGuidBatch;
-import generated.se.sundsvall.messaging.Mailbox;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zalando.problem.Problem;
-import se.sundsvall.dept44.support.Identifier;
-import se.sundsvall.postportalservice.api.model.PrecheckRequest;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.DeliveryMethod;
 import se.sundsvall.postportalservice.api.model.PrecheckResponse.PrecheckRecipient;
 import se.sundsvall.postportalservice.integration.citizen.CitizenIntegration;
+import se.sundsvall.postportalservice.integration.db.RecipientEntity;
+import se.sundsvall.postportalservice.integration.db.converter.MessageType;
 import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration;
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
+import se.sundsvall.postportalservice.service.mapper.EntityMapper;
 import se.sundsvall.postportalservice.service.mapper.PrecheckMapper;
 
 @ExtendWith(MockitoExtension.class)
 class PrecheckServiceTest {
 
 	private static final String MUNICIPALITY_ID = "2281";
-	private static final String DEPARTMENT_ID = "dept44";
 	private static final String ORGANIZATION_NUMBER = "5555555555";
+	private static final String DEPARTMENT_ID = "123";
 
 	@Mock
 	private CitizenIntegration citizenIntegrationMock;
@@ -69,12 +59,15 @@ class PrecheckServiceTest {
 	@Mock
 	private PrecheckMapper precheckMapperMock;
 
+	@Mock(answer = Answers.CALLS_REAL_METHODS)
+	private EntityMapper entityMapperMock;
+
 	@InjectMocks
 	private PrecheckService precheckService;
 
 	@AfterEach
 	void noMoreInteractions() {
-		verifyNoMoreInteractions(citizenIntegrationMock, messagingSettingsIntegrationMock, messagingIntegrationMock, precheckMapperMock);
+		verifyNoMoreInteractions(citizenIntegrationMock, messagingSettingsIntegrationMock, messagingIntegrationMock, entityMapperMock, precheckMapperMock);
 	}
 
 	@Test
@@ -96,9 +89,10 @@ class PrecheckServiceTest {
 
 		final var citizens = List.of(citizenExtended2, citizenExtended3);
 
-		final var sentBy = new EmployeeService.SentBy("username", ORGANIZATION_NUMBER, "departmentName");
+		final var sentBy = new EmployeeService.SentBy("username", DEPARTMENT_ID, "departmentName");
 
 		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(sentBy);
+		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(ORGANIZATION_NUMBER);
 		when(messagingIntegrationMock.precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, partyIds)).thenReturn(mailboxes);
 		when(citizenIntegrationMock.getCitizens(MUNICIPALITY_ID, List.of(partyId2, partyId3))).thenReturn(citizens);
 		when(precheckMapperMock.toSnailMailEligiblePartyIds(eq(citizens), ArgumentMatchers.<Predicate<CitizenExtended>>any())).thenReturn(List.of(partyId2));
@@ -135,292 +129,156 @@ class PrecheckServiceTest {
 	}
 
 	@Test
-	void precheck_employeeNotFound() {
-		var username = "username";
-		var identifier = Identifier.create()
-			.withType(Identifier.Type.AD_ACCOUNT)
-			.withValue(username)
-			.withTypeString("AD_ACCOUNT");
-		Identifier.set(identifier);
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve employee data for user [%s]".formatted(username)));
+	void precheckLegalIds() {
+		// Person 1 - Eligible for digital mail
+		final var legalId1 = "201801022383";
+		final var partyId1 = "5c1b2636-5ffc-467d-95be-156aeb73ec8e";
+		final var personGuidBatch1 = new PersonGuidBatch()
+			.success(Boolean.TRUE)
+			.personNumber(legalId1)
+			.personId(UUID.fromString(partyId1));
 
-		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, any()))
-			.isInstanceOf(Problem.class)
-			.hasMessageContaining("Bad Gateway: Failed to retrieve employee data for user [username]");
-	}
+		// Person 2 - Eligible for snail mail
+		final var legalId2 = "201801032390";
+		final var partyId2 = "7c1b2636-5ffc-467d-95be-156aeb73ec8e";
+		final var personGuidBatch2 = new PersonGuidBatch()
+			.success(Boolean.TRUE)
+			.personNumber(legalId2)
+			.personId(UUID.fromString(partyId2));
 
-	@Test
-	void precheck_invalidOrgTree() {
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(INTERNAL_SERVER_ERROR, "Internal Server Error: Failed to parse organization from employee data"));
+		// Person 3 - Not eligible for digital mail or snail mail
+		final var legalId3 = "201801042381";
+		final var partyId3 = "8c1b2636-5ffc-467d-95be-156aeb73ec8e";
+		final var personGuidBatch3 = new PersonGuidBatch()
+			.success(Boolean.TRUE)
+			.personNumber(legalId3)
+			.personId(UUID.fromString(partyId3));
 
-		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, any()))
-			.isInstanceOf(Problem.class)
-			.hasMessageContaining("Internal Server Error: Failed to parse organization from employee data");
-	}
+		final var legalIds = List.of(legalId1, legalId2, legalId3);
+		final var personGuidBatches = List.of(personGuidBatch1, personGuidBatch2, personGuidBatch3);
+		final var partyIds = List.of(partyId1, partyId2, partyId3);
 
-	@Test
-	void precheck_withNoEntries() {
-		final var request = new PrecheckRequest(List.of());
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
+		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, legalIds)).thenReturn(personGuidBatches);
+		final var sentBy = new EmployeeService.SentBy("username", DEPARTMENT_ID, "departmentName");
 
-		final var result = precheckService.precheck(MUNICIPALITY_ID, request.partyIds());
+		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(sentBy);
+		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(ORGANIZATION_NUMBER);
 
-		assertThat(result.precheckRecipients()).isEmpty();
-	}
+		final var mailbox1 = createMailbox(partyId1, true);
+		final var mailbox2 = createMailbox(partyId2, false);
+		final var mailbox3 = createMailbox(partyId3, false);
+		final var mailboxes = List.of(mailbox1, mailbox2, mailbox3);
+		when(messagingIntegrationMock.precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, partyIds)).thenReturn(mailboxes);
 
-	@Test
-	void precheck_withAllReachableDigitalMailboxes() {
-		final var personId1 = "191111111111";
-		final var personId2 = "192222222222";
-		final var personIds = List.of(personId1, personId2);
-		final var request = new PrecheckRequest(personIds);
+		final var citizenExtended1 = new CitizenExtended()
+			.personId(UUID.fromString(partyId2))
+			.addresses(List.of(new CitizenAddress()
+				.status("Current")
+				.addressType("POPULATION_REGISTRATION_ADDRESS")));
+		final var citizenExtended2 = new CitizenExtended()
+			.personId(UUID.fromString(partyId3))
+			.addresses(List.of(new CitizenAddress()
+				.status("Current")
+				.addressType("NOT_ELIGIBLE_ADDRESS_TYPE")));
+		final var citizenExtendedList = List.of(citizenExtended1, citizenExtended2);
+		when(citizenIntegrationMock.getCitizens(MUNICIPALITY_ID, List.of(partyId2, partyId3))).thenReturn(citizenExtendedList);
+		when(citizenIntegrationMock.isRegisteredInSweden(citizenExtended1)).thenReturn(true);
+		when(citizenIntegrationMock.isRegisteredInSweden(citizenExtended2)).thenReturn(false);
 
-		final var batches = okBatches(personId1, personId2);
-		final var partyIds = batches.stream()
-			.map(batch -> requireNonNull(batch.getPersonId()).toString())
-			.toList();
+		final var result = precheckService.precheckLegalIds(MUNICIPALITY_ID, legalIds);
 
-		final var isReachable = true;
+		assertThat(result).hasSize(3).extracting(
+			RecipientEntity::getPartyId, RecipientEntity::getMessageType, RecipientEntity::getStatus)
+			.containsExactlyInAnyOrder(
+				tuple(partyId1, MessageType.DIGITAL_MAIL, "PENDING"),
+				tuple(partyId2, MessageType.SNAIL_MAIL, "PENDING"),
+				tuple(partyId3, MessageType.LETTER, "UNDELIVERABLE"));
 
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
-		when(precheckMapperMock.toFailureByPersonId(anyList())).thenReturn(Map.of());
-		when(precheckMapperMock.mapPersonIdToPartyId(anyList())).thenReturn(Map.of(
-			personId1, partyIds.get(0),
-			personId2, partyIds.get(1)));
-		when(precheckMapperMock.toSnailMailEligiblePartyIds(anyList(), any())).thenReturn(emptyList());
-		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, personIds)).thenReturn(batches);
-		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.of(ORGANIZATION_NUMBER));
-		when(messagingIntegrationMock.precheckMailboxes(eq(MUNICIPALITY_ID), eq(ORGANIZATION_NUMBER), anyList())).thenReturn(List.of(
-			createMailbox(partyIds.get(0), isReachable),
-			createMailbox(partyIds.get(1), isReachable)));
-		when(citizenIntegrationMock.getCitizens(eq(MUNICIPALITY_ID), anyList())).thenReturn(emptyList());
-
-		final var result = precheckService.precheck(MUNICIPALITY_ID, request.partyIds());
-
-		assertThat(result.precheckRecipients()).hasSize(2);
-		assertThat(result.precheckRecipients().get(0))
-			.extracting(
-				PrecheckRecipient::personalIdentityNumber,
-				PrecheckRecipient::deliveryMethod,
-				PrecheckRecipient::partyId,
-				PrecheckRecipient::reason)
-			.containsExactly(personId1, DeliveryMethod.DIGITAL_MAIL, partyIds.get(0), null);
-
-		assertThat(result.precheckRecipients().get(1))
-			.extracting(
-				PrecheckRecipient::personalIdentityNumber,
-				PrecheckRecipient::deliveryMethod,
-				PrecheckRecipient::partyId,
-				PrecheckRecipient::reason)
-			.containsExactly(personId2, DeliveryMethod.DIGITAL_MAIL, partyIds.get(1), null);
-
-		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, personIds);
+		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, legalIds);
+		verify(employeeServiceMock).getSentBy(MUNICIPALITY_ID);
 		verify(messagingSettingsIntegrationMock).getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
-		verify(messagingIntegrationMock).precheckMailboxes(
-			eq(MUNICIPALITY_ID),
-			eq(ORGANIZATION_NUMBER),
-			argThat(ids -> ids.size() == partyIds.size() && ids.containsAll(partyIds) && partyIds.containsAll(ids)));
-		verify(citizenIntegrationMock).getCitizens(eq(MUNICIPALITY_ID), anyList());
-		verify(precheckMapperMock).toFailureByPersonId(anyList());
-		verify(precheckMapperMock).mapPersonIdToPartyId(anyList());
-		verify(precheckMapperMock).toSnailMailEligiblePartyIds(anyList(), any());
+		verify(messagingIntegrationMock).precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, partyIds);
+		verify(citizenIntegrationMock).getCitizens(MUNICIPALITY_ID, List.of(partyId2, partyId3));
+		verify(entityMapperMock).toDigitalMailRecipientEntity(any());
+		verify(entityMapperMock).toSnailMailRecipientEntity(any());
+		verify(entityMapperMock).toUndeliverableRecipientEntity(any());
+		verifyNoMoreInteractions(citizenIntegrationMock, employeeServiceMock, messagingSettingsIntegrationMock, messagingIntegrationMock);
 	}
 
 	@Test
-	void precheck_withFailureRow() {
-		final var personIdOk = "191111111111";
-		final var personIdFail = "193333333333";
-		final var personIds = List.of(personIdOk, personIdFail);
-		final var request = new PrecheckRequest(personIds);
+	void precheckLegalIds_citizenThrows() {
+		final var legalIds = List.of("201801022383", "201801032390", "201801042381");
+		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, legalIds)).thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve citizen data"));
 
-		final var ok = createPersonGuidBatch(personIdOk, true, FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD);
-		final var fail = createPersonGuidBatch(personIdFail, false, "Some random error");
+		assertThatThrownBy(() -> precheckService.precheckLegalIds(MUNICIPALITY_ID, legalIds))
+			.isInstanceOf(Problem.class)
+			.hasMessageContaining("Bad Gateway: Failed to retrieve citizen data");
 
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
-		when(precheckMapperMock.toFailureByPersonId(anyList()))
-			.thenReturn(Map.of(personIdFail, "Some random error"));
-
-		final var idMap = new HashMap<String, String>();
-
-		idMap.put(personIdOk, requireNonNull(ok.getPersonId()).toString());
-		idMap.put(personIdFail, null);
-
-		when(precheckMapperMock.mapPersonIdToPartyId(anyList())).thenReturn(idMap);
-		when(precheckMapperMock.toSnailMailEligiblePartyIds(anyList(), any()))
-			.thenReturn(emptyList());
-		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, personIds)).thenReturn(List.of(ok, fail));
-
-		final var org = Optional.of(ORGANIZATION_NUMBER);
-
-		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(org);
-
-		final var okPartyId = requireNonNull(ok.getPersonId()).toString();
-
-		when(messagingIntegrationMock.precheckMailboxes(eq(MUNICIPALITY_ID), eq(ORGANIZATION_NUMBER), anyList()))
-			.thenReturn(List.of(createMailbox(okPartyId, false)));
-		when(citizenIntegrationMock.getCitizens(eq(MUNICIPALITY_ID), anyList())).thenReturn(emptyList());
-
-		final var result = precheckService.precheck(MUNICIPALITY_ID, request.partyIds());
-
-		assertThat(result.precheckRecipients()).extracting(
-			PrecheckRecipient::personalIdentityNumber,
-			PrecheckRecipient::deliveryMethod,
-			PrecheckRecipient::partyId,
-			PrecheckRecipient::reason)
-			.containsExactly(
-				tuple(personIdOk, DeliveryMethod.DELIVERY_NOT_POSSIBLE, okPartyId, FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD),
-				tuple(personIdFail, DeliveryMethod.DELIVERY_NOT_POSSIBLE, null, "Some random error"));
-
-		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, personIds);
-		verify(messagingSettingsIntegrationMock).getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
-		verify(messagingIntegrationMock).precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, List.of(okPartyId));
-		verify(citizenIntegrationMock).getCitizens(eq(MUNICIPALITY_ID), anyList());
+		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, legalIds);
+		verifyNoInteractions(employeeServiceMock, messagingSettingsIntegrationMock, messagingIntegrationMock, precheckMapperMock);
 	}
 
 	@Test
-	void precheck_withFailureRowWhenErrorIsMissing() throws Exception {
-		final var personIdOk = "191111111111";
-		final var personIdFail = "193333333333";
-		final var personIds = List.of(personIdOk, personIdFail);
-		final var request = new PrecheckRequest(personIds);
+	void precheckLegalIds_employeeThrows() {
+		final var legalIds = List.of("201801022383", "201801032390", "201801042381");
+		final var batches = List.of(new PersonGuidBatch(), new PersonGuidBatch());
+		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, legalIds)).thenReturn(batches);
 
-		final var ok = createPersonGuidBatch(personIdOk, true, null);
-		final var fail = createPersonGuidBatch(personIdFail, false, null);
+		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve employee data"));
 
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
-		when(precheckMapperMock.toFailureByPersonId(anyList()))
-			.thenReturn(Map.of(personIdFail, FAILURE_REASON_UNKNOWN_ERROR));
+		assertThatThrownBy(() -> precheckService.precheckLegalIds(MUNICIPALITY_ID, legalIds))
+			.isInstanceOf(Problem.class)
+			.hasMessageContaining("Bad Gateway: Failed to retrieve employee data");
 
-		final var idMap = new HashMap<String, String>();
+		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, legalIds);
+		verify(employeeServiceMock).getSentBy(MUNICIPALITY_ID);
+		verifyNoMoreInteractions(citizenIntegrationMock, employeeServiceMock);
+		verifyNoInteractions(messagingSettingsIntegrationMock, messagingIntegrationMock, precheckMapperMock);
+	}
 
-		idMap.put(personIdOk, requireNonNull(ok.getPersonId()).toString());
-		idMap.put(personIdFail, null);
+	@Test
+	void precheckLegalIds_messagingSettingThrows() {
+		final var legalIds = List.of("201801022383", "201801032390", "201801042381");
+		final var batches = List.of(new PersonGuidBatch(), new PersonGuidBatch());
+		final var sentBy = new EmployeeService.SentBy("username", DEPARTMENT_ID, "departmentName");
 
-		when(precheckMapperMock.mapPersonIdToPartyId(anyList())).thenReturn(idMap);
-		when(precheckMapperMock.toSnailMailEligiblePartyIds(anyList(), any()))
-			.thenReturn(java.util.Collections.emptyList());
-		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, personIds)).thenReturn(List.of(ok, fail));
+		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, legalIds)).thenReturn(batches);
+		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(sentBy);
 		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID))
-			.thenReturn(Optional.of(ORGANIZATION_NUMBER));
+			.thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve messaging settings"));
 
-		final var okPartyId = requireNonNull(ok.getPersonId()).toString();
-
-		when(messagingIntegrationMock.precheckMailboxes(eq(MUNICIPALITY_ID), eq(ORGANIZATION_NUMBER), anyList()))
-			.thenReturn(List.of(createMailbox(okPartyId, false)));
-		when(citizenIntegrationMock.getCitizens(eq(MUNICIPALITY_ID), anyList())).thenReturn(emptyList());
-
-		final var result = precheckService.precheck(MUNICIPALITY_ID, request.partyIds());
-
-		assertThat(result.precheckRecipients()).extracting(
-			PrecheckRecipient::personalIdentityNumber,
-			PrecheckRecipient::deliveryMethod,
-			PrecheckRecipient::partyId,
-			PrecheckRecipient::reason)
-			.containsExactly(
-				tuple(personIdOk, DeliveryMethod.DELIVERY_NOT_POSSIBLE, okPartyId, FAILURE_REASON_NO_ELIGIBLE_DELIVERY_METHOD),
-				tuple(personIdFail, DeliveryMethod.DELIVERY_NOT_POSSIBLE, null, FAILURE_REASON_UNKNOWN_ERROR));
-
-		final var mapper = new ObjectMapper();
-		final var json = mapper.writeValueAsString(result);
-		final var root = mapper.readTree(json);
-
-		assertThat(root.at("/recipients/1/reason").asText()).isEqualTo(FAILURE_REASON_UNKNOWN_ERROR);
-		assertThat(root.at("/recipients/0/partyId").asText()).isEqualTo(okPartyId);
-
-		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, personIds);
-		verify(messagingSettingsIntegrationMock).getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
-		verify(messagingIntegrationMock).precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, List.of(okPartyId));
-		verify(citizenIntegrationMock).getCitizens(eq(MUNICIPALITY_ID), anyList());
-	}
-
-	@Test
-	void precheck_throwsWhenNoOrganizationNumber() {
-		final var personId = "191111111111";
-		final var request = new PrecheckRequest(List.of(personId));
-
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
-		when(precheckMapperMock.toFailureByPersonId(anyList())).thenReturn(Map.of());
-		when(precheckMapperMock.mapPersonIdToPartyId(anyList())).thenReturn(Map.of());
-		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, List.of(personId))).thenReturn(okBatches(personId));
-		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(Optional.empty());
-		when(precheckMapperMock.mapPersonIdToPartyId(anyList()))
-			.thenReturn(Map.of(
-				personId, UUID.randomUUID().toString()));
-
-		assertThatThrownBy(() -> precheckService.precheck(MUNICIPALITY_ID, request.partyIds()))
+		assertThatThrownBy(() -> precheckService.precheckLegalIds(MUNICIPALITY_ID, legalIds))
 			.isInstanceOf(Problem.class)
-			.hasMessageContaining("Organization number not found");
+			.hasMessageContaining("Bad Gateway: Failed to retrieve messaging settings");
 
-		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, List.of(personId));
+		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, legalIds);
+		verify(employeeServiceMock).getSentBy(MUNICIPALITY_ID);
 		verify(messagingSettingsIntegrationMock).getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verifyNoMoreInteractions(citizenIntegrationMock, employeeServiceMock, messagingSettingsIntegrationMock);
+		verifyNoInteractions(messagingIntegrationMock, precheckMapperMock);
 	}
 
 	@Test
-	void precheck_withOnlyFailures() {
-		final var personId1 = "191111111111";
-		final var personId2 = "192222222222";
-		final var personIds = List.of(personId1, personId2);
-		final var request = new PrecheckRequest(personIds);
-		final var failures = Map.of(
-			personId1, "not found",
-			personId2, "timeout");
+	void precheckLegalIds_messagingThrows() {
+		final var legalIds = List.of("201801022383", "201801032390", "201801042381");
+		final var batches = List.of(new PersonGuidBatch(), new PersonGuidBatch());
+		final var sentBy = new EmployeeService.SentBy("username", DEPARTMENT_ID, "departmentName");
 
-		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(new EmployeeService.SentBy("username", DEPARTMENT_ID, "name"));
-		when(precheckMapperMock.toFailureByPersonId(anyList())).thenReturn(failures);
-		when(precheckMapperMock.toRecipientsWithoutPartyIds(personIds, failures)).thenReturn(List.of(
-			new PrecheckRecipient(personId1, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, "not found"),
-			new PrecheckRecipient(personId2, null, DeliveryMethod.DELIVERY_NOT_POSSIBLE, "timeout")));
-		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, List.of(personId1, personId2))).thenReturn(List.of(
-			createPersonGuidBatch(personId1, false, "not found"),
-			createPersonGuidBatch(personId2, false, "timeout")));
+		when(citizenIntegrationMock.getPartyIds(MUNICIPALITY_ID, legalIds)).thenReturn(batches);
+		when(employeeServiceMock.getSentBy(MUNICIPALITY_ID)).thenReturn(sentBy);
+		when(messagingSettingsIntegrationMock.getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID)).thenReturn(ORGANIZATION_NUMBER);
+		when(messagingIntegrationMock.precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, List.of())).thenThrow(Problem.valueOf(BAD_GATEWAY, "Failed to retrieve mailbox data"));
 
-		final var result = precheckService.precheck(MUNICIPALITY_ID, request.partyIds());
+		assertThatThrownBy(() -> precheckService.precheckLegalIds(MUNICIPALITY_ID, legalIds))
+			.isInstanceOf(Problem.class)
+			.hasMessageContaining("Bad Gateway: Failed to retrieve mailbox data");
 
-		assertThat(result.precheckRecipients()).extracting(
-			PrecheckRecipient::personalIdentityNumber,
-			PrecheckRecipient::deliveryMethod,
-			PrecheckRecipient::partyId,
-			PrecheckRecipient::reason)
-			.containsExactly(
-				tuple(personId1, DeliveryMethod.DELIVERY_NOT_POSSIBLE, null, "not found"),
-				tuple(personId2, DeliveryMethod.DELIVERY_NOT_POSSIBLE, null, "timeout"));
-
-		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, List.of(personId1, personId2));
-		verify(precheckMapperMock).toFailureByPersonId(anyList());
-		verify(precheckMapperMock).mapPersonIdToPartyId(anyList());
-		verify(precheckMapperMock).toRecipientsWithoutPartyIds(personIds, failures);
+		verify(citizenIntegrationMock).getPartyIds(MUNICIPALITY_ID, legalIds);
+		verify(employeeServiceMock).getSentBy(MUNICIPALITY_ID);
+		verify(messagingSettingsIntegrationMock).getOrganizationNumber(MUNICIPALITY_ID, DEPARTMENT_ID);
+		verify(messagingIntegrationMock).precheckMailboxes(MUNICIPALITY_ID, ORGANIZATION_NUMBER, List.of());
+		verifyNoMoreInteractions(citizenIntegrationMock, employeeServiceMock, messagingSettingsIntegrationMock, messagingIntegrationMock);
+		verifyNoInteractions(precheckMapperMock);
 	}
 
-	private static List<PersonGuidBatch> okBatches(String... personIds) {
-		return Arrays.stream(personIds)
-			.map(p -> createPersonGuidBatch(p, true, null))
-			.toList();
-	}
-
-	private static PersonGuidBatch createPersonGuidBatch(String personId, boolean success, String errorMessage) {
-		final var personGuidBatch = new PersonGuidBatch();
-
-		personGuidBatch.setPersonNumber(personId);
-
-		if (success) {
-			personGuidBatch.setSuccess(true);
-			personGuidBatch.setErrorMessage(null);
-			personGuidBatch.setPersonId(UUID.randomUUID());
-		} else {
-			personGuidBatch.setSuccess(false);
-			personGuidBatch.setErrorMessage(errorMessage == null ? FAILURE_REASON_UNKNOWN_ERROR : errorMessage);
-			personGuidBatch.setPersonId(null);
-		}
-
-		return personGuidBatch;
-	}
-
-	private static Mailbox createMailbox(String partyId, Boolean isReachable) {
-		final var mailbox = new Mailbox();
-
-		mailbox.setPartyId(partyId);
-		mailbox.setReachable(isReachable);
-
-		return mailbox;
-	}
 }

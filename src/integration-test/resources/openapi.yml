@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:52304
+  - url: http://localhost:55445
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -194,6 +194,7 @@ paths:
                   items:
                     type: string
                     format: binary
+        required: true
       responses:
         "200":
           description: OK
@@ -239,7 +240,7 @@ paths:
           example: 2281
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               required:
                 - attachments
@@ -253,6 +254,70 @@ paths:
                   items:
                     type: string
                     format: binary
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Problem"
+                  - $ref: "#/components/schemas/ConstraintViolationProblem"
+        "500":
+          description: Internal Server Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "502":
+          description: Bad Gateway
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /{municipalityId}/messages/letter/csv:
+    post:
+      tags:
+        - Message Resources
+      summary: Send a message by either digital mail or as a physical letter. Digital
+        mail is always preferred if possible.
+      operationId: sendLetterCSV
+      parameters:
+        - name: X-Sent-By
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: municipalityId
+          in: path
+          description: Municipality ID
+          required: true
+          schema:
+            type: string
+          example: 2281
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - csv-file
+                - request
+              type: object
+              properties:
+                request:
+                  $ref: "#/components/schemas/LetterCsvRequest"
+                csv-file:
+                  type: string
+                  format: binary
+                attachments:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+        required: true
       responses:
         "200":
           description: OK
@@ -606,18 +671,18 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
     StatusType:
       type: object
       properties:
-        reasonPhrase:
-          type: string
         statusCode:
           type: integer
           format: int32
+        reasonPhrase:
+          type: string
     ConstraintViolationProblem:
       type: object
       properties:
@@ -884,6 +949,8 @@ components:
       description: Address model
     LetterRequest:
       required:
+        - body
+        - contentType
         - subject
       type: object
       properties:
@@ -893,10 +960,12 @@ components:
           description: The subject of the letter
           example: This is the subject of the letter
         body:
+          minLength: 1
           type: string
           description: The body of the letter
           example: This is the body of the letter
         contentType:
+          minLength: 1
           type: string
           description: The content type of the body
           example: text/plain
@@ -929,6 +998,29 @@ components:
         address:
           $ref: "#/components/schemas/Address"
       description: Recipient model
+    LetterCsvRequest:
+      required:
+        - body
+        - contentType
+        - subject
+      type: object
+      properties:
+        subject:
+          minLength: 1
+          type: string
+          description: The subject of the letter
+          example: This is the subject of the letter
+        body:
+          minLength: 1
+          type: string
+          description: The body of the letter
+          example: This is the body of the letter
+        contentType:
+          minLength: 1
+          type: string
+          description: The content type of the body
+          example: text/plain
+      description: Letter CSV request model
     Statistics:
       type: object
       properties:

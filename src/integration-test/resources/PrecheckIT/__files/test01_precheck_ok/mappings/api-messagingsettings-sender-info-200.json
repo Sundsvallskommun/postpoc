@@ -1,6 +1,6 @@
 {
 	"request": {
-		"url": "/api-employee/2281/portalpersondata/personal/joe01doe",
+		"url": "/api-messagingsettings/2281/sender-info?departmentId=28",
 		"method": "GET",
 		"headers": {
 			"Authorization": {
@@ -13,6 +13,6 @@
 		"headers": {
 			"Content-Type": "application/json"
 		},
-		"bodyFileName": "test01_precheck_ok/responses/api-employee-getportalpersondata.json"
+		"bodyFileName": "test01_precheck_ok/responses/api-messagingsettings-sender-info.json"
 	}
 }

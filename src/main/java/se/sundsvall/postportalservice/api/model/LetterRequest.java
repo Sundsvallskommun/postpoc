@@ -15,9 +15,11 @@ public class LetterRequest {
 	private String subject;
 
 	@Schema(description = "The body of the letter", example = "This is the body of the letter")
+	@NotBlank
 	private String body;
 
 	@Schema(description = "The content type of the body", example = "text/plain")
+	@NotBlank
 	private String contentType;
 
 	@ArraySchema(schema = @Schema(description = "List of recipients", implementation = Recipient.class))

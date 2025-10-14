@@ -48,19 +48,11 @@ public class MessagingIntegration {
 
 	public MessageResult sendSms(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
 		var smsRequest = toSmsRequest(messageEntity, recipientEntity);
-		smsRequest.setSender(messageEntity.getDisplayName());
 
 		return client.sendSms(getIdentifierHeaderValue(messageEntity.getUser().getName()),
 			ORIGIN,
 			messageEntity.getMunicipalityId(),
 			smsRequest);
-	}
-
-	public boolean sendSmsBatch(final String municipalityId) {
-		// Used to send SMS in batch.
-		// TODO: Implement the mapping and the call to messaging. Also, the response from messaging should be used to update the
-		// status of the message.
-		return true;
 	}
 
 	public List<Mailbox> precheckMailboxes(final String municipalityId, final String organizationNumber, final List<String> partyIds) {

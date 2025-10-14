@@ -137,11 +137,6 @@ class MessagingIntegrationTest {
 	}
 
 	@Test
-	void sendSmsBatch() {
-		assertThat(messagingIntegration.sendSmsBatch(MUNICIPALITY_ID)).isTrue();
-	}
-
-	@Test
 	void sendSnailMail() {
 		var recipientEntity = RecipientEntity.create()
 			.withPhoneNumber(MOBILE_NUMBER);

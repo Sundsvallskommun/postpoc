@@ -20,8 +20,7 @@ public final class PrecheckUtil {
 	private PrecheckUtil() {}
 
 	public static List<PersonGuidBatch> filterSuccessfulPersonGuidBatches(final List<PersonGuidBatch> batches) {
-		return ofNullable(batches).orElse(emptyList())
-			.stream()
+		return ofNullable(batches).orElse(emptyList()).stream()
 			.filter(batch -> TRUE.equals(batch.getSuccess()))
 			.toList();
 	}
@@ -35,8 +34,7 @@ public final class PrecheckUtil {
 	}
 
 	public static List<String> filterReachableMailboxes(final List<Mailbox> mailboxes) {
-		return ofNullable(mailboxes).orElse(emptyList())
-			.stream()
+		return ofNullable(mailboxes).orElse(emptyList()).stream()
 			.filter(mailbox -> TRUE.equals(mailbox.getReachable()))
 			.map(Mailbox::getPartyId)
 			.filter(Objects::nonNull)
@@ -44,8 +42,7 @@ public final class PrecheckUtil {
 	}
 
 	public static List<String> filterUnreachableMailboxes(final List<Mailbox> mailboxes) {
-		return ofNullable(mailboxes).orElse(emptyList())
-			.stream()
+		return ofNullable(mailboxes).orElse(emptyList()).stream()
 			.filter(mailbox -> FALSE.equals(mailbox.getReachable()))
 			.map(Mailbox::getPartyId)
 			.filter(Objects::nonNull)
