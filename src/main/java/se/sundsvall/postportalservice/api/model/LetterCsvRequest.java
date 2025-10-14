@@ -12,9 +12,11 @@ public class LetterCsvRequest {
 	private String subject;
 
 	@Schema(description = "The body of the letter", example = "This is the body of the letter")
+	@NotBlank
 	private String body;
 
 	@Schema(description = "The content type of the body", example = "text/plain")
+	@NotBlank
 	private String contentType;
 
 	public static LetterCsvRequest create() {

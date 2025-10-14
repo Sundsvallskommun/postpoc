@@ -60,7 +60,7 @@ class MessageResource {
 	@Operation(summary = "Send a message by either digital mail or as a physical letter. Digital mail is always preferred if possible.", responses = {
 		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true)
 	})
-	@PostMapping(value = "/letter", produces = ALL_VALUE)
+	@PostMapping(value = "/letter", produces = ALL_VALUE, consumes = MULTIPART_FORM_DATA_VALUE)
 	ResponseEntity<Void> sendLetter(
 		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
@@ -79,7 +79,7 @@ class MessageResource {
 	@Operation(summary = "Send a message by either digital mail or as a physical letter. Digital mail is always preferred if possible.", responses = {
 		@ApiResponse(responseCode = "200", description = "OK", useReturnTypeSchema = true)
 	})
-	@PostMapping("/letter/csv")
+	@PostMapping(value = "/letter/csv", produces = ALL_VALUE, consumes = MULTIPART_FORM_DATA_VALUE)
 	ResponseEntity<Void> sendLetterCSV(
 		@RequestHeader(value = Identifier.HEADER_NAME) @ValidIdentifier final String xSentBy,
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,

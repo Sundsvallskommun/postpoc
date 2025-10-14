@@ -101,10 +101,14 @@ class MessageResourceTest {
 
 	@Test
 	void sendLetter_BadRequest() {
+		final var multipartBodyBuilder = new MultipartBodyBuilder();
+		multipartBodyBuilder.part("request", createValidLetterRequest(), APPLICATION_JSON);
+
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/letter")
 				.build(INVALID_MUNICIPALITY_ID))
-			.bodyValue(createValidLetterRequest())
+			.contentType(MULTIPART_FORM_DATA)
+			.body(fromMultipartData(multipartBodyBuilder.build()))
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
 	}
@@ -149,10 +153,14 @@ class MessageResourceTest {
 
 	@Test
 	void sendLetterCsv_BadRequest() {
+		final var multipartBodyBuilder = new MultipartBodyBuilder();
+		multipartBodyBuilder.part("request", createValidLetterCsvRequest(), APPLICATION_JSON);
+
 		webTestClient.post()
 			.uri(uriBuilder -> uriBuilder.replacePath("/{municipalityId}/messages/letter/csv")
 				.build(INVALID_MUNICIPALITY_ID))
-			.bodyValue(createValidLetterRequest())
+			.contentType(MULTIPART_FORM_DATA)
+			.body(fromMultipartData(multipartBodyBuilder.build()))
 			.exchange()
 			.expectStatus().isEqualTo(HttpStatus.BAD_REQUEST);
 	}

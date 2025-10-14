@@ -7,7 +7,7 @@ info:
     url: https://opensource.org/licenses/MIT
   version: "1.0"
 servers:
-  - url: http://localhost:51997
+  - url: http://localhost:55445
     description: Generated server url
 paths:
   /{municipalityId}/precheck:
@@ -240,7 +240,7 @@ paths:
           example: 2281
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               required:
                 - attachments
@@ -300,7 +300,7 @@ paths:
           example: 2281
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               required:
                 - csv-file
@@ -671,9 +671,9 @@ components:
             type: object
         status:
           $ref: "#/components/schemas/StatusType"
-        detail:
-          type: string
         title:
+          type: string
+        detail:
           type: string
     StatusType:
       type: object
@@ -949,6 +949,8 @@ components:
       description: Address model
     LetterRequest:
       required:
+        - body
+        - contentType
         - subject
       type: object
       properties:
@@ -958,10 +960,12 @@ components:
           description: The subject of the letter
           example: This is the subject of the letter
         body:
+          minLength: 1
           type: string
           description: The body of the letter
           example: This is the body of the letter
         contentType:
+          minLength: 1
           type: string
           description: The content type of the body
           example: text/plain
@@ -996,6 +1000,8 @@ components:
       description: Recipient model
     LetterCsvRequest:
       required:
+        - body
+        - contentType
         - subject
       type: object
       properties:
@@ -1005,10 +1011,12 @@ components:
           description: The subject of the letter
           example: This is the subject of the letter
         body:
+          minLength: 1
           type: string
           description: The body of the letter
           example: This is the body of the letter
         contentType:
+          minLength: 1
           type: string
           description: The content type of the body
           example: text/plain
