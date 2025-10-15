@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import se.sundsvall.postportalservice.api.model.SigningInformation;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
+import se.sundsvall.postportalservice.service.util.RecipientId;
 
 @Component
 public class DigitalRegisteredLetterIntegration {
@@ -50,6 +51,7 @@ public class DigitalRegisteredLetterIntegration {
 	}
 
 	public void sendLetter(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
+		RecipientId.init(recipientEntity.getId());
 		try {
 			final var request = mapper.toLetterRequest(messageEntity, recipientEntity);
 			final var multipartFiles = mapper.toMultipartFiles(messageEntity.getAttachments());

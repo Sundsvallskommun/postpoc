@@ -24,6 +24,7 @@ import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import se.sundsvall.postportalservice.api.model.DigitalRegisteredLetterRequest;
@@ -42,6 +43,7 @@ import se.sundsvall.postportalservice.integration.messaging.MessagingIntegration
 import se.sundsvall.postportalservice.integration.messagingsettings.MessagingSettingsIntegration;
 import se.sundsvall.postportalservice.service.mapper.AttachmentMapper;
 import se.sundsvall.postportalservice.service.mapper.EntityMapper;
+import se.sundsvall.postportalservice.service.util.RecipientId;
 
 @Service
 public class MessageService {
@@ -178,6 +180,7 @@ public class MessageService {
 	}
 
 	CompletableFuture<Void> processRecipients(final MessageEntity messageEntity) {
+		LOG.info("Starting to process recipients for message with id {}", messageEntity.getId());
 		var futures = Optional.ofNullable(messageEntity.getRecipients()).orElse(emptyList()).stream()
 			.filter(recipientEntity -> !"UNDELIVERABLE".equalsIgnoreCase(recipientEntity.getStatus()))
 			.map(recipientEntity -> withPermit(() -> sendMessageToRecipient(messageEntity, recipientEntity), permits, executor))
@@ -188,6 +191,7 @@ public class MessageService {
 				var triggerSnailmailBatch = messageEntity.getRecipients().stream()
 					.anyMatch(recipientEntity -> recipientEntity.getMessageType() == SNAIL_MAIL);
 				if (triggerSnailmailBatch) {
+					LOG.info("Triggering snail mail batch processing for message with id {}", messageEntity.getId());
 					messagingIntegration.triggerSnailMailBatchProcessing(messageEntity.getMunicipalityId(), messageEntity.getId());
 				}
 				messageRepository.save(messageEntity);
@@ -204,6 +208,7 @@ public class MessageService {
 			case DIGITAL_MAIL -> sendDigitalMailToRecipient(messageEntity, recipientEntity);
 			case SNAIL_MAIL -> sendSnailMailToRecipient(messageEntity, recipientEntity);
 			default -> {
+				LOG.error("Unsupported message type: {}, for recipient with id: {}", recipientEntity.getMessageType(), recipientEntity.getId());
 				recipientEntity.setStatus(FAILED);
 				recipientEntity.setStatusDetail("Unsupported message type: " + recipientEntity.getMessageType());
 				yield CompletableFuture.completedFuture(null);
@@ -212,34 +217,68 @@ public class MessageService {
 	}
 
 	CompletableFuture<Void> sendSmsToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
-		return supplyAsync(() -> messagingIntegration.sendSms(messageEntity, recipientEntity))
-			.thenAccept(messageResult -> updateRecipient(messageResult, recipientEntity))
+		LOG.info("Sending SMS to recipient with id {}", recipientEntity.getId());
+		var contextMap = MDC.getCopyOfContextMap();
+		return supplyAsync(() -> {
+			MDC.setContextMap(contextMap);
+			return messagingIntegration.sendSms(messageEntity, recipientEntity);
+		})
+			.thenAccept(messageResult -> {
+				MDC.setContextMap(contextMap);
+				LOG.info("SMS sent to recipient with id {}", recipientEntity.getId());
+				updateRecipient(messageResult, recipientEntity);
+				RecipientId.reset();
+			})
 			.exceptionally(throwable -> {
+				LOG.error("Failed to send SMS to recipient with id {}", recipientEntity.getId(), throwable);
 				recipientEntity.setStatus(FAILED);
 				recipientEntity.setStatusDetail(throwable.getMessage());
+				RecipientId.reset();
 				return null;
 			});
 	}
 
 	CompletableFuture<Void> sendDigitalMailToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
-		return supplyAsync(() -> messagingIntegration.sendDigitalMail(messageEntity, recipientEntity))
+		LOG.info("Sending digital mail to recipient with id {}", recipientEntity.getId());
+		var contextMap = MDC.getCopyOfContextMap();
+		return supplyAsync(() -> {
+			MDC.setContextMap(contextMap);
+			return messagingIntegration.sendDigitalMail(messageEntity, recipientEntity);
+		})
 			.thenAccept(messageBatchResult -> {
+				MDC.setContextMap(contextMap);
+				LOG.info("Digital mail sent to recipient with id {}", recipientEntity.getId());
 				var messageResult = messageBatchResult.getMessages().getFirst();
 				updateRecipient(messageResult, recipientEntity);
+				RecipientId.reset();
 			})
 			.exceptionally(throwable -> {
+				LOG.error("Failed to send digital mail to recipient with id {}", recipientEntity.getId(), throwable);
 				recipientEntity.setStatus(FAILED);
 				recipientEntity.setStatusDetail(throwable.getMessage());
+				RecipientId.reset();
 				return null;
 			});
 	}
 
 	CompletableFuture<Void> sendSnailMailToRecipient(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
-		return supplyAsync(() -> messagingIntegration.sendSnailMail(messageEntity, recipientEntity))
-			.thenAccept(messageResult -> updateRecipient(messageResult, recipientEntity))
+		LOG.info("Sending snail mail to recipient with id {}", recipientEntity.getId());
+		var contextMap = MDC.getCopyOfContextMap();
+		return supplyAsync(() -> {
+			MDC.setContextMap(contextMap);
+			return messagingIntegration.sendSnailMail(messageEntity, recipientEntity);
+		})
+			.thenAccept(messageResult -> {
+				MDC.setContextMap(contextMap);
+				LOG.info("Snail mail sent to recipient with id {}", recipientEntity.getId());
+				updateRecipient(messageResult, recipientEntity);
+				RecipientId.reset();
+			})
 			.exceptionally(throwable -> {
+				LOG.error("Failed to send snail mail to recipient with id {}", recipientEntity.getId(), throwable);
 				recipientEntity.setStatus(FAILED);
 				recipientEntity.setStatusDetail(throwable.getMessage());
+				RecipientId.reset();
 				return null;
 			});
 	}
@@ -257,6 +296,7 @@ public class MessageService {
 			.map(DeliveryResult::getStatus)
 			.orElse(generated.se.sundsvall.messaging.MessageStatus.FAILED);
 
+		LOG.info("Updating recipient with id {}, Status: {}, ExternalId: {}", recipientEntity.getId(), status, messageId);
 		recipientEntity.setStatus(status.toString());
 		recipientEntity.setExternalId(String.valueOf(messageId));
 	}
