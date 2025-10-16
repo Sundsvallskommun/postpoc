@@ -1,8 +1,11 @@
 package se.sundsvall.postportalservice.integration.digitalregisteredletter;
 
+import static java.util.Collections.emptyList;
+import static org.springframework.util.CollectionUtils.isEmpty;
 import static se.sundsvall.postportalservice.Constants.FAILED;
 import static se.sundsvall.postportalservice.service.util.IdentifierUtil.getIdentifierHeaderValue;
 
+import generated.se.sundsvall.digitalregisteredletter.LetterStatus;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import se.sundsvall.postportalservice.api.model.SigningInformation;
@@ -34,8 +37,17 @@ public class DigitalRegisteredLetterIntegration {
 	}
 
 	public SigningInformation getSigningInformation(final String municipalityId, final String letterId) {
-		var info = client.getSigningInfo(municipalityId, letterId);
+		final var info = client.getSigningInfo(municipalityId, letterId);
 		return mapper.toSigningInformation(info);
+	}
+
+	public List<LetterStatus> getLetterStatuses(final String municipalityId, final List<String> letterIds) {
+		if (isEmpty(letterIds)) {
+			return emptyList();
+		}
+
+		final var request = mapper.toLetterStatusRequest(letterIds);
+		return client.getLetterStatuses(municipalityId, request);
 	}
 
 	public boolean getAllLetters(final String municipalityId) {
@@ -61,7 +73,7 @@ public class DigitalRegisteredLetterIntegration {
 				multipartFiles);
 			recipientEntity.setExternalId(letter.getId());
 			recipientEntity.setStatus(letter.getStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			recipientEntity.setStatus(FAILED);
 			recipientEntity.setStatusDetail(e.getMessage());
 		}

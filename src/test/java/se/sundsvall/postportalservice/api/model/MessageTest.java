@@ -21,6 +21,7 @@ class MessageTest {
 	private static final String SUBJECT = "subject";
 	private static final String TYPE = "type";
 	private static final LocalDateTime SENT_AT = LocalDateTime.of(2021, 1, 1, 12, 0, 0);
+	private static final SigningStatus SIGNING_STATUS = SigningStatus.create();
 
 	@BeforeAll
 	static void setup() {
@@ -39,36 +40,42 @@ class MessageTest {
 
 	@Test
 	void getterAndSetterTest() {
-		var bean = new Message();
+		final var bean = new Message();
 		bean.setMessageId(MESSAGE_ID);
+		bean.setSentAt(SENT_AT);
+		bean.setSigningStatus(SIGNING_STATUS);
 		bean.setSubject(SUBJECT);
 		bean.setType(TYPE);
-		bean.setSentAt(SENT_AT);
 
-		assertThat(bean.getMessageId()).isEqualTo(MESSAGE_ID);
-		assertThat(bean.getSubject()).isEqualTo(SUBJECT);
-		assertThat(bean.getType()).isEqualTo(TYPE);
-		assertThat(bean.getSentAt()).isEqualTo(SENT_AT);
+		assertBean(bean);
 	}
 
 	@Test
 	void builderPatternTest() {
 		final var bean = new Message()
 			.withMessageId(MESSAGE_ID)
+			.withSentAt(SENT_AT)
+			.withSigningStatus(SIGNING_STATUS)
 			.withSubject(SUBJECT)
-			.withType(TYPE)
-			.withSentAt(SENT_AT);
+			.withType(TYPE);
 
+		assertBean(bean);
+	}
+
+	private void assertBean(final Message bean) {
+		assertThat(bean).hasNoNullFieldsOrProperties();
 		assertThat(bean.getMessageId()).isEqualTo(MESSAGE_ID);
+		assertThat(bean.getSentAt()).isEqualTo(SENT_AT);
+		assertThat(bean.getSigningStatus()).isEqualTo(SIGNING_STATUS);
 		assertThat(bean.getSubject()).isEqualTo(SUBJECT);
 		assertThat(bean.getType()).isEqualTo(TYPE);
-		assertThat(bean.getSentAt()).isEqualTo(SENT_AT);
 	}
 
 	@Test
 	void constructorTest() {
+		assertThat(new Message()).hasOnlyFields("messageId", "subject", "type", "sentAt", "signingStatus");
 		assertThat(new Message()).hasAllNullFieldsOrProperties();
-		assertThat(new Message()).hasOnlyFields("messageId", "subject", "type", "sentAt");
+		assertThat(Message.create()).hasAllNullFieldsOrProperties();
 	}
 
 }

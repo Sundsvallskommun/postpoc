@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -46,10 +47,10 @@ class StatisticsResource {
 	@GetMapping("/departments")
 	ResponseEntity<List<Statistics>> getStatisticsByDepartment(
 		@Parameter(name = "municipalityId", description = "Municipality ID", example = "2281") @ValidMunicipalityId @PathVariable final String municipalityId,
-		@Parameter(name = "year", description = "Filter statistics by year") @RequestParam final String year,
-		@Parameter(name = "month", description = "Filter statistics by month") @RequestParam final String month) {
+		@Parameter(name = "year", description = "Filter statistics by year") @RequestParam @Pattern(regexp = "[0-9]{4}", message = "must be a value between 0 and 9999") final String year,
+		@Parameter(name = "month", description = "Filter statistics by month") @RequestParam @Pattern(regexp = "^0?[1-9]$|^1[0-2]$", message = "must be a value between 1 and 12") final String month) {
 
-		var statistics = statisticsService.getDepartmentStatistics(year, month);
+		final var statistics = statisticsService.getDepartmentStatistics(year, month);
 		return ok(statistics);
 	}
 

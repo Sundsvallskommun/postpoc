@@ -1,12 +1,14 @@
 package se.sundsvall.postportalservice.integration.digitalregisteredletter;
 
 import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.ObjectUtils.anyNull;
 import static org.zalando.fauxpas.FauxPas.throwingFunction;
 
 import generated.se.sundsvall.digitalregisteredletter.Device;
 import generated.se.sundsvall.digitalregisteredletter.EligibilityRequest;
 import generated.se.sundsvall.digitalregisteredletter.LetterRequest;
+import generated.se.sundsvall.digitalregisteredletter.LetterStatusRequest;
 import generated.se.sundsvall.digitalregisteredletter.Organization;
 import generated.se.sundsvall.digitalregisteredletter.SigningInfo;
 import generated.se.sundsvall.digitalregisteredletter.StepUp;
@@ -27,7 +29,8 @@ import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 public class DigitalRegisteredLetterMapper {
 
 	public EligibilityRequest toEligibilityRequest(final List<String> partyIds) {
-		return new EligibilityRequest().partyIds(partyIds);
+		return new EligibilityRequest()
+			.partyIds(partyIds);
 	}
 
 	public LetterRequest toLetterRequest(final MessageEntity messageEntity, final RecipientEntity recipientEntity) {
@@ -44,30 +47,32 @@ public class DigitalRegisteredLetterMapper {
 			.partyId(recipientEntity.getPartyId());
 	}
 
-	public SupportInfo toSupportInfo(final DepartmentEntity departmentEntity) {
-		return Optional.ofNullable(departmentEntity).map(present -> new SupportInfo()
-			.contactInformationEmail(departmentEntity.getContactInformationEmail())
-			.contactInformationUrl(departmentEntity.getContactInformationUrl())
-			.contactInformationPhoneNumber(departmentEntity.getContactInformationPhoneNumber())
-			.supportText(departmentEntity.getSupportText()))
+	public SupportInfo toSupportInfo(final DepartmentEntity nullableDepartmentEntity) {
+		return ofNullable(nullableDepartmentEntity)
+			.map(departmentEntity -> new SupportInfo()
+				.contactInformationEmail(departmentEntity.getContactInformationEmail())
+				.contactInformationUrl(departmentEntity.getContactInformationUrl())
+				.contactInformationPhoneNumber(departmentEntity.getContactInformationPhoneNumber())
+				.supportText(departmentEntity.getSupportText()))
 			.orElse(null);
 	}
 
-	public Organization toOrganization(final DepartmentEntity departmentEntity) {
-		return Optional.ofNullable(departmentEntity).map(present -> new Organization()
-			.number(Integer.valueOf(departmentEntity.getOrganizationNumber()))
-			.name(departmentEntity.getName()))
+	public Organization toOrganization(final DepartmentEntity nullableDepartmentEntity) {
+		return ofNullable(nullableDepartmentEntity)
+			.map(departmentEntity -> new Organization()
+				.number(Integer.valueOf(departmentEntity.getOrganizationNumber()))
+				.name(departmentEntity.getName()))
 			.orElse(null);
 	}
 
 	public List<MultipartFile> toMultipartFiles(final List<AttachmentEntity> attachmentEntities) {
-		return Optional.ofNullable(attachmentEntities).orElse(emptyList()).stream()
+		return ofNullable(attachmentEntities).orElse(emptyList()).stream()
 			.map(this::toMultipartFile)
 			.toList();
 	}
 
 	public MultipartFile toMultipartFile(final AttachmentEntity attachmentEntity) {
-		return Optional.ofNullable(attachmentEntity)
+		return ofNullable(attachmentEntity)
 			.map(throwingFunction(this::createMultipartFile))
 			.orElse(null);
 	}
@@ -76,38 +81,48 @@ public class DigitalRegisteredLetterMapper {
 		return new AttachmentMultipartFile(attachmentEntity.getFileName(), attachmentEntity.getContentType(), attachmentEntity.getContent());
 	}
 
-	public SigningInformation toSigningInformation(final SigningInfo signingInfo) {
-		return Optional.ofNullable(signingInfo).map(info -> new SigningInformation()
-			.withStatus(signingInfo.getStatus())
-			.withSignedAt(signingInfo.getSigned())
-			.withContentKey(signingInfo.getContentKey())
-			.withOrderReference(signingInfo.getOrderRef())
-			.withSignature(signingInfo.getSignature())
-			.withOcspResponse(signingInfo.getOcspResponse())
-			.withUser(toUser(signingInfo.getUser()))
-			.withDevice(toDevice(signingInfo.getDevice()))
-			.withStepUp(toStepUp(signingInfo.getStepUp())))
+	public SigningInformation toSigningInformation(final SigningInfo nullableSigningInfo) {
+		return ofNullable(nullableSigningInfo)
+			.map(signingInfo -> new SigningInformation()
+				.withStatus(signingInfo.getStatus())
+				.withSignedAt(signingInfo.getSigned())
+				.withContentKey(signingInfo.getContentKey())
+				.withOrderReference(signingInfo.getOrderRef())
+				.withSignature(signingInfo.getSignature())
+				.withOcspResponse(signingInfo.getOcspResponse())
+				.withUser(toUser(signingInfo.getUser()))
+				.withDevice(toDevice(signingInfo.getDevice()))
+				.withStepUp(toStepUp(signingInfo.getStepUp())))
 			.orElse(null);
 	}
 
-	public SigningInformation.User toUser(final User user) {
-		return Optional.ofNullable(user).map(present -> new SigningInformation.User()
-			.withPersonalIdentityNumber(user.getPersonalIdentityNumber())
-			.withName(user.getName())
-			.withGivenName(user.getGivenName())
-			.withSurname(user.getSurname())).orElse(null);
+	public SigningInformation.User toUser(final User nullableUser) {
+		return ofNullable(nullableUser)
+			.map(user -> new SigningInformation.User()
+				.withPersonalIdentityNumber(user.getPersonalIdentityNumber())
+				.withName(user.getName())
+				.withGivenName(user.getGivenName())
+				.withSurname(user.getSurname())).orElse(null);
 	}
 
 	public SigningInformation.Device toDevice(final Device device) {
-		return Optional.ofNullable(device).map(present -> new SigningInformation.Device()
-			.withIpAddress(device.getIpAddress()))
+		return Optional.ofNullable(device)
+			.map(present -> new SigningInformation.Device()
+				.withIpAddress(device.getIpAddress()))
 			.orElse(null);
 	}
 
-	public SigningInformation.StepUp toStepUp(final StepUp stepUp) {
-		return Optional.ofNullable(stepUp).map(present -> new SigningInformation.StepUp()
-			.withMrtd(stepUp.getMrtd()))
+	public SigningInformation.StepUp toStepUp(final StepUp nullableStepUp) {
+		return ofNullable(nullableStepUp)
+			.map(stepUp -> new SigningInformation.StepUp()
+				.withMrtd(stepUp.getMrtd()))
 			.orElse(null);
 	}
 
+	public LetterStatusRequest toLetterStatusRequest(final List<String> nullableLetterIds) {
+		return ofNullable(nullableLetterIds)
+			.map(letterIds -> new LetterStatusRequest()
+				.letterIds(letterIds))
+			.orElse(null);
+	}
 }

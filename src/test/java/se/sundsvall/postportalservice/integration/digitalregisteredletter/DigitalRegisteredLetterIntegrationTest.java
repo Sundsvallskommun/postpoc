@@ -10,16 +10,22 @@ import static se.sundsvall.postportalservice.TestDataFactory.MUNICIPALITY_ID;
 
 import generated.se.sundsvall.digitalregisteredletter.Letter;
 import generated.se.sundsvall.digitalregisteredletter.LetterRequest;
+import generated.se.sundsvall.digitalregisteredletter.LetterStatus;
+import generated.se.sundsvall.digitalregisteredletter.LetterStatusRequest;
+import generated.se.sundsvall.digitalregisteredletter.SigningInfo;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
+import se.sundsvall.postportalservice.api.model.SigningInformation;
 import se.sundsvall.postportalservice.integration.db.MessageEntity;
 import se.sundsvall.postportalservice.integration.db.RecipientEntity;
 import se.sundsvall.postportalservice.integration.db.UserEntity;
@@ -52,7 +58,7 @@ class DigitalRegisteredLetterIntegrationTest {
 		final var eligibilityRequest = digitalRegisteredLetterMapperMock.toEligibilityRequest(partyIds);
 		when(clientMock.checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest)).thenReturn(partyIds);
 
-		var result = digitalRegisteredLetterIntegration.checkKivraEligibility(MUNICIPALITY_ID, partyIds);
+		final var result = digitalRegisteredLetterIntegration.checkKivraEligibility(MUNICIPALITY_ID, partyIds);
 
 		assertThat(result).hasSameElementsAs(partyIds);
 		verify(clientMock).checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest);
@@ -70,7 +76,7 @@ class DigitalRegisteredLetterIntegrationTest {
 		final List<String> eligiblePartyIds = Collections.emptyList();
 		when(clientMock.checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest)).thenReturn(eligiblePartyIds);
 
-		var result = digitalRegisteredLetterIntegration.checkKivraEligibility(MUNICIPALITY_ID, partyIds);
+		final var result = digitalRegisteredLetterIntegration.checkKivraEligibility(MUNICIPALITY_ID, partyIds);
 
 		assertThat(result).isEmpty();
 		verify(clientMock).checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest);
@@ -88,7 +94,7 @@ class DigitalRegisteredLetterIntegrationTest {
 		final var eligiblePartyIds = List.of(partyId1, partyId2);
 		when(clientMock.checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest)).thenReturn(eligiblePartyIds);
 
-		var result = digitalRegisteredLetterIntegration.checkKivraEligibility(MUNICIPALITY_ID, partyIds);
+		final var result = digitalRegisteredLetterIntegration.checkKivraEligibility(MUNICIPALITY_ID, partyIds);
 
 		assertThat(result).hasSameElementsAs(eligiblePartyIds);
 		verify(clientMock).checkKivraEligibility(MUNICIPALITY_ID, eligibilityRequest);
@@ -98,14 +104,14 @@ class DigitalRegisteredLetterIntegrationTest {
 	@Test
 	void getAllLetters() {
 		// TODO: Implement when logic is in place.
-		var result = digitalRegisteredLetterIntegration.getAllLetters(MUNICIPALITY_ID);
+		final var result = digitalRegisteredLetterIntegration.getAllLetters(MUNICIPALITY_ID);
 		assertThat(result).isTrue();
 	}
 
 	@Test
 	void getLetterById() {
 		// TODO: Implement when logic is in place.
-		var result = digitalRegisteredLetterIntegration.getLetterById(MUNICIPALITY_ID, "letterId");
+		final var result = digitalRegisteredLetterIntegration.getLetterById(MUNICIPALITY_ID, "letterId");
 		assertThat(result).isTrue();
 	}
 
@@ -114,7 +120,7 @@ class DigitalRegisteredLetterIntegrationTest {
 		final var userEntity = new UserEntity().withName("John Wick");
 		final var messageEntity = new MessageEntity()
 			.withUser(userEntity)
-			.withMunicipalityId("2281");
+			.withMunicipalityId(MUNICIPALITY_ID);
 		final var recipientEntity = new RecipientEntity();
 
 		final var letterRequest = new LetterRequest();
@@ -143,7 +149,7 @@ class DigitalRegisteredLetterIntegrationTest {
 		final var userEntity = new UserEntity().withName("John Wick");
 		final var messageEntity = new MessageEntity()
 			.withUser(userEntity)
-			.withMunicipalityId("2281");
+			.withMunicipalityId(MUNICIPALITY_ID);
 		final var recipientEntity = new RecipientEntity();
 
 		final var letterRequest = new LetterRequest();
@@ -164,4 +170,41 @@ class DigitalRegisteredLetterIntegrationTest {
 		verify(clientMock).sendLetter(HEADER_VALUE, MUNICIPALITY_ID, letterRequest, multipartList);
 	}
 
+	@Test
+	void getSigningInformation() {
+		final var letterId = "123e4567-e89b-12d3-a456-426614174001";
+		final var signingInfo = new SigningInfo();
+		final var signingInformation = new SigningInformation();
+
+		when(clientMock.getSigningInfo(MUNICIPALITY_ID, letterId)).thenReturn(signingInfo);
+		when(digitalRegisteredLetterMapperMock.toSigningInformation(signingInfo)).thenReturn(signingInformation);
+
+		final var response = digitalRegisteredLetterIntegration.getSigningInformation(MUNICIPALITY_ID, letterId);
+
+		assertThat(response).isEqualTo(signingInformation);
+		verify(clientMock).getSigningInfo(MUNICIPALITY_ID, letterId);
+		verify(digitalRegisteredLetterMapperMock).toSigningInformation(signingInfo);
+	}
+
+	@Test
+	void getLetterStatuses() {
+		final var letterId = "123e4567-e89b-12d3-a456-426614174001";
+		final var letterStatusRequest = new LetterStatusRequest();
+		final var letterStatus = new LetterStatus();
+
+		when(digitalRegisteredLetterMapperMock.toLetterStatusRequest(List.of(letterId))).thenReturn(letterStatusRequest);
+		when(clientMock.getLetterStatuses(MUNICIPALITY_ID, letterStatusRequest)).thenReturn(List.of(letterStatus));
+
+		final var response = digitalRegisteredLetterIntegration.getLetterStatuses(MUNICIPALITY_ID, List.of(letterId));
+
+		assertThat(response).isEqualTo(List.of(letterStatus));
+		verify(digitalRegisteredLetterMapperMock).toLetterStatusRequest(List.of(letterId));
+		verify(clientMock).getLetterStatuses(MUNICIPALITY_ID, letterStatusRequest);
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	void getLetterStatuses_nullAndEmpty(final List<String> ids) {
+		assertThat(digitalRegisteredLetterIntegration.getLetterStatuses(MUNICIPALITY_ID, ids)).isEmpty();
+	}
 }

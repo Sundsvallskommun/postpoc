@@ -1,0 +1,31 @@
+{
+	"messages": [
+		{
+			"messageId": "11d7486b-5da0-4e73-92ec-7d77a3660f55",
+			"subject": "This is the subject",
+			"type": "LETTER",
+			"sentAt": "2025-09-08T13:00:00"
+		},
+		{
+			"messageId": "1decdead-52b8-42d9-aa62-5ef08c4a701e",
+			"subject": "This is the subject",
+			"type": "DIGITAL_REGISTERED_LETTER",
+			"sentAt": "2025-09-07T12:00:00",
+			"signingStatus": {
+				"letterState": "SIGNED"
+			}
+		},
+		{
+			"messageId": "a8fec1ef-950f-4735-9c49-1a641043cdbb",
+			"type": "LETTER",
+			"sentAt": "2025-08-06T12:00:00"
+		}
+	],
+	"_meta": {
+		"page": 1,
+		"limit": 20,
+		"count": 3,
+		"totalRecords": 3,
+		"totalPages": 1
+	}
+}
