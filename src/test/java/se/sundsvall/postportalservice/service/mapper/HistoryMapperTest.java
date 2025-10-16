@@ -197,7 +197,7 @@ class HistoryMapperTest {
 		entities.addFirst(null);
 
 		// Act
-		final var result = HISTORY_MAPPER.toAttachmentList(List.of(attachmentEntity));
+		final var result = HISTORY_MAPPER.toAttachmentList(entities);
 
 		// Assert
 		assertThat(result).hasSize(1).satisfiesExactly(attachmentDetails -> {
@@ -250,12 +250,82 @@ class HistoryMapperTest {
 
 	@Test
 	void toRecipientList() {
+		// Setup
+		final var city = "city";
+		final var firstName = "firstName";
+		final var lastName = "lastName";
+		final var messageType = DIGITAL_MAIL;
+		final var phoneNumber = "phoneNumber";
+		final var partyId = "partyId";
+		final var status = "status";
+		final var streetAddress = "streetAddress";
+		final var zipCode = "zipCode";
+		final var recipientEntity = RecipientEntity.create()
+			.withCity(city)
+			.withFirstName(firstName)
+			.withLastName(lastName)
+			.withMessageType(messageType)
+			.withPhoneNumber(phoneNumber)
+			.withPartyId(partyId)
+			.withStatus(status)
+			.withStreetAddress(streetAddress)
+			.withZipCode(zipCode);
 
+		// Act
+		final var result = HISTORY_MAPPER.toRecipientList(List.of(recipientEntity));
+
+		// Assert
+		assertThat(result).hasSize(1).satisfiesExactly(recipient -> {
+			assertThat(recipient.getCity()).isEqualTo(city);
+			assertThat(recipient.getMessageType()).isEqualTo(messageType.name());
+			assertThat(recipient.getMobileNumber()).isEqualTo(phoneNumber);
+			assertThat(recipient.getName()).isEqualTo(firstName + " " + lastName);
+			assertThat(recipient.getPartyId()).isEqualTo(partyId);
+			assertThat(recipient.getStatus()).isEqualTo(status);
+			assertThat(recipient.getStreetAddress()).isEqualTo(streetAddress);
+			assertThat(recipient.getZipCode()).isEqualTo(zipCode);
+		});
 	}
 
 	@Test
 	void toRecipientListWhenSourceContainsNull() {
+		// Setup
+		final var city = "city";
+		final var firstName = "firstName";
+		final var lastName = "lastName";
+		final var messageType = DIGITAL_MAIL;
+		final var phoneNumber = "phoneNumber";
+		final var partyId = "partyId";
+		final var status = "status";
+		final var streetAddress = "streetAddress";
+		final var zipCode = "zipCode";
+		final var recipientEntity = RecipientEntity.create()
+			.withCity(city)
+			.withFirstName(firstName)
+			.withLastName(lastName)
+			.withMessageType(messageType)
+			.withPhoneNumber(phoneNumber)
+			.withPartyId(partyId)
+			.withStatus(status)
+			.withStreetAddress(streetAddress)
+			.withZipCode(zipCode);
+		final var entities = new ArrayList<>(List.of(recipientEntity));
+		entities.addFirst(null);
 
+		// Act
+		final var result = HISTORY_MAPPER.toRecipientList(entities);
+
+		// Assert
+		assertThat(result).hasSize(1).satisfiesExactly(recipient -> {
+			assertThat(recipient.getCity()).isEqualTo(city);
+			assertThat(recipient.getMessageType()).isEqualTo(messageType.name());
+			assertThat(recipient.getMobileNumber()).isEqualTo(phoneNumber);
+			assertThat(recipient.getName()).isEqualTo(firstName + " " + lastName);
+			assertThat(recipient.getPartyId()).isEqualTo(partyId);
+			assertThat(recipient.getStatus()).isEqualTo(status);
+			assertThat(recipient.getStreetAddress()).isEqualTo(streetAddress);
+			assertThat(recipient.getZipCode()).isEqualTo(zipCode);
+		});
 	}
 
 	@Test
