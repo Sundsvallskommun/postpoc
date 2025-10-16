@@ -22,7 +22,10 @@ class StatisticsIT extends AbstractAppTest {
 	@Test
 	void test01_getStatistics_2025_september() {
 		setupCall()
-			.withServicePath("/2281/statistics/departments?year=2025&month=9")
+			.withServicePath(uriBuilder -> uriBuilder.replacePath("/2281/statistics/departments")
+				.replaceQueryParam("year", "2025")
+				.replaceQueryParam("month", "9")
+				.build())
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
@@ -32,7 +35,10 @@ class StatisticsIT extends AbstractAppTest {
 	@Test
 	void test02_getStatistics_2025_august() {
 		setupCall()
-			.withServicePath("/2281/statistics/departments?year=2025&month=8")
+			.withServicePath(uriBuilder -> uriBuilder.replacePath("/2281/statistics/departments")
+				.replaceQueryParam("year", "2025")
+				.replaceQueryParam("month", "08")
+				.build())
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
