@@ -42,7 +42,8 @@ class HistoryIT extends AbstractAppTest {
 	@Test
 	void test03_getSigningInformation() {
 		setupCall()
-			.withServicePath("/2281/history/messages/1decdead-52b8-42d9-aa62-5ef08c4a701e/signinginfo") // message3 is a DIGITAL_REGISTERED_LETTER in the test data
+			// message with id 1decdead-52b8-42d9-aa62-5ef08c4a701e is a DIGITAL_REGISTERED_LETTER in the test data
+			.withServicePath("/2281/history/messages/1decdead-52b8-42d9-aa62-5ef08c4a701e/signinginfo")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
