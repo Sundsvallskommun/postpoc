@@ -15,6 +15,11 @@ jobs:
       matrix:
         arch: [amd64, arm64]
 
+    outputs:
+      repo_owner: ${{ steps.repo_owner.outputs.owner_lc }}
+      repo_name: ${{ steps.repo_name.outputs.name_lc }}
+      version: ${{ steps.maven.outputs.version }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -90,8 +95,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      packages: write
       contents: read
+      packages: write
 
     steps:
       - name: Log in to GHCR
@@ -101,34 +106,17 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get lowercase repo owner
-        id: repo_owner
-        run: echo "owner_lc=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
-
-      - name: Get lowercase repo name
-        id: repo_name
-        shell: bash
-        run: |
-          repo_name="${GITHUB_REPOSITORY##*/}"
-          echo "name_lc=${repo_name,,}" >> $GITHUB_OUTPUT
-
-      - name: Read Maven version
-        id: maven
-        run: |
-          VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-
       - name: Create multi-arch manifest for :<version>
         run: |
           docker buildx imagetools create \
-            -t ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }} \
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }}-amd64 \
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }}-arm64
+            -t ghcr.io/${{ needs.build.outputs.repo_owner }}/${{ needs.build.outputs.repo_name }}:${{ needs.build.outputs.version }} \
+            ghcr.io/${{ needs.build.outputs.repo_owner }}/${{ needs.build.outputs.repo_name }}:${{ needs.build.outputs.version }}-amd64 \
+            ghcr.io/${{ needs.build.outputs.repo_owner }}/${{ needs.build.outputs.repo_name }}:${{ needs.build.outputs.version }}-arm64
 
       - name: Create multi-arch manifest for :latest
-        if: ${{ github.ref == 'refs/heads/main' && !endsWith(steps.maven.outputs.version, '-SNAPSHOT') }}
+        if: ${{ github.ref == 'refs/heads/main' && !endsWith(needs.build.outputs.version, '-SNAPSHOT') }}
         run: |
           docker buildx imagetools create \
-            -t ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest \
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest-amd64 \
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest-arm64
+            -t ghcr.io/${{ needs.build.outputs.repo_owner }}/${{ needs.build.outputs.repo_name }}:latest \
+            ghcr.io/${{ needs.build.outputs.repo_owner }}/${{ needs.build.outputs.repo_name }}:latest-amd64 \
+            ghcr.io/${{ needs.build.outputs.repo_owner }}/${{ needs.build.outputs.repo_name }}:latest-arm64
