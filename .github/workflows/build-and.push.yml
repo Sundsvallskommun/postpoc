@@ -1,4 +1,4 @@
-name: Build and Push Docker image (multi-arch)
+name: Build and Push Docker image (per-arch, 4 tags)
 
 on:
   workflow_call:
@@ -10,16 +10,17 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
 
     steps:
-      # --- Källkod ---
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Behövs ofta för t.ex. git-commit-id-maven-plugin
           fetch-depth: 0
 
-      # --- Maven miljö ---
       - name: Set up Java (for Maven)
         uses: actions/setup-java@v4
         with:
@@ -29,24 +30,20 @@ jobs:
       - name: Cache Maven repository
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.m2/repository
+          path: ~/.m2/repository
           key: m2-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             m2-${{ runner.os }}-
 
-      # --- Bygg JAR på hosten (inte i Docker) ---
       - name: Maven package (host)
         run: mvn -B -DskipTests clean package
 
-      # Läs version från pom.xml (till Docker taggar)
       - name: Read Maven version
         id: maven
         run: |
           VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      # --- Docker buildx för multi-arch ---
       - name: Enable QEMU (cross-arch emulation)
         uses: docker/setup-qemu-action@v3
 
@@ -72,81 +69,19 @@ jobs:
           repo_name="${GITHUB_REPOSITORY##*/}"
           echo "name_lc=${repo_name,,}" >> $GITHUB_OUTPUT
 
-      # ---- Multi-arch: version ----
-      - name: Build & push :version (multi-arch amd64+arm64)
+      - name: Build & push per-arch tags
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          # Dockerfile är runtime-only och förlitar sig på target/*.jar från Maven-steget ovan
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.arch }}
           tags: |
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }}
+            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }}-${{ matrix.arch }}
+            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest-${{ matrix.arch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false  
+          sbom: false       
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.version=${{ steps.maven.outputs.version }}
-
-      # ---- Multi-arch: latest (endast på main och ej SNAPSHOT) ----
-      - name: Tag & push :latest (multi-arch) when non-SNAPSHOT on main
-        if: ${{ github.ref == 'refs/heads/main' && !endsWith(steps.maven.outputs.version, '-SNAPSHOT') }}
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          labels: |
-            org.opencontainers.image.source=${{ github.repository }}
-            org.opencontainers.image.version=${{ steps.maven.outputs.version }}
-
-      # ---- (Valfritt) Arkitekturspecifika taggar ----
-      - name: Push arch-specific :version-amd64
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }}-amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Push arch-specific :version-arm64
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/arm64
-          tags: |
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:${{ steps.maven.outputs.version }}-arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Push arch-specific :latest-amd64
-        if: ${{ github.ref == 'refs/heads/main' && !endsWith(steps.maven.outputs.version, '-SNAPSHOT') }}
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest-amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Push arch-specific :latest-arm64
-        if: ${{ github.ref == 'refs/heads/main' && !endsWith(steps.maven.outputs.version, '-SNAPSHOT') }}
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          platforms: linux/arm64
-          tags: |
-            ghcr.io/${{ steps.repo_owner.outputs.owner_lc }}/${{ steps.repo_name.outputs.name_lc }}:latest-arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
