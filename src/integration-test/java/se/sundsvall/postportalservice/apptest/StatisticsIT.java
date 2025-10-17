@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.jdbc.Sql;
+
 import se.sundsvall.dept44.test.AbstractAppTest;
 import se.sundsvall.dept44.test.annotation.wiremock.WireMockAppTestSuite;
 import se.sundsvall.postportalservice.Application;
@@ -22,8 +23,8 @@ class StatisticsIT extends AbstractAppTest {
 	void test01_getStatistics_2025_september() {
 		setupCall()
 			.withServicePath(uriBuilder -> uriBuilder.replacePath("/2281/statistics/departments")
-				.queryParam("year", "2025")
-				.queryParam("month", "9")
+				.replaceQueryParam("year", "2025")
+				.replaceQueryParam("month", "9")
 				.build())
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
@@ -35,8 +36,8 @@ class StatisticsIT extends AbstractAppTest {
 	void test02_getStatistics_2025_august() {
 		setupCall()
 			.withServicePath(uriBuilder -> uriBuilder.replacePath("/2281/statistics/departments")
-				.queryParam("year", "2025")
-				.queryParam("month", "8")
+				.replaceQueryParam("year", "2025")
+				.replaceQueryParam("month", "08")
 				.build())
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)

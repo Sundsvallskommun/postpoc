@@ -1,5 +1,8 @@
 package se.sundsvall.postportalservice.api.model;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -7,17 +10,20 @@ import java.util.Objects;
 @Schema(description = "Message model")
 public class Message {
 
-	@Schema(description = "Message ID", accessMode = Schema.AccessMode.READ_ONLY, example = "123456")
+	@Schema(description = "Message ID", accessMode = READ_ONLY, example = "123456")
 	private String messageId;
 
-	@Schema(description = "The subject", accessMode = Schema.AccessMode.READ_ONLY, example = "Viktig information")
+	@Schema(description = "The subject", accessMode = READ_ONLY, example = "Viktig information")
 	private String subject;
 
-	@Schema(description = "Type of message", accessMode = Schema.AccessMode.READ_ONLY, example = "SMS|LETTER|DIGITAL_REGISTERED_LETTER")
+	@Schema(description = "Type of message", accessMode = READ_ONLY, example = "SMS|LETTER|DIGITAL_REGISTERED_LETTER")
 	private String type;
 
-	@Schema(description = "When the message was sent", accessMode = Schema.AccessMode.READ_ONLY, example = "2021-01-01T12:00:00")
+	@Schema(description = "When the message was sent", accessMode = READ_ONLY, example = "2021-01-01T12:00:00")
 	private LocalDateTime sentAt;
+
+	@Schema(description = "Status for signing process. Only applicable for message type DIGITAL_REGISTERED_LETTER", requiredMode = NOT_REQUIRED, accessMode = READ_ONLY)
+	private SigningStatus signingStatus;
 
 	public static Message create() {
 		return new Message();
@@ -75,6 +81,19 @@ public class Message {
 		this.sentAt = sentAt;
 	}
 
+	public SigningStatus getSigningStatus() {
+		return signingStatus;
+	}
+
+	public Message withSigningStatus(final SigningStatus signingStatus) {
+		this.signingStatus = signingStatus;
+		return this;
+	}
+
+	public void setSigningStatus(final SigningStatus signingStatus) {
+		this.signingStatus = signingStatus;
+	}
+
 	@Override
 	public String toString() {
 		return "Message{" +
@@ -82,19 +101,23 @@ public class Message {
 			", subject='" + subject + '\'' +
 			", type='" + type + '\'' +
 			", sentAt=" + sentAt +
+			", signingStatus=" + signingStatus +
 			'}';
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || getClass() != o.getClass())
+		if (o == null || getClass() != o.getClass()) {
 			return false;
-		Message message = (Message) o;
-		return Objects.equals(messageId, message.messageId) && Objects.equals(subject, message.subject) && Objects.equals(type, message.type) && Objects.equals(sentAt, message.sentAt);
+		}
+		final var message = (Message) o;
+		return Objects.equals(messageId, message.messageId) && Objects.equals(subject, message.subject) &&
+			Objects.equals(type, message.type) && Objects.equals(sentAt, message.sentAt) &&
+			Objects.equals(signingStatus, message.signingStatus);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(messageId, subject, type, sentAt);
+		return Objects.hash(messageId, subject, type, sentAt, signingStatus);
 	}
 }

@@ -1,11 +1,14 @@
 package se.sundsvall.postportalservice.integration.digitalregisteredletter;
 
-import static org.apache.commons.fileupload.FileUploadBase.MULTIPART_FORM_DATA;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 import static se.sundsvall.postportalservice.integration.digitalregisteredletter.configuration.DigitalRegisteredLetterConfiguration.CLIENT_ID;
 
 import generated.se.sundsvall.digitalregisteredletter.EligibilityRequest;
 import generated.se.sundsvall.digitalregisteredletter.Letter;
 import generated.se.sundsvall.digitalregisteredletter.LetterRequest;
+import generated.se.sundsvall.digitalregisteredletter.LetterStatus;
+import generated.se.sundsvall.digitalregisteredletter.LetterStatusRequest;
 import generated.se.sundsvall.digitalregisteredletter.Letters;
 import generated.se.sundsvall.digitalregisteredletter.SigningInfo;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -28,28 +31,33 @@ import se.sundsvall.postportalservice.integration.digitalregisteredletter.config
 @CircuitBreaker(name = CLIENT_ID)
 public interface DigitalRegisteredLetterClient {
 
-	@PostMapping(path = "/{municipalityId}/eligibility/kivra")
+	@PostMapping(path = "/{municipalityId}/eligibility/kivra", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	List<String> checkKivraEligibility(
 		@PathVariable final String municipalityId,
 		@RequestBody final EligibilityRequest request);
 
-	@GetMapping(path = "/{municipalityId}/letters")
+	@GetMapping(path = "/{municipalityId}/letters", produces = APPLICATION_JSON_VALUE)
 	List<Letters> getAllLetters(@PathVariable final String municipalityId);
 
-	@GetMapping(path = "/{municipalityId}/letters/{letterId}")
+	@GetMapping(path = "/{municipalityId}/letters/{letterId}", produces = APPLICATION_JSON_VALUE)
 	Letter getLetterById(@PathVariable final String municipalityId,
 		@PathVariable final String letterId);
 
-	@PostMapping(value = "/{municipalityId}/letters", consumes = MULTIPART_FORM_DATA)
+	@PostMapping(value = "/{municipalityId}/letters", consumes = MULTIPART_FORM_DATA_VALUE, produces = APPLICATION_JSON_VALUE)
 	Letter sendLetter(
 		@RequestHeader(Identifier.HEADER_NAME) String identifier,
 		@PathVariable final String municipalityId,
 		@RequestPart(name = "letter") final LetterRequest letterRequest,
 		@RequestPart(name = "letterAttachments") final List<MultipartFile> files);
 
-	@GetMapping(value = "/{municipalityId}/letters/{letterId}/signinginfo")
+	@GetMapping(value = "/{municipalityId}/letters/{letterId}/signinginfo", produces = APPLICATION_JSON_VALUE)
 	SigningInfo getSigningInfo(
 		@PathVariable final String municipalityId,
 		@PathVariable final String letterId);
+
+	@PostMapping(value = "/{municipalityId}/status/letters", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	List<LetterStatus> getLetterStatuses(
+		@PathVariable final String municipalityId,
+		@RequestBody final LetterStatusRequest letterStatusRequest);
 
 }

@@ -32,7 +32,7 @@ class DigitalRegisteredLetterMapperTest {
 		final var partyId3 = "123e4567-e89b-12d3-a456-426614174003";
 		final var partyIds = List.of(partyId1, partyId2, partyId3);
 
-		var result = mapper.toEligibilityRequest(partyIds);
+		final var result = mapper.toEligibilityRequest(partyIds);
 
 		assertThat(result.getPartyIds()).containsExactlyInAnyOrder(partyId1, partyId2, partyId3);
 	}
@@ -44,23 +44,23 @@ class DigitalRegisteredLetterMapperTest {
 
 	@Test
 	void toLetterRequest() {
-		var partyId = "123e4567-e89b-12d3-a456-426614174000";
-		var department = new DepartmentEntity()
+		final var partyId = "123e4567-e89b-12d3-a456-426614174000";
+		final var department = new DepartmentEntity()
 			.withName("Sundsvalls kommun")
 			.withOrganizationNumber("12345")
 			.withContactInformationEmail("email")
 			.withContactInformationPhoneNumber("number")
 			.withContactInformationUrl("url")
 			.withSupportText("supportText");
-		var message = new MessageEntity()
+		final var message = new MessageEntity()
 			.withBody("body")
 			.withContentType("application/pdf")
 			.withSubject("subject")
 			.withDepartment(department);
-		var recipient = new RecipientEntity()
+		final var recipient = new RecipientEntity()
 			.withPartyId(partyId);
 
-		var result = mapper.toLetterRequest(message, recipient);
+		final var result = mapper.toLetterRequest(message, recipient);
 
 		assertThat(result).isNotNull().satisfies(letterRequest -> {
 			assertThat(letterRequest.getBody()).isEqualTo(message.getBody());
@@ -87,13 +87,13 @@ class DigitalRegisteredLetterMapperTest {
 
 	@Test
 	void toSupportInfo() {
-		var department = new DepartmentEntity()
+		final var department = new DepartmentEntity()
 			.withContactInformationEmail("email")
 			.withContactInformationPhoneNumber("number")
 			.withContactInformationUrl("url")
 			.withSupportText("supportText");
 
-		var result = mapper.toSupportInfo(department);
+		final var result = mapper.toSupportInfo(department);
 
 		assertThat(result).isNotNull().satisfies(supportInfo -> {
 			assertThat(supportInfo.getContactInformationEmail()).isEqualTo(department.getContactInformationEmail());
@@ -110,11 +110,11 @@ class DigitalRegisteredLetterMapperTest {
 
 	@Test
 	void toOrganization() {
-		var department = new DepartmentEntity()
+		final var department = new DepartmentEntity()
 			.withName("Sundsvalls kommun")
 			.withOrganizationNumber("12345");
 
-		var result = mapper.toOrganization(department);
+		final var result = mapper.toOrganization(department);
 
 		assertThat(result).isNotNull().satisfies(organization -> {
 			assertThat(organization.getName()).isEqualTo(department.getName());
@@ -129,20 +129,20 @@ class DigitalRegisteredLetterMapperTest {
 
 	@Test
 	void toMultipartFiles() throws SQLException {
-		var blobMock = Mockito.mock(Blob.class);
-		var content = "content".getBytes();
+		final var blobMock = Mockito.mock(Blob.class);
+		final var content = "content".getBytes();
 		when(blobMock.length()).thenReturn((long) 5);
 		when(blobMock.getBytes(1, 5)).thenReturn(content);
-		var attachment1 = new AttachmentEntity()
+		final var attachment1 = new AttachmentEntity()
 			.withContentType("application/pdf")
 			.withFileName("file1.pdf")
 			.withContent(blobMock);
-		var attachment2 = new AttachmentEntity()
+		final var attachment2 = new AttachmentEntity()
 			.withContentType("application/json")
 			.withFileName("file2.pdf")
 			.withContent(blobMock);
 
-		var result = mapper.toMultipartFiles(List.of(attachment1, attachment2));
+		final var result = mapper.toMultipartFiles(List.of(attachment1, attachment2));
 
 		assertThat(result).isNotNull().hasSize(2)
 			.extracting(MultipartFile::getName)
@@ -160,16 +160,16 @@ class DigitalRegisteredLetterMapperTest {
 
 	@Test
 	void toMultipartFile() throws SQLException, IOException {
-		var blobMock = Mockito.mock(Blob.class);
-		var content = "content".getBytes();
+		final var blobMock = Mockito.mock(Blob.class);
+		final var content = "content".getBytes();
 		when(blobMock.length()).thenReturn((long) 5);
 		when(blobMock.getBytes(1, 5)).thenReturn(content);
-		var attachment = new AttachmentEntity()
+		final var attachment = new AttachmentEntity()
 			.withContentType("application/pdf")
 			.withFileName("file1.pdf")
 			.withContent(blobMock);
 
-		var result = mapper.toMultipartFile(attachment);
+		final var result = mapper.toMultipartFile(attachment);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getName()).isEqualTo(attachment.getFileName());
@@ -179,16 +179,16 @@ class DigitalRegisteredLetterMapperTest {
 
 	@Test
 	void createMultipartFile() throws Exception {
-		var blobMock = Mockito.mock(Blob.class);
-		var content = "content".getBytes();
+		final var blobMock = Mockito.mock(Blob.class);
+		final var content = "content".getBytes();
 		when(blobMock.length()).thenReturn((long) 5);
 		when(blobMock.getBytes(1, 5)).thenReturn(content);
-		var attachment = new AttachmentEntity()
+		final var attachment = new AttachmentEntity()
 			.withContentType("application/pdf")
 			.withFileName("file1.pdf")
 			.withContent(blobMock);
 
-		var result = mapper.createMultipartFile(attachment);
+		final var result = mapper.createMultipartFile(attachment);
 
 		assertThat(result).isNotNull();
 		assertThat(result.getName()).isEqualTo(attachment.getFileName());
@@ -196,4 +196,18 @@ class DigitalRegisteredLetterMapperTest {
 		assertThat(result.getBytes()).isEqualTo(content);
 	}
 
+	@Test
+	void toLetterStatusRequest() {
+		final var ids = List.of("id1", "id2", "id3");
+
+		final var result = mapper.toLetterStatusRequest(ids);
+
+		assertThat(result).isNotNull();
+		assertThat(result.getLetterIds()).isEqualTo(ids);
+	}
+
+	@Test
+	void toLetterStatusRequest_whenNull() {
+		assertThat(mapper.toLetterStatusRequest(null)).isNull();
+	}
 }

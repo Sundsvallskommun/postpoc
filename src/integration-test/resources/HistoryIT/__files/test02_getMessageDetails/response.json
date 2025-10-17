@@ -19,7 +19,8 @@
 			"streetAddress": "Testgatan 12",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
@@ -27,7 +28,8 @@
 			"streetAddress": "Testgatan 13",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
@@ -35,7 +37,8 @@
 			"streetAddress": "Testgatan 14",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
@@ -43,7 +46,8 @@
 			"streetAddress": "Testgatan 15",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
@@ -51,7 +55,8 @@
 			"streetAddress": "Testgatan 16",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "FAILED"
 		},
 		{
 			"name": "John Doe",
@@ -59,7 +64,8 @@
 			"streetAddress": "Testgatan 17",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
@@ -67,14 +73,16 @@
 			"streetAddress": "Testgatan 18",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
 			"streetAddress": "Testgatan 121",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Doe",
@@ -82,7 +90,8 @@
 			"streetAddress": "Testgatan 19",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
@@ -90,7 +99,8 @@
 			"streetAddress": "Testgatan 122",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
@@ -98,7 +108,8 @@
 			"streetAddress": "Testgatan 123",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
@@ -106,14 +117,16 @@
 			"streetAddress": "Testgatan 124",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
 			"streetAddress": "Testgatan 12",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
@@ -121,7 +134,8 @@
 			"streetAddress": "Testgatan 125",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
@@ -129,7 +143,8 @@
 			"streetAddress": "Testgatan 126",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Alex Doe",
@@ -137,7 +152,8 @@
 			"streetAddress": "Testgatan 127",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -145,14 +161,16 @@
 			"streetAddress": "Testgatan 128",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
 			"streetAddress": "Testgatan 129",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -160,7 +178,8 @@
 			"streetAddress": "Testgatan 120",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -168,7 +187,8 @@
 			"streetAddress": "Testgatan 112",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -176,7 +196,8 @@
 			"streetAddress": "Testgatan 1122",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -184,7 +205,8 @@
 			"streetAddress": "Testgatan 122",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -192,7 +214,8 @@
 			"streetAddress": "Testgatan 132",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
@@ -200,59 +223,71 @@
 			"streetAddress": "Testgatan 131",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "Jane Doe",
 			"streetAddress": "Testgatan 182",
 			"zipCode": "12345",
 			"city": "Testsvall",
-			"messageType": "SNAIL_MAIL"
+			"messageType": "SNAIL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
-			"messageType": "DIGITAL_MAIL"
+			"messageType": "DIGITAL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
-			"messageType": "DIGITAL_MAIL"
+			"messageType": "DIGITAL_MAIL",
+			"status": "FAILED"
 		},
 		{
 			"name": "John Wick",
-			"messageType": "DIGITAL_MAIL"
+			"messageType": "DIGITAL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
-			"messageType": "DIGITAL_MAIL"
+			"messageType": "DIGITAL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
-			"messageType": "DIGITAL_MAIL"
-		},
-		{
-			"name": "John Wick",
-			"mobileNumber": "+46701740605",
-			"messageType": "SMS"
-		},
-		{
-			"name": "John Wick",
-			"mobileNumber": "+46701740605",
-			"messageType": "SMS"
+			"messageType": "DIGITAL_MAIL",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
 			"mobileNumber": "+46701740605",
-			"messageType": "SMS"
+			"messageType": "SMS",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
 			"mobileNumber": "+46701740605",
-			"messageType": "SMS"
+			"messageType": "SMS",
+			"status": "SENT"
 		},
 		{
 			"name": "John Wick",
 			"mobileNumber": "+46701740605",
-			"messageType": "SMS"
+			"messageType": "SMS",
+			"status": "FAILED"
+		},
+		{
+			"name": "John Wick",
+			"mobileNumber": "+46701740605",
+			"messageType": "SMS",
+			"status": "SENT"
+		},
+		{
+			"name": "John Wick",
+			"mobileNumber": "+46701740605",
+			"messageType": "SMS",
+			"status": "SENT"
 		}
 	]
 }

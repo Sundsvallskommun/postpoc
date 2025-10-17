@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.jdbc.Sql;
+
 import se.sundsvall.dept44.test.AbstractAppTest;
 import se.sundsvall.dept44.test.annotation.wiremock.WireMockAppTestSuite;
 import se.sundsvall.postportalservice.Application;
@@ -31,7 +32,7 @@ class HistoryIT extends AbstractAppTest {
 	@Test
 	void test02_getMessageDetails() {
 		setupCall()
-			.withServicePath("/2281/history/users/user1/messages/message101")
+			.withServicePath("/2281/history/users/user1/messages/4972e098-21b8-4fda-9a0b-4d1b1377f7e4")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
@@ -41,7 +42,18 @@ class HistoryIT extends AbstractAppTest {
 	@Test
 	void test03_getSigningInformation() {
 		setupCall()
-			.withServicePath("/2281/history/messages/message3/signinginfo") // message3 is a DIGITAL_REGISTERED_LETTER in the test data
+			// message with id 1decdead-52b8-42d9-aa62-5ef08c4a701e is a DIGITAL_REGISTERED_LETTER in the test data
+			.withServicePath("/2281/history/messages/1decdead-52b8-42d9-aa62-5ef08c4a701e/signinginfo")
+			.withHttpMethod(GET)
+			.withExpectedResponseStatus(OK)
+			.withExpectedResponse(RESPONSE_FILE)
+			.sendRequestAndVerifyResponse();
+	}
+
+	@Test
+	void test04_getUserMessagesWhenDigitalRegisteredMailIsPresent() {
+		setupCall()
+			.withServicePath("/2281/history/users/user2/messages")
 			.withHttpMethod(GET)
 			.withExpectedResponseStatus(OK)
 			.withExpectedResponse(RESPONSE_FILE)
